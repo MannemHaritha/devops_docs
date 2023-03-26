@@ -1,0 +1,379 @@
+ git clone https://github.com/srinadhm/devops-practise.git
+  386  ll
+  387  cd devops-practise/
+  388  git branch
+  389  git branch -a
+  390  git checkout develop
+  391  git branch
+  392  git branch -a
+  393  clear
+  394  git branch feature-1
+  395  git branch
+  396  git push --set-upstream origin feature-1
+  397  git push --set-upstream origin feature-1
+  398  git config --global user.name "srinadhm"
+  399  git config --global user.email "mupparajusrinadh@gmail.com"
+  
+  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
+  
+  
+  400  git push --set-upstream origin feature-1
+  401  git push --set-upstream origin feature-1
+  402  git checkout feature-1
+  403  vi feature-1.txt
+  404  git config --global user.name "srinadhm"
+  405  git config --global user.email "mupparajusrinadh@gmail.com"
+  406  git config list
+  407  git config --list
+  408  clear
+  409  git add feature-1.txt
+  410  git commit -m 'added git config --list
+  411  clear
+  412  git commit -m 'added feature-1.txt file'
+  413  git status
+  414  git status
+  415  git push
+  416  git checkout develop
+  417  git diff develop remote/develop
+  418  git diff develop origin/develop
+  419  git pull
+  420  git branch -r
+  421  clear
+  422  git config -l
+  423  clear
+  424  ll
+  425  git remote add origin https://github.com/username/Hello-World.git
+  426  git remote add origin https://github.com/srinadhm/Hello-World.git
+  427  git config --lsit
+  428  git config --list
+  429  clear
+  430  clear
+  431  ll
+  432  exit
+  433  git clone https://github.com/srinadhm/git-branch-strategy.git
+  434  ll
+  435  cd git-branch-strategy/
+  436  git branch master
+  437  git push --set-upstream master
+  438  git push --set-upstream origin master
+  439  git branch develop
+  440  git branch
+  441  git branch -r
+  442  clesr
+  443  clear
+  444  git push --set-upstream develop
+  445  git push --set-upstream origin develop
+  446  git branch -r
+  447  git branch -d develop
+  448  git branch
+  449  git push delete origin develop
+  450  git push --delete origin develop
+  451  git checkout master
+  452  git status
+  453  clear
+  454  git branch develop
+  455  git branch
+  456  git push --set-upstream origin develop
+  457  git checkout develop
+  458  git branch feature-1
+  459  git push --set-upstream origin feature-1
+  460  git checkout feature-1
+  461  clear
+  462  vi feature-1.txt
+  463  git add feature-1.txt
+  464  git push
+  465  git status
+  466  git commit -m 'added feature-1.txt text file'
+  467  git status
+  468  git push
+  469  ll
+  470  vi feature-1.txt
+  471  clear
+  472  clear
+  473  git status
+  474  git add feature-1.txt
+  475  git status
+  476  git commit -m 'updated feature-1.txt text file'
+  477  clear
+  478  git push -u origin feature-1
+  479  vi feature-1.txt
+  480  git add feature-1.txt
+  481  git commit -m
+  482  git commit -m 'updated feature-1.txt text file'
+  483  git push origin feature-1
+  484  git checkout pull
+  485  git checkout develop
+  486  git pull
+  487  ll
+  488  clear
+  489  git branch --delete feature-1
+  490  git push origin --delete feature-1
+  491  git branch -r
+  492  git branch feature-2
+  493  git push --set-upstream origin feature-2
+  494  git checkout feature-2
+  495  git --delete feature-2
+  496  git branch --delete feature-2
+  497  git push origin --delete feature-2
+  498  clear
+  499  exit
+  500  git branch-2
+  501  git branch
+  502  git checkout develop
+  503  clear
+  504  git pull
+  505  git branch release_20211124
+  506  git push --set-upstream origin release_20211124
+  507  git push --set-upstream origin release_20211124
+  508  git checkout release_20211124
+  509  touch issue-1.txt
+  510  touch issue-2.txt
+  511  ll
+  512  git add issue-1.txt issue-2.txt
+  513  git statu
+  514  git status
+  515  git commit -m 'fixed issues during release'
+  516  git push origin release_20211124
+  517  clear
+  518  git checkout develop
+  519  ls -lrt
+  520  git pull
+  521  ls -lrt
+  522  git log --oneline
+  523  clear
+  524  git log --oneline
+  525  cler
+  526  git reset 1383d0d
+  527  ls -lrt
+  528  git log --oneline
+  529  git status
+  530  clear
+  531  git clean -fd
+  532  git commit -m 'removed unwanted files'
+  533  git add issue-1.txt issue-2.txt
+  534  git add .
+  535  git commit -m 'removed unwanted files'
+  536  git push
+  537  git pull
+  538  ll
+  539  clear
+  540  ll
+  541  git checkout feature-1
+  542  git branch
+  543  git feature-2
+  544  clear
+  545  touch sample.txt
+  546  git status
+  547  git add sample.txt
+  548  git status
+  549  clear
+  550  git commit -m 'added sample.txt text file'
+  551  git push origin develop
+  552  git status
+  553  git config --global --list
+  554  git config --global --unset user.name
+  555  git config --global --list
+  556  git config --global --unset user.email
+  557  clear
+  558  git config --global --list
+  559  git clone https://github.com/srinadhm/devops-practise.git
+  560  cd devops-practise/
+  561  ll
+  562  clear
+  563  git branch -a
+  564  git checkout feature-1
+  565  ll
+  566  vi sample.txt
+  567  clear
+  568  git add sample.txt
+  569  git commit -m 'added sample.txt'
+  570  git pull
+  571  ll
+  572  clear
+  573  git config --global user.email "mupparajusrinadh@gmail.com"
+  574  git config --global user.name "srinadhm"
+  575  git config --global --list
+  576  git push
+  577  ll
+  578  ll
+  579  git status
+  580  git commit -m 'added sample.txt'
+  581  git push
+  582  cler
+  583  clear
+  584  ll
+  585  vi sample.txt
+  586  clear
+  587  git add sample.txt
+  588  git commit -m 'added changes to sample.txt'
+  589  git log --oneline
+  590  git revert 929bad6
+  591  cat sample.txt
+  592  git log --oneline
+  593  git revert addd97d
+  594  cat sample.txt
+  595  git log --oneline
+  596  clear
+  597  git log --oneline
+  598  git reset 550fdbc
+  599  cat sample.txt
+  600  git log --oneline
+  601  git reset --hard 550fdbc
+  602  git log --oneline
+  603  cat sample.txt
+  604  git reset --hard 550fdbc
+  605  git log --oneline
+  606  cat sample.txt
+  607  clear
+  608  ll
+  609  vi sample.txt
+  610  clear
+  611  ll
+  612  vi demo.txt
+  613  cat demo.txt
+  614  clear
+  615  git log --oneline
+  616  clear
+  617  git commit -am 'committed files by mistake'
+  618  git status
+  619  cat demo.txt
+  620  cat sample.txt
+  621  git log --oneline
+  622  git reset --soft 550fdbc
+  623  git log --oneline
+  624  clear
+  625  cat demo.txt
+  626  cat sample.txt
+  627  git reset --hard 550fdbc
+  628  cat demo.txt
+  629  cat sample.txt
+  630  git reset --hard ddf8f7e
+  631  git log --oneline
+  632  ll
+  633  clear
+  634  git fetch
+  635  ll
+  636  git log --oneline
+  637  git merge
+  638  ll
+  639  git log --oneline
+  640  git fetch
+  641  ll
+  642  git log --oneline
+  643  clear
+  644  git merge
+  645  ll
+  646  git diff origin feature-1
+  647  git fetch
+  648  git diff origin feature-1
+  649  clear
+  650  git log feature-1 origin/feature-1
+  651  git show daf19b0c6572112531ba20ffac2d4e7bcabd7147
+  652  clear
+  653  git log feature-1 origin/feature-1
+  654  git fetch
+  655  git log feature-1 origin/feature-1
+  656  git show 9f6994404c9786286e46922e507d5881edfa39da
+  657  git pull
+  658  ll
+  659  git remote -v
+  660  clear
+  661  ll
+  662  touch resetdemo.txt
+  663  git commit -am 'added new file'
+  664  git add resetdemo.txt
+  665  git commit -am 'added new file'
+  666  ll
+  667  clear
+  668  git log --oneline
+  669  git reset --hard 9f69944
+  670  git log --oneline
+  671  git reset --hard ddf8f7e
+  672  git log --oneline
+  673  git pull
+  674  ll
+  675  clear
+  676  git branch
+  677  git branch -a
+  678  git checkout develop
+  679  clear
+  680  ll
+  681  vi file1.txt
+  682  clear
+  683  git add file1.txt
+  684  ll
+  685  git commit -m 'first commit on develop branch'
+  686  git checkout master
+  687  vi file1.txt
+  688  git commit -am 'second commit on master'
+  689  git add file1.txt
+  690  git commit -m 'second commit on master'
+  691  git merge develop
+  692  git merge develop
+  693  git commit -am 'resolved merge conflicts'
+  694  git merge develop
+  695  cat file1.txt
+  696  git push origin master
+  697  clear
+  698  git checkout develop
+  699  git status
+  700  git push
+  701  cat file1.txt
+  702  git checkout master
+  703  cat file1.txt
+  704  clear
+  705  git checkout main
+  706  git pull
+  707  git diff origin develop
+  708  cat file1.txt
+  709  clear
+  710  git branch -a
+  711  git checkout feature-1
+  712  clear
+  713  ll
+  714  clear
+  715  touch nov24.txt
+  716  ll
+  717  git clean -f
+  718  ll
+  719  clear
+  720  mkdir demo-dir
+  721  ll
+  722  git clean -fd
+  723  ll
+  724  mkdir -p Parent/folder1
+  725  mkdir -p Parent/folder1/subfolder
+  726  ll
+  727  clear
+  728  mkdir parent11
+  729  ll
+  730  git clean -fd
+  731  ll
+  732  vi sample.txt
+  733  cat sample.txt
+  734  git diff sample.txt
+  735  git clean -fd
+  736  cat sample.txt
+  737  clear
+  738  git checkout -- sample.txt
+  739  cat sample.txt
+  740  clear
+  741  vi checkout-demo.txt
+  742  git add checkout-demo.txt
+  743  git clean -fd
+  744  cat checkout-demo.txt
+  745  git checkout -- checkout-demo.txt
+  746  cat checkout-demo.txt
+  747  vi checkout-demo.txt
+  748  git diff checkout-demo.txtq
+  749  git diff checkout-demo.txt
+  750  git checkout -- checkout-demo.txt
+  751  cat checkout-demo.txt
+  752  clear
+  753  git log --oneline
+  754  cat file-fetch.txt
+  755  cat sample.txt
+  756  git revert 550fdbc
+  757  git stash
+  758  git revert 550fdbc
+  759  git log --oneline
