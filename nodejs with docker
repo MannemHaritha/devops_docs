@@ -1,0 +1,86 @@
+how to bulid nodejs project?
+how to run the project?
+########
+in case of java project we define dependencies in pom.xml or build.gradle
+in case of nodejs project we define dependencies in package.json file
+########
+in case of java we use mvn clean package or gradle clean build is to build the  java project
+in case of nodjs we use npm install(npm means node package manager)
+########
+in java to run java project we can use 
+	java -jar jarfilename.jar
+in nodejs to run command is	
+	node flename.js
+	
+	
+	
+  docker exec -it nodejs-docker-project /bin/bash ---- 
+  docker exec -it python-flask-docker-project /bin/bash
+                  python-flask-docker-project 
+
+
+   1  ls
+    2  cat node_modules/
+    3  ll
+    4  ls
+    5  ls -l
+    6  cat package-lock.json
+    7  ls
+    8  cat package.json
+    9  cat server.js
+   10  cd node_modules/
+   11  ls
+
+
+
+
+programming language 
+1.servlet spring mvc spring boot
+2.net asp.net mvc 
+3.python flask django framework requirements.txt
+4.node js ember.js express (16.4.1) package.json
+
+const express = require('express' 4.16.3);
+const app = express();
+
+app.get('/', (request, response) {
+    response.send('Hello World!));
+});
+
+app.listen(3000, console.log('App Listening to port 3000');
+
+'use strict';
+
+const express = require('express');
+
+// Constants
+const PORT = 8080;
+const HOST = '0.0.0.0';
+
+// App
+const app = express();
+app.get('/', (req, res) => {
+  res.send('Hello World');
+});
+
+app.listen(PORT, HOST);
+console.log(`Running on http://${HOST}:${PORT}`);
+
+git clone https://github.com/MannemHaritha/nodejs-docker-project.git
+   45  cd nodejs-docker-project
+   46  ls
+   47  cat package.json
+   48  cat server.js
+   49  cat Dockerfile
+   50  docker image build -t mannemharitha/nodejs-docker-project:n1 .
+   51  docker images
+   52  docker push mannemharitha/nodejs-docker-project:n1
+   53  docker container run --name=nodejs-docker-project -p 8080:8080 --detach
+   54  docker container run --name=nodejs-docker-project -p 8080:8080 --detach mannemharitha/nodejs-docker-project
+   55  docker container run --name=nodejs-docker-project -p 8080:8080 --detach mannemharitha/nodejs-docker-project:n1
+   56  docker ps
+   57  docker ps
+   58  ls
+   59  docker ps
+   60  docker exec -it nodejs-demo-project /bin/bash
+   61  docker exec -it nodejs-docker-project /bin/bash
