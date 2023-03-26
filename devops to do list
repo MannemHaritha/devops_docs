@@ -1,0 +1,708 @@
+Git ---- Branching Strategy, reset rebase revert merge cherrypick clone pull push fetch stash push pop
+Maven ---- Integration with nexus sonarqube
+Jenkins ------ mail notification, ci and cd pipeline different parameters webhook integration master slave architecture
+Ansible --- adhoc commands installation playbook
+Deploy to tomcat
+Cd using ansible
+Facts variables roles galaxy tower vault
+become_user
+Docker ----- file instructions 
+Pull and push from public registry docker hub
+Pull and push from private registry elastic container registry
+Pipeline to push to docker hub / ecr
+Docker compose
+Docker swarm
+Integration with fargate
+Terraform --- create EC2 S3 vpc eks 
+Provisioners local remote-exec file
+Modules variables
+Remote backend with S3
+Locking with dynamo db
+Lambda ---- start/stop EC2 instances
+Integration with S3 sns simple notification service sqs simple queue service
+Read data from S3 and write to dynamo db
+K8s --- Architecture 
+Components master and node
+Installation using minikube kubeadm kops and Amazon eks 
+Objects --- pod deployment service 
+Replication controller Replica Set 
+Stateful set Daemon set configmap secrets labels selectors annotations resource quotas requests and limits 
+Taint toleration node selector node affinity pod affinity anti affinity
+Cluster ip node port load balancer
+Auto scaler - horizontal vertical cluster
+Health checks liveness probe readiness probe
+Deployment strategies - rolling update 
+Blue green canary 
+Service accounts RBAC role back access control 
+Ingress Controller
+Ingress rules
+Helm charts 
+Install elk using helm chart
+Helm chart directory structure
+Integration with Jenkins
+Promotheus and Grafana ---- setup and run as service 
+Monitoring k8s cluster
+Monitor spring boot application
+Monitor EC2 instance
+Monitor Jenkins 
+Monitor docker
+Node exporter and Alert Manager in promotheus
+Elk setup and use case
+Send spring boot logs to elk 
+File beat and heartbeat in Elk stack
+Monitoring k8s with elk stack
+Shell script 
+Database backup and restore
+
+----------------------------
+
+###################################
+
+Devops Master Program -- 
+Terraform ---- 2 hours 
+Kubernetes --- 2 hours 
+Satish konanki --- 2 hours 
+Server Gyan --- 1 hour 
+Kubernetes weekend workshop --- 2hours 
+Application Deployment in Production --- 
+Tools Setup ---- In Progress
+Notes for Devops concepts -- In Progress
+Practical examples for Devops concepts --- In Progress
+Deekshith sn 
+Prashant Lakhera https://github.com/100daysofdevops/100daysofdevops  or http://100daysofdevops.com/day-100-100-days-of-devops/
+Simplilearn
+Great Learning
+Intellipaat
+freeCodeCamp.org  https://www.youtube.com/watch?v=fqMOX6JJhGo&list=PLWKjhJtqVAbkzvvpY12KkfiIGso9A_Ixs
+                  https://www.youtube.com/watch?v=V4waklkBC38 
+Linux Admin Roles and Responsibilities 
+Roles and Responsibilities of Devops Engineer 
+Roles and Responsibilities of SRE 
+Prashant Lakhera 100 days of devops 
+
+
+Linux Interview questions
+Devops Interview questions
+AWS Interview questions 
+Commands List
+
+1.Git
+2.Jenkins
+3.Ansible
+4.Docker 
+5.Terraform
+6.Kubernetes
+7.Aws Cli commands 
+8.Boto3
+
+ENV
+EXPOSE
+ENTRYPOINT
+FROM
+HEALTHCHECK
+LABEL
+RUN
+STOPSIGNAL
+USER
+VOLUME
+WORKDIR
+ONBUILD
+SHELL
+
+
+AWS Playlist --- 
+Stephane Maarek --- https://www.youtube.com/watch?v=kvP_7jT-ImY&list=PLt1SIbA8guuvfvUDVLpJepmbnYpOfYCIB
+Intellipaat --- https://www.youtube.com/watch?v=MmsoIcYrXJU&list=PLVHgQku8Z935QbKFvttpxUF1WlNWt1dZ9
+knowledgeindia AWS Azure GCP tutorials  https://www.youtube.com/watch?v=ywHFXfuJoSU&list=PLTyrc6mz8dg8YE7OpHYoaRILnf1RQM8bz
+Vijay Tech360 https://www.youtube.com/watch?v=5Z5Q3ZvOEj8&list=PLCbzEkWetVXwfPtrQ8CFFEeWFSkIMGuDO
+Technology Hub https://www.youtube.com/watch?v=cakXKlc_OTk&list=PLBCBYFXVIMinELzm1GtLkWg_cPw1g8Hby 
+Tech Mahato https://www.youtube.com/watch?v=WFPFqj1XJqs&list=PL7foQG1Y7xk-kM32_Vkeh0tob8sb9cGbY&index=1
+S3CloudHub https://www.youtube.com/watch?v=CrpPG0Cz6xc&list=PL_OdF9Z6GmVZCwyfd8n6_50jcE_Xlz1je
+           https://www.youtube.com/watch?v=8CGZjYoLWlc&list=PL_OdF9Z6GmVayanQ4cjISqY_UkrOcZtr1 
+Be a better Dev https://www.youtube.com/@BeABetterDev/playlists
+Simplilearn https://www.youtube.com/watch?v=ZB5ONbD_SMY
+Great Learning https://www.youtube.com/watch?v=-8O32k26RWA
+Prashant Lakhera  https://www.youtube.com/@laprashant/playlists
+Server Gyan https://www.youtube.com/@ServerGyan/playlists
+            https://www.youtube.com/watch?v=bkRdHKrz0hg&list=PL10Ao--Mok8P_KD4_8Ovr2ONCYq71RI5B
+Java Techie https://www.youtube.com/watch?v=AK6Rf_yjvI0
+            https://www.youtube.com/watch?v=YB_qanudIzA&list=PLVz2XdJiJQxxurKT1Dqz6rmiMuZNdClqv
+Techno Town Techie https://www.youtube.com/@technotowntechie9732/playlists
+                   https://www.youtube.com/watch?v=maV840CbrCE&list=PL4TnYdea-xTJpaL2XigZ2ulcPyoRPjHAI
+In28Minutes https://www.youtube.com/@in28minutes/playlists
+            https://www.youtube.com/watch?v=WYPG6Sdx1os
+Java Guides  https://www.youtube.com/@JavaGuides/playlists
+             https://www.youtube.com/watch?v=IV7rX7bJDJI&list=PLGRDMO4rOGcP-Ln6nJ7CT5jYlwTBQA2KT
+Daily Code Buffer https://www.youtube.com/watch?v=9kXMLTNaQj8&list=PLhfxuQVMs-nyRj4XEM0xVKSfduJXo1PAQ
+                  https://www.youtube.com/watch?v=vKs17-QDi4w&list=PLhfxuQVMs-nx3YQa3XJ9-4g_EoK0J8WhU
+
+Spring boot and microservices		
+
+https://www.youtube.com/watch?v=lh1oQHXVSc0&list=PLSVW22jAG8pBnhAdq9S8BpLnZ0_jVBj0c
+
+		  
+---------------------------------- 
+
+
+
+
+
+{
+  "source": ["aws.s3"],
+  "detail-type": ["Object Created"],
+  "detail": {
+    "bucket": {
+      "name": ["macie-s3-sec"]
+    },
+    "object": {
+      "key": [{
+        "prefix": "eventbridge-sns-test/"
+      }]
+    }
+
+  }
+}
+
+IS it required to diable macie once it generate macie findings 
+
+Instance block store v/s Elastic block store
+
+If we terminate instance block store we cant recover it and we cant attach any additional volumes 
+
+If we terminate ebs we can recover by attaching to another volumes and ebs we can attach additional volumes.
+
+To enable ssm for ec2 instances we need to attach ssm role to Ec2 instances which are nothing but managed nodes 
+
+by default most of the instances ssm agent will be configured if not we need to configure ssm agent explicitly
+
+We can run the commands via 
+
+1.Run Command (Run Command)
+
+
+2.State Manager (Create Association)
+
+1.AWS-RunShellScript --- if we execute any commands or install any packages we can use this document name here we installed httpd and started the service
+
+aws ssm send-command --document-name "AWS-RunShellScript" --document-version "1" --targets '[{"Key":"InstanceIds","Values":["i-0cbab57746dfcf2bb","i-0b88b8457e45d49cb"]}]' --parameters '{"workingDirectory":[""],"executionTimeout":["3600"],"commands":["sudo yum install httpd -y","sudo service httpd start"]}' --comment "Installing httpd today" --timeout-seconds 600 --max-concurrency "50" --max-errors "0" --region us-east-1
+
+2.AWS-RunDocument ---- if we want to run or copy any document from source will be Github,S3,SSMDocument
+aws ssm send-command --document-name "AWS-RunDocument" --document-version "1" --targets '[{"Key":"InstanceIds","Values":["i-0b88b8457e45d49cb"]}]' --parameters '{"sourceType":["GitHub"],"sourceInfo":["{}"],"documentParameters":["{}"]}' --timeout-seconds 600 --max-concurrency "50" --max-errors "0" --region us-east-1
+
+3.AWS-RunAnsiblePlaybook ---- if we want place the playbook directly it will execute the playbook but before that we need to install ansible in the managed nodes
+
+
+aws ssm send-command --document-name "AWS-RunAnsiblePlaybook" --document-version "1" --targets '[{"Key":"InstanceIds","Values":["i-0b88b8457e45d49cb"]}]' --parameters '{"playbook":["- hosts: localhost\n become: yes\n gather_facts : false\n tasks :\n - name: download maven\n get_url :\n url : https://downloads.apache.org/maven/binaries/apache-maven-3.0.5-bin.tar.gz\n dest : /opt\n mode: '"'"'0755'"'"'\n - name: extract maven\n unarchive:\n src: /opt/apache-maven-3.0.5-bin.tar.gz\n dest: /opt\n remote_src: True\n - name: remote after extract\n file:\n path: /opt/apache-maven-3.0.5-bin.tar.gz\n state: absent"],"playbookurl":[""],"extravars":["SSM=True"],"check":["True"],"timeoutSeconds":["3600"]}' --comment "Run ansible playbook" --timeout-seconds 600 --max-concurrency "50" --max-errors "0" --region us-east-1
+
+
+4.AWS-ApplyAnsiblePlaybooks ---- We can mention the source type will be Github or S3 and we can mention the playbook name and InstallDependencies property true it will install the dependencies automatically.
+aws ssm send-command --document-name "AWS-ApplyAnsiblePlaybooks" --document-version "1" --parameters '{"SourceType":["GitHub"],"SourceInfo":["{}"],"InstallDependencies":["True"],"PlaybookFile":["hello-world-playbook.yml"],"ExtraVariables":["SSM=True"],"Check":["False"],"Verbose":["-v"],"TimeoutSeconds":["3600"]}' --timeout-seconds 600 --max-concurrency "50" --max-errors "0" --region us-east-1
+
+
+
+/var/lib/amazon/ssm/i-0b88b8457e45d49cb/document/orchestration/864a4672-9e70-4ed6-b8f8-3b98f39e0463/runShellScript/_script.sh: line 2: ansible: command not found
+
+Ansible is not installed. Please install Ansible and rerun the command
+
+failed to run commands: exit status 1
+
+[WARNING]: Platform linux on host localhost is using the discovered Python
+
+interpreter at /usr/bin/python, but future installation of another Python
+
+interpreter could change this. See https://docs.ansible.com/ansible/2.9/referen
+
+ce_appendices/interpreter_discovery.html for more information.
+
+failed to run commands: exit status 2
+
+
+---
+- hosts: localhost
+  become: yes
+  gather_facts : false
+  tasks:
+    - name: Installing java
+      yum:
+        name: java-1.8.0-openjdk-devel
+        state: latest
+
+---		
+- hosts: localhost
+  become: yes
+  gather_facts : false
+  tasks :
+    - name: download maven
+      get_url :
+        url : https://downloads.apache.org/maven/binaries/apache-maven-3.0.5-bin.tar.gz
+        dest : /opt
+        mode: '0755'
+    - name: extract maven
+      unarchive:
+        src: /opt/apache-maven-3.0.5-bin.tar.gz
+        dest: /opt
+        remote_src: True
+    - name: remote after extract
+      file:
+        path: /opt/apache-maven-3.0.5-bin.tar.gz
+        state: absent
+		
+ansible 2.9.23
+
+config file = /etc/ansible/ansible.cfg
+
+configured module search path = [u'/root/.ansible/plugins/modules', u'/usr/share/ansible/plugins/modules']
+
+ansible python module location = /usr/lib/python2.7/site-packages/ansible
+
+executable location = /usr/bin/ansible
+
+python version = 2.7.18 (default, May 25 2022, 14:30:51) [GCC 7.3.1 20180712 (Red Hat 7.3.1-15)]
+
+PLAY [localhost] ***************************************************************
+
+TASK [download maven] **********************************************************
+
+changed: [localhost]
+
+TASK [extract maven] ***********************************************************
+
+changed: [localhost]
+
+TASK [remote after extract] ****************************************************
+
+changed: [localhost]
+
+PLAY RECAP *********************************************************************
+
+localhost : ok=3 changed=3 unreachable=0 failed=0 skipped=0 rescued=0 ignored=0
+
+
+
+
+Loaded plugins: extras_suggestions, langpacks, priorities, update-motd
+
+Resolving Dependencies
+
+--> Running transaction check
+
+---> Package httpd.x86_64 0:2.4.54-1.amzn2 will be installed
+
+--> Processing Dependency: httpd-tools = 2.4.54-1.amzn2 for package: httpd-2.4.54-1.amzn2.x86_64
+
+--> Processing Dependency: httpd-filesystem = 2.4.54-1.amzn2 for package: httpd-2.4.54-1.amzn2.x86_64
+
+--> Processing Dependency: system-logos-httpd for package: httpd-2.4.54-1.amzn2.x86_64
+
+--> Processing Dependency: mod_http2 for package: httpd-2.4.54-1.amzn2.x86_64
+
+--> Processing Dependency: httpd-filesystem for package: httpd-2.4.54-1.amzn2.x86_64
+
+--> Processing Dependency: /etc/mime.types for package: httpd-2.4.54-1.amzn2.x86_64
+
+--> Processing Dependency: libaprutil-1.so.0()(64bit) for package: httpd-2.4.54-1.amzn2.x86_64
+
+--> Processing Dependency: libapr-1.so.0()(64bit) for package: httpd-2.4.54-1.amzn2.x86_64
+
+--> Running transaction check
+
+---> Package apr.x86_64 0:1.7.0-9.amzn2 will be installed
+
+---> Package apr-util.x86_64 0:1.6.1-5.amzn2.0.2 will be installed
+
+--> Processing Dependency: apr-util-bdb(x86-64) = 1.6.1-5.amzn2.0.2 for package: apr-util-1.6.1-5.amzn2.0.2.x86_64
+
+---> Package generic-logos-httpd.noarch 0:18.0.0-4.amzn2 will be installed
+
+---> Package httpd-filesystem.noarch 0:2.4.54-1.amzn2 will be installed
+
+---> Package httpd-tools.x86_64 0:2.4.54-1.amzn2 will be installed
+
+---> Package mailcap.noarch 0:2.1.41-2.amzn2 will be installed
+
+---> Package mod_http2.x86_64 0:1.15.19-1.amzn2.0.1 will be installed
+
+--> Running transaction check
+
+---> Package apr-util-bdb.x86_64 0:1.6.1-5.amzn2.0.2 will be installed
+
+--> Finished Dependency Resolution
+
+Dependencies Resolved
+
+================================================================================
+
+Package Arch Version Repository Size
+
+================================================================================
+
+Installing:
+
+httpd x86_64 2.4.54-1.amzn2 amzn2-core 1.4 M
+
+Installing for dependencies:
+
+apr x86_64 1.7.0-9.amzn2 amzn2-core 122 k
+
+apr-util x86_64 1.6.1-5.amzn2.0.2 amzn2-core 99 k
+
+apr-util-bdb x86_64 1.6.1-5.amzn2.0.2 amzn2-core 19 k
+
+generic-logos-httpd noarch 18.0.0-4.amzn2 amzn2-core 19 k
+
+httpd-filesystem noarch 2.4.54-1.amzn2 amzn2-core 24 k
+
+httpd-tools x86_64 2.4.54-1.amzn2 amzn2-core 88 k
+
+mailcap noarch 2.1.41-2.amzn2 amzn2-core 31 k
+
+mod_http2 x86_64 1.15.19-1.amzn2.0.1 amzn2-core 149 k
+
+Transaction Summary
+
+================================================================================
+
+Install 1 Package (+8 Dependent packages)
+
+Total download size: 1.9 M
+
+Installed size: 5.2 M
+
+Downloading packages:
+
+--------------------------------------------------------------------------------
+
+Total 11 MB/s | 1.9 MB 00:00
+
+Running transaction check
+
+Running transaction test
+
+Transaction test succeeded
+
+Running transaction
+
+Installing : apr-1.7.0-9.amzn2.x86_64 1/9
+
+Installing : apr-util-bdb-1.6.1-5.amzn2.0.2.x86_64 2/9
+
+Installing : apr-util-1.6.1-5.amzn2.0.2.x86_64 3/9
+
+Installing : httpd-tools-2.4.54-1.amzn2.x86_64 4/9
+
+Installing : httpd-filesystem-2.4.54-1.amzn2.noarch 5/9
+
+Installing : generic-logos-httpd-18.0.0-4.amzn2.noarch 6/9
+
+Installing : mailcap-2.1.41-2.amzn2.noarch 7/9
+
+Installing : mod_http2-1.15.19-1.amzn2.0.1.x86_64 8/9
+
+Installing : httpd-2.4.54-1.amzn2.x86_64 9/9
+
+Verifying : apr-util-1.6.1-5.amzn2.0.2.x86_64 1/9
+
+Verifying : apr-util-bdb-1.6.1-5.amzn2.0.2.x86_64 2/9
+
+Verifying : httpd-tools-2.4.54-1.amzn2.x86_64 3/9
+
+Verifying : mod_http2-1.15.19-1.amzn2.0.1.x86_64 4/9
+
+Verifying : httpd-2.4.54-1.amzn2.x86_64 5/9
+
+Verifying : mailcap-2.1.41-2.amzn2.noarch 6/9
+
+Verifying : generic-logos-httpd-18.0.0-4.amzn2.noarch 7/9
+
+Verifying : httpd-filesystem-2.4.54-1.amzn2.noarch 8/9
+
+Verifying : apr-1.7.0-9.amzn2.x86_64 9/9
+
+Installed:
+
+httpd.x86_64 0:2.4.54-1.amzn2
+
+Dependency Installed:
+
+apr.x86_64 0:1.7.0-9.amzn2
+
+apr-util.x86_64 0:1.6.1-5.amzn2.0.2
+
+apr-util-bdb.x86_64 0:1.6.1-5.amzn2.0.2
+
+generic-logos-httpd.noarch 0:18.0.0-4.amzn2
+
+httpd-filesystem.noarch 0:2.4.54-1.amzn2
+
+httpd-tools.x86_64 0:2.4.54-1.amzn2
+
+mailcap.noarch 0:2.1.41-2.amzn2
+
+mod_http2.x86_64 0:1.15.19-1.amzn2.0.1
+
+Complete!
+
+Redirecting to /bin/systemctl start httpd.service
+
+http://18.204.222.76/
+
+Execute composite or nested Systems Manager documents (SSM documents) stored in a remote location. The following remote locations are currently supported: GitHub (public and private), Amazon S3 (S3), and Systems Manager documents. The following SSM document types are currently supported: JSON and YAML.
+
+
+
+https://downloads.apache.org/tomcat/tomcat-10/
+
+https://downloads.apache.org/tomcat/tomcat-10/v10.0.16/bin/apache-tomcat-10.0.16.tar.gz
+
+
+[root@ip-172-31-84-92 ~]# cat /etc/gitlab/initial_root_password
+# WARNING: This value is valid only in the following conditions
+#          1. If provided manually (either via `GITLAB_ROOT_PASSWORD` environment variable or via `gitlab_rails['initial_root_password']` setting in `gitlab.rb`, it was provided before database was seeded for the first time (usually, the first reconfigure run).
+#          2. Password hasn't been changed manually, either via UI or via command line.
+#
+#          If the password shown here doesn't work, you must reset the admin password following https://docs.gitlab.com/ee/security/reset_user_password.html#reset-your-root-password.
+
+Password: 9whnVoPDrx+LNQRZPC5NOjZmM9gPGlcVY+I/wZTO1ig=
+
+# NOTE: This file will be automatically deleted in the first reconfigure run after 24 hours.
+[root@ip-172-31-84-92 ~]#
+
+sudo gitlab-rake "gitlab:password:reset"
+
+sudo gitlab-rake "gitlab:password:reset[srinadh]"
+
+
+Cyber Park, 1st Floor, Block B Plot No. 76 & 77, Electronic City Phase 1, Hosur Rd, Doddathoguru, Bengaluru, Karnataka 560100
+
+Cyber Park, 1st Floor, Block B, Plot No. 76-77, e-City Phase 1,
+
+Doddathogur Village, Hosur Road, Bangalore – 560 100
+
+Role:Sr Java Developer
+Employee ID:26602
+Annual Salary:Indian Rupee 1050000  1,050,000 10,50,000 1,050,000
+Address:Cyber Park, 1st Floor, Block B Plot No. 76 77, Electronic City Phase 1, Hosur Rd, Doddathoguru, Bengaluru, Karnataka 560100
+
+Run tomcat as a service 
+Run prometheus as a service 
+Run grafana as a service 
+Run nexus as a service
+Run sonarqube as a service 
+
+master : 54.167.193.76
+
+redhat node : 3.84.61.77 172.31.92.221
+
+
+ubuntu node : 54.174.140.51 172.31.90.96
+
+[remotenodes]
+172.31.92.221
+172.31.90.96
+
+when: ansible_distribution == "Redhat" and ansible_distribution_major_version == '8'
+
+"os_family": "RedHat", 
+
+"os_family": "Debian",
+
+when: ansible_os_family == "Debian"
+
+when: ansible_os_family == "RedHat" 
+
+rheljava8pkgname 
+
+ubuntujavapkgname 
+
+ansible-playbook install-java8.yml --extra-vars "rheljava8pkgname=java-1.8.0-openjdk-devel ubuntujavapkgname=openjdk-8-jdk"
+
+<!-- https://mvnrepository.com/artifact/org.postgresql/postgresql -->
+<dependency>
+    <groupId>org.postgresql</groupId>
+    <artifactId>postgresql</artifactId>
+    <version>42.3.0</version>
+</dependency>
+
+# Download an artifact from a private repository requiring authentication
+- maven_artifact:
+    group_id: com.company
+    artifact_id: library-name
+    repository_url: 'https://repo.company.com/maven'
+    username: user
+    password: pass
+    dest: /tmp/library-name-latest.jar
+	
+	
+
+
+https://repo1.maven.org/maven2/org/postgresql/postgresql/42.3.0/postgresql-42.3.0.jar
+
+---
+- hosts: localhost
+  tasks:
+    - name: check java is installed or not
+      yum:
+        list: java-1.8.0-openjdk-devel
+      register: java_output
+    - name: print java_output
+      debug:
+        msg: "  {{ java_output }} "
+		
+/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.312.b07-1.amzn2.0.2.x86_64/jre
+
+[Unit]
+Description=Apache apache-tomcat-8.5.61 Web Application Container
+After=network.target
+
+[Service]
+Type=forking
+
+Environment=JAVA_HOME=/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.312.b07-1.amzn2.0.2.x86_64/jre
+Environment=CATALINA_PID={{ tomcat_download_directory }}/apache-tomcat-10.0.16/temp/tomcat.pid
+Environment=CATALINA_HOME={{ tomcat_download_directory }}/apache-tomcat-10.0.16
+Environment=CATALINA_BASE={{ tomcat_download_directory }}/apache-tomcat-10.0.16
+Environment='CATALINA_OPTS=-Xms512M -Xmx1024M -server -XX:+UseParallelGC'
+Environment='JAVA_OPTS=-Djava.awt.headless=true -Djava.security.egd=file:/dev/./urandom'
+ExecStart="{{ tomcat_download_directory }}/apache-tomcat-10.0.16/bin/startup.sh"
+ExecStop=/bin/kill -15 $MAINPID
+
+User=tomcat10
+Group=tomcat10
+
+[Install]
+WantedBy=multi-user.target
+
+
+
+
+
+
+
+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
+
+
+
+#########################################
+
+
+
+
+
+
+ICICIBankLtd.,No.2,Thubrahalli,WhitefieldPost,VarthurMainRoad,,
+NearThubrahalliBusStop,,Bangalore,KA,IN,560066
+
+
+#############################
+
+
+Global Services 
+
+IAM
+S3
+Route53
+
+
+#####################
+
+
+Questions
+1.Aws project architecture
+2.Vpc endpoint
+3.Rds
+4.Use of IAM
+5.Difference between cmd vs entrypoint
+6.How to convert container in a virtual machine
+7.Node affinity in kubernetes
+8.Ingress in kubernetes
+9.Explain about continuous integration and continuous delivery stages
+10.How to stores credentials in Jenkins
+11.Explain about modules in terraform
+12.How to create EC2 instance mandatory steps
+13.What is Guard duty
+14.Explain about vpc endpoint
+15.What is locking in terraform
+16.How to call or pass values from one module to other 
+
+
+
+##############################
+
+
+PS C:\Users\QC\project\python workspace\terraform-course\Backends_and_Remote_State> terraform show
+# aws_instance.web[0]:
+resource "aws_instance" "web" {
+    ami                                  = "ami-0a8b4cd432b1c3063"
+    arn                                  = "arn:aws:ec2:us-east-1:358959533981:instance/i-02f767ca4e07a2f9b"
+    associate_public_ip_address          = true
+    availability_zone                    = "us-east-1b"
+    cpu_core_count                       = 2
+    cpu_threads_per_core                 = 1
+    disable_api_termination              = false
+    ebs_optimized                        = false
+    get_password_data                    = false
+    hibernation                          = false
+    id                                   = "i-02f767ca4e07a2f9b"
+    instance_initiated_shutdown_behavior = "stop"
+    instance_state                       = "running"
+    instance_type                        = "t2.large"
+    ipv6_address_count                   = 0
+    ipv6_addresses                       = []
+    key_name                             = "devops-aws"
+    monitoring                           = false
+    primary_network_interface_id         = "eni-066c587068cc27d17"
+    private_dns                          = "ip-172-31-85-148.ec2.internal"
+    private_ip                           = "172.31.85.148"
+    public_dns                           = "ec2-34-230-45-230.compute-1.amazonaws.com"
+    public_ip                            = "34.230.45.230"
+    secondary_private_ips                = []
+    security_groups                      = [
+        "default",
+    ]
+    source_dest_check                    = true
+    subnet_id                            = "subnet-03fd971efbb1b3dba"
+    tags                                 = {
+        "Name" = "terraform-ec2instance"
+        "foo"  = "bar"
+    }
+    tags_all                             = {
+        "Name" = "terraform-ec2instance"
+        "foo"  = "bar"
+    }
+    tenancy                              = "default"
+    vpc_security_group_ids               = [
+        "sg-0254b25c16f5a91ff",
+    ]
+
+    capacity_reservation_specification {
+        capacity_reservation_preference = "open"
+    }
+
+    credit_specification {
+        cpu_credits = "standard"
+    }
+
+    enclave_options {
+        enabled = false
+    }
+
+    metadata_options {
+        http_endpoint               = "enabled"
+        http_put_response_hop_limit = 1
+        http_tokens                 = "optional"
+        instance_metadata_tags      = "disabled"
+    }
+
+    root_block_device {
+        delete_on_termination = true
+        device_name           = "/dev/xvda"
+        encrypted             = false
+        iops                  = 100
+        tags                  = {}
+        throughput            = 0
+        volume_id             = "vol-09e3a63b4d5dcf331"
+        volume_size           = 8
+        volume_type           = "gp2"
+    }
+}
+
