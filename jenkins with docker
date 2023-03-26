@@ -1,0 +1,31 @@
+jenkins with docker
+###################
+from the jenkins pipeline we are going to push docker image to docker hub or amazon ecr repo
+
+    1.sudo wget sudo wget -O /etc/yum.repos.d/jenkins.repo     https://pkg.jenkins.io/redhat-stable/jenkins.repo
+    2  sudo rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io.key
+    3  sudo yum install jenkins -y
+    4  sudo systemctl start jenkins
+    5  sudo cat /var/lib/jenkins/secrets/initialAdminPassword
+    6  cd /temp
+    7  cd /tmp
+    8  sudo wget https://archive.apache.org/dist/maven/maven-3/3.8.6/binaries/apache-maven-3.8.6-bin.tar.gz
+    9  tar xvf apache-maven-3.8.6-bin.tar.gz
+   10  pwd
+   11  ll
+   12  export PATH=$PATH:/tmp/apache-maven-3.8.6/bin
+   13  echo $PATH
+   
+   
+   
+################
+to push the image into docker hub we should save docker hub credentials in jenkins credentials section
+
+
+280530133458.dkr.ecr.us-east-1.amazonaws.com/springboot-maven-course-micro-svc:latest
+
+environment {
+    registry = '1111111111111.dkr.ecr.eu-central-1.amazonaws.com/myRepo'
+    registryCredential = 'ID_OF_MY_AWS_JENKINS_CREDENTIAL'
+    dockerImage = ''
+  }
