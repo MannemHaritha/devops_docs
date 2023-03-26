@@ -1,0 +1,21 @@
+git branching strategy or workflow
+#######
+as a part of project the new project will set up we will make sure main/master branch in place and develop on place.
+
+when a developer or devops engineergets a task he will create his ownfeature branch from develop and start working on the changes
+
+once his changes are done ge will raise the pullrequest(pr) with the team members so that they can review his changes,if changes are goodpr will be approvedand then we can merge feature branch with develop branch
+
+
+
+now we will cloning to the repository and copy the repository
+open gitbash
+git clone git@github.com:MannemHaritha/projectname-appname-1.git ---------->we are cloning the repository
+cd projectname-appname-1-------------->changing the directory to repository name
+git branch------------>which branch we are 
+##first we created develop brench from main branch but in gitbash it shows only main branch bcz we dint checkout the develop branch.
+git checkout develop------------> it switched to main branch to develop branch
+##now this branch(develop) we need to create a feature beanch
+git branch feature/jira-0001--------->now branch is created
+####how to push the newly branch to  remote or upstream or repository  from our local repository
+git push -u origin feature/jira-0001------------>it pushes the feature branch in remote repository
