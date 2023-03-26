@@ -1,0 +1,63 @@
+pipeline{
+    agent any
+    tools{
+        maven 'Maven-3.8.6'
+    }
+    stages{
+        stage('git checkout from github'){
+            steps{
+                git branch: 'master', url: 'https://github.com/MannemHaritha/springboot-maven-course-micro-svc.git'
+            }
+        }
+        stage('build maven project'){
+            steps{
+                sh 'mvn clean package -f pom.xml'
+            }
+        }
+        stage('build docker image from dockerfile'){
+            steps{
+                sh 'docker image build -t mannemharitha/springboot-maven-course-micro-svc:${BUILD_NUMBER} .'
+            }
+        }
+         stage('login to docker hub & push the image '){
+            steps{
+                withCredentials([usernamePassword(credentialsId: 'mannemharitha-dockerhub-cred', passwordVariable: 'password', usernameVariable: 'username')]){
+                sh 'docker login -u ${username} -p ${password}'
+                sh 'docker image push mannemharitha/springboot-maven-course-micro-svc:${BUILD_NUMBER}'
+                }
+            }
+        }
+    }
+}
+
+pipeline{
+    agent any
+    tools{
+        maven 'Maven-3.8.6'
+    }
+    stages{
+        stage('git checkout from github'){
+            steps{
+                git branch: 'master', url: 'https://github.com/MannemHaritha/springboot-maven-course-micro-svc.git'
+            }
+        }
+        stage('build maven project'){
+            steps{
+                sh 'mvn clean package -f pom.xml'
+            }
+        }
+        stage('build docker image from dockerfile'){
+            steps{
+                sh 'docker image build -t 280530133458.dkr.ecr.us-east-1.amazonaws.com/springboot-maven-course-micro-svc:${BUILD_NUMBER} .'
+            }
+        }
+        stage('login to docker hub & push the image '){
+            steps{
+                //withCredentials([usernamePassword(credentialsId: 'mannemharitha-dockerhub-cred', passwordVariable: 'password', usernameVariable: 'username')]){
+                //sh 'docker login -u ${username} -p ${password}'
+                sh 'aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 280530133458.dkr.ecr.us-east-1.amazonaws.com'
+                sh 'docker image push 280530133458.dkr.ecr.us-east-1.amazonaws.com/springboot-maven-course-micro-svc:${BUILD_NUMBER}'
+                }
+           }  
+        }
+    }
