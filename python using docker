@@ -1,0 +1,12 @@
+python
+#####################
+in python we use requirements.txt file for dependencies
+for build the project we use pip install -r requirements.txt
+for run the project we use command in python somefilename.python
+
+
+ http://44.202.198.136:5001/hello
+
+ http://ip:portnumber/urlpattern
+ 
+ http://44.202.198.136:8080/helloworld
