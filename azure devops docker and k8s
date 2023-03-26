@@ -1,0 +1,212 @@
+Azure devops docker and k8s 
+##################
+
+1.im gng to use java based spring boot application
+2. im gng to build the project using apache maeven
+3. build the docker image and push the docker image to azure container registry/ACR
+4. we will deploy the azure container registry  docker image to azure k8s service
+
+once everyone knows manual process we do the same with azure devops as well
+
+
+i.e.
+
+			1.clone the code			2. maven cleane package			3. sonarqube analysis							4.Build teh docker image from the docker file
+			 git clone  cloneurl											mvn clean install							  &push the docker image azure container registry
+																			mvn sonar:										(all images will be stored under a project 
+																			sonar-Dsonar.login=myAuthenticationToken			repositoy )
+
+
+################
+1. now im gng to create azure vm(virtual machine) of type of ubuntu/RHEL
+2. install java and maven and docker on that machine and then we will start the process of acr
+ 
+ 
+ ##############
+ACR
+########
+Login Server:azuredevopspractice.azurecr.io
+Username:azuredevopspractice
+Password:HM63Lg+tck8r3OfYzEJELPtjp9J6LjmGO4eLZx56bk+ACRDgtSxS
+
+how to build the docker image
+###########
+sudo docker image build -t dockerhubusername/repositoryname:tag .
+it it is azure
+sudo docker image build -t azureloginserver/repositoryname:tag .
+
+sudo docker image build -t azuredevopspractice.azurecr.io/springboot-maven-course-micro-svc:14 .
+
+
+before we push the docker image we nedd to login to the server
+#########
+sudo docker login -u username -p password loginserver
+
+for azure
+sudo docker login -u azuredevopspractice -p HM63Lg+tck8r3OfYzEJELPtjp9J6LjmGO4eLZx56bk+ACRDgtSxS azuredevopspractice.azurecr.io
+
+push the docker image
+################
+sudo dcoker image push dockerhubusername/repositoryname:tag
+for azure
+sudo docker image push azuredevopspractice.azurecr.io/springboot-maven-course-micro-svc:14
+
+
+###############
+once docker image is ready,we will deploy this docker image to k8s cluster
+in this case it is caleed azure k8s service
+which is also caled as AKS
+
+##########
+ours is free azure account we cannot create more than one node
+but in office it will be a multiple node cluster
+
+
+azure cli aks
+############
+https://learn.microsoft.com/en-us/azure/aks/learn/quick-kubernetes-deploy-cli
+
+Create AKS cluster
+az aks create -g myResourceGroup -n myAKSCluster --enable-managed-identity --node-count 1 --enable-addons monitoring --enable-msi-auth-for-monitoring  --generate-ssh-keys
+
+for azure
+
+az aks create -g azuredevops-practice -n myAKSCluster --enable-managed-identity --node-count 1 --enable-addons monitoring --enable-msi-auth-for-monitoring  --generate-ssh-keys
+
+az aks create -g azuredevops-practice -n myAKSCluster --node-count 1 --generate-ssh-keys
+
+Connect to the cluster
+
+az aks get-credentials --resource-group myResourceGroup --name myAKSCluster
+
+az aks get-credentials --resource-group azuredevops-practice --name myAKSCluster
+
+
+now run the deployment docker image we have
+# start the pod running nginx
+kubectl create deployment --image=nginx nginx-app
+
+kubectl create deployment --image=azuredevopspractice.azurecr.io/springboot-maven-course-micro-svc:14 springboot-deployment
+
+error
+########
+bandteja [ ~ ]$ kubectl get deployments
+NAME                    READY   UP-TO-DATE   AVAILABLE   AGE
+springboot-deployment   0/1     1            0           79s
+bandteja [ ~ ]$ kubectl get pods
+NAME                                     READY   STATUS             RESTARTS   AGE
+springboot-deployment-57c689d8c8-5cpv4   0/1     ImagePullBackOff   0          98s
+
+azure acr image is private registry, private registry images can't be pulled without secrets
+i.e we need to create a secret with azure acr username and password and login service and then we need to pass this sceret to this deployment
+
+pull an image from private registry
+
+Create a Secret by providing credentials on the command line 
+kubectl create secret docker-registry regcred --docker-server=<your-registry-server> --docker-username=<your-name> --docker-password=<your-pword> --docker-email=<your-email>
+
+for azure
+
+kubectl create secret docker-registry regcred --docker-server=azuredevopspractice.azurecr.io --docker-username=azuredevopspractice --docker-password=HM63Lg+tck8r3OfYzEJELPtjp9J6LjmGO4eLZx56bk+ACRDgtSxS --docker-email=bandteja@mail.fresnostate.edu
+
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  labels:
+    app: nginx
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.14.2
+        ports:
+        - containerPort: 80
+      imagePullSecrets:
+      - name: regcred
+
+
+
+
+for azure
+
+
+apiVersion: apps/v1
+
+kind: Deployment
+
+metadata:
+
+  name: springboot-deployment
+
+  labels:
+
+    app: springboot
+
+spec:
+
+  replicas: 3
+
+  selector:
+
+    matchLabels:
+
+      app: springboot
+
+  template:
+
+    metadata:
+
+      labels:
+
+        app: springboot
+
+    spec:
+
+      containers:
+
+      - name: springboot
+
+        image: azuredevopspractice.azurecr.io/springboot-maven-course-micro-svc:14
+
+        ports:
+
+        - containerPort: 8080
+      imagePullSecrets:
+      - name: regcred
+	  
+	  
+	  
+	  
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: springboot-deployment
+  labels:
+    app: springboot
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: springboot
+  template:
+    metadata:
+      labels:
+        app: springboot
+    spec:
+      containers:
+      - name: springboot-container
+        image: azuredevopspractice.azurecr.io/springboot-maven-course-micro-svc:14
+        ports:
+        - containerPort: 8080
+	  imagePullSecrets:
+      - name: regcred
