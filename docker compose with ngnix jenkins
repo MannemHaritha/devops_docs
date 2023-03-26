@@ -1,0 +1,88 @@
+docker compose
+####################
+what si docker compose?
+what is docker swarm?
+
+and also about ecs?
+
+#############
+if we wnat to run any(multi) containers we are usibg below method
+
+sudo docker contaiber run --name=container1 -p outboundpoer:inboundport -d dockerhubusername/reponame:tagname
+sudo docker contaiber run --name=container2i -p outboundpoer:inboundport -d dockerhubusername/reponame:tagname
+
+
+if we want to run both the containers at the same time, we can install docker compose
+and create a yaml file for compose and mention all the containers in compose file
+
+docker compose installation
+################
+sudo curl -L https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose
+
+Fix permissions after download:
+
+sudo chmod +x /usr/local/bin/docker-compose
+
+Verify success:
+
+docker-compose version
+
+
+Docker Compose version v2.14.0
+
+create a file caled docker-compose.yaml in your project directory and paste the following:
+
+version: "3.9"   ------------>(this the not docker compose version ,this is docker compose yaml specific version)
+services:
+  web:
+    build: .
+    ports:
+      - "8000:5000"
+  redis:
+    image: "redis:alpine"
+	
+	
+	
+	
+version: "3.9"   
+services:
+  container1service:
+    image: nginx:latest  
+    ports:
+      - "80:80"
+  container2service:
+    image: "jenkins:jenkins/lts-jdk11"
+	ports:
+      - "8080:8080"
+	  
+	  
+	1  sudo yum install docker -y
+    2  sudo curl -L https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose
+    3  sudo chmod +x /usr/local/bin/docker-compose
+    4  export PATH=$PATH:/usr/local/bin/
+    5  docker-compose --VERSION
+    6  docker-compose --version
+    7  vi docker-compose.yaml
+    8  cat docker-compose.yaml
+    9  sudo systemctl start docker
+   10  sudo docker-compose up --detach
+   11  docker-compose up --detach
+   12  sudo chmod 7777 /var/run/docker.sock
+   13  docker-compose up --detach
+   14  docker-compose ps
+   15  docke rimages
+   16  docke images
+   17  cat docker-compose.yaml
+   18  vi docker-compose.yaml
+   19  docker-compose up --detach
+   29  docker images
+   30  docker network  ls
+   31  docker ps
+   32  docker exec -it 8368f444b6be bash
+   33 cat /var/jenkins_home/secrets/initialAdminPassword
+   34  exit
+ 
+ 
+ 
+
+
