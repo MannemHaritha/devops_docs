@@ -1,0 +1,32 @@
+where to use ELK and PROMETHEUS and GRAFANA
+##########
+PROMETHEUS---LOGGING
+GRAFANA---MONITORING
+
+Logging--->we want to see application logs in centralised location, in this case we use elastic search and kibana
+Monitoring---->we want to capture server or application metrics and want to visualize them
+
+in this case we use prometheus to capture the metrics and grafana to view the metrics present in prometheus.
+
+for example
+################
+i have a some springboot application and it is generating some logs at some location
+now i want to see this application using prometheus and grafana
+
+we need to make sure these logs get transferred to the elastic search and later we can use kibana to view them.
+
+while using this some times its called as logstash
+logstash
+#######
+this means ELK
+E means  elastic serch
+L means Logstash
+K means kibana------------>kibana get data from the elastic search only
+
+the usecase will show for ELK
+if you have k8s cluster and that k8s cluster generating some logs then how to send that logs to elastic search
+https://computingforgeeks.com/ship-kubernetes-logs-to-external-elasticsearch/ 
+
+the usecase will show for prometheus and grafana
+if u having k8s cluster how to monitoring the k8s cluster using prometheus and grafana
+https://www.eksworkshop.com/intermediate/240_monitoring/
