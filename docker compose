@@ -1,0 +1,107 @@
+Docker compose
+####################
+what is docker compose?
+#############
+docke compose is a tool that was developed to define and share multi container applications.
+
+using docker compose we can try to ndeploy application as well
+
+and we can try to intsall sonar using docker as well?
+  
+#######
+i want to run two docker containers at a time, waht is the process  we will follow?
+docker container run --name=container1 -p 9090:9090 -d prom/prometheus
+docker container run --name=container2 -p 3000:3000 -d grafana/grafana
+
+
+
+can we run both the containers at a time in one shot?
+we can run both the containers in one shot using docker compose method.
+
+
+with dcoker compose we can cerate yaml file to define the services 
+and with a single command we can create  containers and we can destroy containers as well.
+
+
+docker compose 
+##########
+https://stackoverflow.com/questions/63708035/installing-docker-compose-on-amazon-ec2-linux-2-9kb-docker-compose-file
+
+sudo curl -L https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose
+
+Fix permissions after download:
+
+sudo chmod +x /usr/local/bin/docker-compose
+
+Verify success:
+
+docker-compose version
+
+
+https://docs.docker.com/compose/gettingstarted/
+
+docker-compose.yml
+##############
+version: "3.9"
+services:
+  web:
+    build: .
+    ports:
+      - "8000:5000"
+  redis:
+    image: "redis:alpine"
+	
+	
+	
+	
+	
+version: "3.9"
+services:
+  prometheus:
+	image: "prom/prometheus"
+	ports:
+      - "9090:9090"
+  grafana:
+    image: "grafana/grafana"
+	ports:
+	  - "3000:3000"
+
+
+##############
+docke image : mannemharitha/springboot-maven-course-micro-svc:14	
+
+version: "3.9"
+services:
+  myspringbootservice:
+	image: "mannemharitha/springboot-maven-course-micro-svc:14"
+	ports:
+      - "8080:8080"
+	  
+http://3.235.140.73:8080/course-svc/getAllDevopsTools
+
+    1 sudo yum install docker -y
+    2  uname -s
+    3  uname -m
+    4  sudo curl -L https://github.com/docker/compose/releases/latest/download/docker-compose-Linux-x86_64 -o /usr/local/bin/docker-compose
+    5  ll
+    6  chmod +x /usr/local/bin/docker-compose
+    7  sudo /usr/local/bin/docker-compose
+    8  sudo chmod +x /usr/local/bin/docker-compose
+    9   /usr/local/bin/docker-compose --version
+   10  export PATH=$PATH:/usr/local/bin/
+   11  docker-compose --version
+   12  vi docker-compose.yaml
+   13  vi docker-compose up --detach
+   14  docker-compose up --detach
+   15  sudo systemctl start docker
+   16  docker-compose up --detach
+   17  chmod 777 /var/run/docker.sock
+   18  sudo chmod 777 /var/run/docker.sock
+   19  docker-compose up --detach
+   20  docker ps
+   21  ll
+   22  mkdir java-app
+   23  cd java-app/
+   24  vi docker-compose.yaml
+   25  docker-compose up --detach
+   
