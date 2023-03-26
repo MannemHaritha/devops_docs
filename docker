@@ -1,0 +1,244 @@
+Docker
+################
+what is the docker?
+##########
+a dockerfile is a text document which containes all the docker commands that a user can call on the command line to assemble an image.so docker can build image automatically by reading this instructions from a dockerfile.
+you can use docker build to create an automated build to excute several command line instructions in succession.
+
+docker image?
+##########
+docker image can be compared to a template which is used to create docker container.
+
+what are the terminologies in docker?
+
+we will try to run java application  using docker
+
+docker is a containeraizaton platform that packages your app and all its dependies to gether in the form of containers to ensure that your application works seemlessly in any environment
+
+before containeraizaton we are using vm is called virtualization
+
+
+for java commands for running application
+############
+how to run java spring boot application?
+###########
+java -jar target/jarfilename
+		or
+java -jar jarfilepath/jarfilename.jar  ------------->this the commang for running java application 
+ in the same way docker also using this type of command instructions. those are
+ 
+ for docker command instructions
+ ##############
+ FROM openjdk:8
+ COPY target/springboot-maven-course-micro-svc-0.0.1-SNAPSHOT.jar(app.jar)
+ ENTRYPOINT["java","-jar","/app.jar"]
+ 
+ docker build -t dockerhubusername/projectname:tagname .
+ docker image build -t dockerhubusername/projectname:tagname .
+ 
+springboot-postgres-docker-assignment-1.0-SNAPSHOT.jar
+springboot-postgres-docker-assignment-1.0-SNAPSHOT.jar
+
+FROM openjdk:8
+COPY target/springboot-postgres-docker-assignment-1.0-SNAPSHOT.jar
+ENTRYPOINT["java","-jar","/app.jar"]
+
+FROM openjdk:8
+COPY target/springboot-postgres-docker-assignment-1.0-SNAPSHOT.jar app.jar
+ENTRYPOINT["java","-jar","/app.jar"]
+
+FROM java:8-jdk-alpine
+
+COPY ./target/springboot-postgres-docker-assignment-1.0-SNAPSHOT.jar /usr/app/
+
+WORKDIR /usr/app
+
+RUN sh -c 'touch springboot-postgres-docker-assignment-1.0-SNAPSHOT.jar'
+
+ENTRYPOINT ["java","-jar","springboot-postgres-docker-assignment-1.0-SNAPSHOT.jar"]
+
+create two servers
+###################
+1.BUILD SERVER    -----in build server we will install GIT,JAVA,MAVEN,DOCKER
+2.DEV/QA/UAT/PROD   (SAME CAN BE CALLED AS UAT=STAGING) --------IN DEV/QA SERVER JUST DOCKER IS ENOUGH
+
+BUILD SERVER    -----in build server we will install GIT,JAVA,MAVEN,DOCKER
+#############
+1. install all needed tools
+2. checkout the code
+3. build the project
+4. write dockerfile or use existing docker from the project repo/code
+5. build docker image from docker file 
+6. login to dockerhub or aws ecr or azure acr or google gcr
+7. push the docker image to dockerhub.
+
+
+
+sudo  yum install git java-11-amazon-corretto-headless docker -y
+wget https://archive.apache.org/dist/maven/maven-3/3.8.6/binaries/apache-maven-3.8.6-bin.tar.gz
+tar xvf apache-maven-3.8.6
+export PATH=$PATH:/home/ece-user/apache-maven-3.8.6/bin/
+mvn --version
+git clone  https://github.com/srinadhm/springboot-maven-course-micro-svc.git
+cd springboot-maven-course-micro-svc
+mnv clean packages
+mvn --version
+ll target/
+cat Dockerfile
+docker image build -t cloudtechmasters/springboot-maven-course-micro-svc:dec1 .
+sudo systemctl start docker
+sudo docker image build -t cloudtechmasters/springboot-maven-course-micro-svc:dec1 .
+vi Dockerfile
+sudo docker image build -t cloudtechmasters/springboot-maven-course-micro-svc:dec1 .
+sudo docker login -u cloudtechmasters -p Manager#436
+sudo cat /root/.docker/config.json
+
+{
+        "auths": {
+                "https://index.docker.io/v1/": {
+                        "auth": "Y2xvdWR0ZWNobWFzdGVyczpNYW5hZ2VyIzQzNg=="
+                }
+        }
+
+}
+Y2xvdWR0ZWNobWFzdGVyczpNYW5hZ2VyIzQzNg------------->base 64 encoded of username:password
+sudo docker images
+
+docker image build -t mannemharitha/springboot-maven-course-micro-svc:dec1 .
+docker image build -t mannemharitha/springboot-postgres-docker-assignment:latest .
+docker images 
+docker push mannemharitha/springboot-maven-course-micro-svc:dec1
+docker pull mannemharitha/springboot-maven-course-micro-svc:dec1
+docker run mannemharitha/springboot-maven-course-micro-svc:dec1
+
+ 
+
+1.Docker file
+2.Docker build
+3.Docker images
+4.Docker login
+5.Docker push
+6.Docker pull
+7. Docker run
+
+FROM java:8 or docker pull library/openjdk
+Pulling from library/openjdk 
+
+
+
+
+
+
+  1  sudo  yum install git java-11-amazon-corretto-headless docker -y
+    2  ll
+    3  wget https://archive.apache.org/dist/maven/maven-3/3.8.6/binaries/apache-maven-3.8.6-bin.tar.gz
+    4  tar xvf apache-maven-3.8.6-bin.tar.gz
+    5  ll
+    6  export PATH=$PATH:/home/ec2-user/apache-maven-3.8.6/bin/
+    7  mvn --version
+    8  ll
+    9  git clone https://github.com/srinadhm/springboot-maven-course-micro-svc.git
+   10  sudo  yum install git java-11-amazon-corretto-headless docker -y
+   11   https://github.com/srinadhm/springboot-maven-course-micro-svc.git
+   12  cd springboot-maven-course-micro-svc
+   13  mvn clean package
+   14  mvn --version
+   15  ll target/
+   16  cat Dockerfile
+   17  docker image build -t MannemHaritha/springboot-maven-course-micro-svc:dec1 .
+   18  docker image build -t cloudtechmasters/springboot-maven-course-micro-svc:dec1 .
+   19  sudo systemctl start docker
+   20  docker image build -t cloudtechmasters/springboot-maven-course-micro-svc:dec1 .
+   21  sudo docker image build -t cloudtechmasters/springboot-maven-course-micro-svc:dec1 .
+   22  vi Dockerfile
+   23  sudo docker image build -t cloudtechmasters/springboot-maven-course-micro-svc:dec1 .
+   24  sudo docker login -u cloudtechmasters -p Manager#436
+   25  sudo cat //root/.docker/config.json.
+   26  sudo cat /root/.docker/config.json
+   27  sudo docker image build -t mannemharitha/springboot-maven-course-micro-svc:dec1 .
+   28  sudo docker login -u mannemharitha -p mannem123
+   29  sudo cat /root/.docker/config.json
+   30  sudo docker images
+   31  sudo docker image push mannemharitha/springboot-maven-course-micro-svc
+   32  sudo docker image push mannemharitha/springboot-maven-course-micro-svc:dec1
+   33  docker images
+   34  sudo docker images
+   35  sudo docker rmi mannemharitha/springboot-maven-course-micro-svc
+   36  sudo docker rmi --help
+   37  sudo docker rmi mannemharitha/springboot-maven-course-micro-svc:dec1
+   38  sudo docker images
+   39  clear
+   40  sudo docker images
+   41  sudo docker pull amazoncorretto:8-alpine
+   42  sudo docker images
+   43  sudo docker pull mannemharitha/springboot-maven-course-micro-svc:dec1
+   44  sudo docker images
+   45  sudo docker run mannemharitha/springboot-maven-course-micro-svc:dec1
+
+
+
+
+
+Dockerize spring boot application wih gradel
+###############################
+we will see how to dockerize java sprong boot application for gradle project
+how to dockerize nodejs web application
+how to dockerize python flask application
+
+let will take 2 servers 
+	or 
+we can do sam server itself
+############
+1. intall gir,java ,gradel and docker 
+2. try to run spring boot application  with dockerer itself
+
+
+Dockerfile for maven
+################
+FROM openjdk:8
+COPY target/springboot-maven-course-micro-svc-0.0.1-SNAPSHOT.jar app.jar
+ENTRYPOINT["java","-jar","/app.jar"]
+ 
+Dockerfile for gradle
+#####################
+FROM openjdk:11
+COPY build/libs/nov13-gradle-demo-project-0.0.1-SNAPSHOT.jar nov13-gradle-demo-project-0.0.1-SNAPSHOT.jar
+ENTRYPOINT ["java","-jar","nov13-gradle-demo-project-0.0.1-SNAPSHOT.jar"]
+
+
+	sudo yum istall git java-11-amazon-corretto-headless docker -y
+	git -version
+	java -version
+	docker -version
+	wget https://distfiles.macports.org/gradle/gradle-7.6-bin.zip
+	unzip gradel-7.6-bin.zip
+	1 ls
+    2  export GRADLE_PATH=/root/gradle-7.6/bin
+    3  export PATH=$PATH:$GRADLE_PATH
+    4  echo $PATH
+    5  git clone https://github.com/cloudtechmasters/nov13-gradle-demo.git
+    6  ls
+    7  cd nov13-gradle-demo/
+    8  gradle clean build
+    9  where isjava
+   10  where is java
+   11  which java
+   12  docker -v
+   13  which docker
+   14  ll
+   15  cat Dockerfile
+   16  ll build/libs/
+   17  ls
+   18  ll
+   19  cat Dockerfile
+   20  sudo docker image build -t mannemharitha/nov13-gradle-demo:v1 .
+   21  docker images
+   22  docker login -u mannemharitha -p mannem123
+   23  docker push mannemharitha/nov13-gradle-demo:v1
+   24  docker run -name=nov13-gradle-demo -p 8080:8080 --detach
+   25  docker run --name=nov13-gradle-demo -p 8080:8080 --detach
+   26  docker container  run --name=nov13-gradle-demo -p 8080:8080 --detach
+   27  docker images
+   28  docker container  run --name=nov13-gradle-demo -p 8080:8080 --detach mannemharitha/nov13-gradle-demo:v1
+   29  docker stop nov13-gradle-demo
+   30  docker rm nov13-gradle-demo
