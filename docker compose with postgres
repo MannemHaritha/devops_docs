@@ -1,0 +1,75 @@
+docker compose with postgres
+####################
+what if my java-app wants to connect with postgres db
+###########
+in this scenario one container is dependent on another container and 
+always we need to make sure db runs first and then only application runs
+
+
+docker image: mannemharitha/springboot-postgresql-docker-assignment
+Dockerfile
+################
+FROM java:8-jdk-alpine
+
+COPY ./target/springboot-postgres-docker-assignment-1.0-SNAPSHOT.jar /usr/app/
+
+WORKDIR /usr/app
+
+RUN sh -c 'touch springboot-postgres-docker-assignment-1.0-SNAPSHOT.jar'
+
+ENTRYPOINT ["java","-jar","springboot-postgres-docker-assignment-1.0-SNAPSHOT.jar"]
+	or
+	
+FROM openjdk:11
+
+COPY ./target/springboot-postgres-docker-assignment-1.0-SNAPSHOT.jar app.jar
+
+
+ENTRYPOINT ["java","-jar","app.jar"]
+
+https://www.baeldung.com/spring-boot-postgresql-docker
+
+version: '2'
+services:
+  app:
+    image: 'docker-spring-boot-postgres:latest'
+    build:
+      context: .
+    container_name: app
+    depends_on:
+      - db
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/compose-postgres
+      - SPRING_DATASOURCE_USERNAME=compose-postgres
+      - SPRING_DATASOURCE_PASSWORD=compose-postgres
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+          
+  db:
+    image: 'postgres:13.1-alpine'
+    container_name: db
+    environment:
+      - POSTGRES_USER=compose-postgres
+      - POSTGRES_PASSWORD=compose-postgres
+	  
+	  
+	  
+	  
+#################	  
+version: '3.9'
+services:
+  app:
+    image: 'mannemharitha/springboot-postgresql-docker-assignment:v1'
+    container_name: app
+    depends_on:
+      - db
+    environment:
+	  - POSTGRES_HOST=db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+          
+  db:
+    image: 'postgres'
+    container_name: db
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
