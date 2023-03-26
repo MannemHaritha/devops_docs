@@ -1,0 +1,507 @@
+Docker and k8s minikuber
+#######################
+what is docker ?
+what are the reasons to use docker?
+
+with docker how to run a java based spring boot application?
+
+with docker how to run python,nodejs and golang appliations as well?
+
+#############
+once we all clear with manuall process then
+push to docker images to dockerhub or amazon ecr using jenkins pipeline
+and then
+##############
+what is docker comopse and docker swarm?
+what are the disadvantages of docker swarm and why people are using k8s?
+what is k8s architecture?
+how to create a simple single node k8s cluster and deploy our docker images there?
+
+these are we are going to do in a session 
+#################################### 
+
+history before containerization?
+reasons to use containers?
+what is docker?
+what is docker file and images and containers?
+what is docker compose and docker swarm?
+
+
+Before docker/containerization came into a picture everyone used to organize applications and their dependencies in its own virtual machine
+
+virtualization
+#################
+these virtul machines will run multiple applications on the same physical hardware and this process is called virtualization.
+
+virtualization has some drawbacks
+######################
+1. virtual machines will be large in size
+2. running multiple virtual machines lead to unstable performance
+3, boot up process usually take a long time and virtual machines won't slove the problems like portability or software updates or ci/cd
+
+Because of above these drawbacks we got a new technique is called as containerization or docker.
+ 
+
+containerization
+######################
+containerization is also a type of a virtualization which brings virtualization to the system level
+while virtualization brings abstraction to the hardware level.
+containerization brings abstraction to the software level.
+
+
+what is the reasons to use containers?
+#########################
+1. containers have no guest operating system/OS and use Host OS . so they share relevent libraries and resources as when they needed
+2. processing and execution of applications is very fast since appliations specific binaries and libraries run on the Host kernel
+3. Booting up a container takes only a fraction of seconds and also light weight than virtual machines/VM'S
+
+
+what is docker file?
+how to write docker file for java based spring boot appliations?
+
+Docker file
+###################
+Docker file is a text document which contains all the commands that a user can call on the command line to assemble an image.
+
+example for docker file
+################
+docker pul nginx
+
+
+FROM ngnix
+
+
+
+how run a java springboot application from command line?
+######
+java -jar locationofjarfile
+		or
+java -jar app.jar
+		or
+java -jar /home/ec2-user/app.jar
+
+
+to run above command line what we all needed?
+############
+java is needed
+jar file is needed
+
+in docker process as well we need to get java  and copy jar file or download war file and then run the jar file.
+
+
+for writting a docker file we need to know some few points /instructions
+############
+1. FROM
+2. COPY
+3. ADD
+4. ENTRYPOINT
+
+
+FROM: As the base for our image, we'll take the Java-enabled Alpine Linux created in the previous section.
+MAINTAINER: The maintainer of the image.
+COPY: We let Docker copy our jar file into the image.
+ENTRYPOINT: This will be the executable to start when the container is booting. We must define them as JSON-Array because we'll use an ENTRYPOINT in combination with a CMD for some application arguments.
+
+
+NOW we will write docker file for java springboot application
+################
+
+FROM openjdk:8
+COPY target/springboot-maven-course-micro-svc-0.0.1-SNAPSHOT.jar app.jar
+ENTRYPOINT ["java" ,"-jar","app.jar"]
+
+when we build a maven project jar or war file will be present in target directory
+and as a cd process this jar file is needed thats why we are copying this jar file into the docker image .
+so that container run will use this jar file.
+
+
+for java 11
+
+FROM openjdk:11
+COPY target/springboot-maven-course-micro-svc-0.0.1-SNAPSHOT.jar app.jar
+ENTRYPOINT ["java" ,"-jar","app.jar"]
+
+
+###########
+now i will take two servers
+
+server-1 i will do regular build process and use this docker file to build image and push the dockerhub or amazon ecr
+server-2 i will pull the image from dockerhub or ecr and run the container.
+
+server-1
+regular build process
+############
+java
+git
+maven
+docker
+
+###################
+	1.java --version
+    2  sudo yum install java-11-amazon-corretto-headless -y
+    3  java --version
+    4  sudo yum install git -y
+    5  pwd
+    6  whoami
+    7  id
+    8  wget https://archive.apache.org/dist/maven/maven-3/3.8.7/binaries/apache-maven-3.8.7-bin.tar.gz
+    9  tar xvf apache-maven-3.8.7-bin.tar.gz
+   10  cd apache-maven-3.8.7/
+   11  cd bin/
+   12  pwd
+   13  export PATH=$PATH:/root/apache-maven-3.8.7/bin
+   14  cd /root
+   15  mvn --version
+   16  git clone --single-branch https://github.com/MannemHaritha/springboot-maven-course-micro-svc.git
+   17  cd springboot-maven-course-micro-svc/
+   18  git branch
+   19  ls
+   20  mvn clean package
+   21  ll target/
+   22  cat Dockerfile
+   23  sudo docker image build -t mannemharitha/springboot-maven-course-micro-svc:14 .
+   24  sudo docker images
+   25  sudo docker image build -t mannemharitha/springboot-maven-course-micro-svc:mar6
+   26  sudo docker image build -t mannemharitha/springboot-maven-course-micro-svc:mar6 .
+   27  sudo docker images
+	sudo docker images
+REPOSITORY                                        TAG       IMAGE ID       CREATED         SIZE
+mannemharitha/springboot-maven-course-micro-svc   14        c7c54efda0bf   5 minutes ago   545MB
+mannemharitha/springboot-maven-course-micro-svc   mar6      c7c54efda0bf   5 minutes ago   545MB
+nginx                                             latest    904b8cb13b93   4 days ago      142MB
+openjdk                                           8         b273004037cc   7 months ago    526MB
+
+
+once docker image build we need to store the docker image in any of the below docker registries
+1. dockerhub
+2. amazon ecr or azure acr or googlr gcr
+3. nexus or jfrog
+
+
+1. dockerhub
+#############
+keep dockerhub username and password handy
+and login to dockerhub server using username and password
+
+
+https://index.docker.io/v1/
+
+sudo docker login -u username -p password dockergubregistryserverurl
+
+sudo docker login -u mannemharitha -p mannem123 https://index.docker.io/v1/
+
+	29 docker login -u mannemharitha -p mannem123docker login -u mannemharitha -p mannem123
+   30  sudo docker login -u mannemharitha -p mannem123 https://index.docker.io/v1/
+   31  cat /root/.docker/config.json
+   32  sudo docker images
+   33  sudo docker image push mannemharitha/springboot-maven-course-micro-svc:mar6
+
+
+if you want to store this image in azure acr
+######################
+
+1. first create container registries in acr
+2. login to azure acr
+3. push the docker image to azure acr
+
+sudo docker image build -t azureloginserver/springboot-maven-course-micro-svc:14 .
+
+docker login -u azureusername -p azurepassword azureloginserver
+
+sudo docker image push azureservername/springboot-maven-course-micro-svc:mar6
+
+
+
+
+
+if you want to store this image in aws we need aws ecr
+########################
+
+1. create repository in ecr
+2. login to aws ecr
+3. push the docker image to aws ecr
+
+
+1. create repository in ecr
+###############
+we can create from gui or we can create from cli
+to create from aws ec2 cli we need to permission for ec2 service
+###########
+1.we can create a iam user or iam role for the same
+2. then we need to create  ecr repository
+
+
+
+aws ecr create-repository \
+    --repository-name project-a/nginx-web-app
+	
+aws ecr create-repository \
+    --repository-name project-a/springboot-maven-course-micro-svc
+	
+now you can set region
+aws configure set default.region us-west-2
+
+for our case
+aws configure set default.region us-east-1
+
+
+
+[root@ci-process ~]# aws ecr create-repository     --repository-name project-a/springboot-maven-course-micro-svc
+{
+    "repository": {
+        "repositoryUri": "255766941731.dkr.ecr.us-east-1.amazonaws.com/project-a/springboot-maven-course-micro-svc",
+        "imageScanningConfiguration": {
+            "scanOnPush": false
+        },
+        "encryptionConfiguration": {
+            "encryptionType": "AES256"
+        },
+        "registryId": "255766941731",
+        "imageTagMutability": "MUTABLE",
+        "repositoryArn": "arn:aws:ecr:us-east-1:255766941731:repository/project-a/springboot-maven-course-micro-svc",
+        "repositoryName": "project-a/springboot-maven-course-micro-svc",
+        "createdAt": 1678119945.0
+    }
+}
+
+
+	1.aws ecr create-repository     --repository-name project-a/springboot-maven-course-micro-svc
+    6  cd /root
+    7  aws configure set default.region us-east-1
+    8  cat /root/.aws/config
+    9  aws ecr create-repository     --repository-name project-a/springboot-maven-course-micro-svc
+	2  cd springboot-maven-course-micro-svc/
+   12  sudo docker image build -t 255766941731.dkr.ecr.us-east-1.amazonaws.com/project-a/springboot-maven-course-micro-svc:mar6 .
+   13  sudo docker images
+   14  sudo docker image push 255766941731.dkr.ecr.us-east-1.amazonaws.com/project-a/springboot-maven-course-micro-svc:mar6:mar6
+	[root@ci-process springboot-maven-course-micro-svc]# sudo docker image push 255766941731.dkr.ecr.us-east-1.amazonaws.com/project-a/springboot-maven-course-micro-svc:mar6
+The push refers to repository [255766941731.dkr.ecr.us-east-1.amazonaws.com/project-a/springboot-maven-course-micro-svc]
+196e31ce954f: Preparing
+6b5aaff44254: Preparing
+53a0b163e995: Preparing
+b626401ef603: Preparing
+9b55156abf26: Preparing
+293d5db30c9f: Preparing
+03127cdb479b: Preparing
+9c742cd6c7a5: Preparing
+no basic auth credentials
+
+now login to ecr before pushing an image
+
+aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 255766941731.dkr.ecr.us-east-1.amazonaws.com
+
+
+aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 255766941731.dkr.ecr.us-east-1.amazonaws.com
+
+
+	17  aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 255766941731.dkr.ecr.us-east-1.amazonaws.com
+   18  cat /root/.docker/config.json
+   19  sudo docker image push 255766941731.dkr.ecr.us-east-1.amazonaws.com/project-a/springboot-maven-course-micro-svc:mar6
+   20  sudo docker images
+
+
+
+
+based on docker registry we build docker images
+##########
+
+sudo docker image build -t mannemharitha/springboot-maven-course-micro-svc:mar6 .-------------->for dockerhub
+
+sudo docker image build -t 255766941731.dkr.ecr.us-east-1.amazonaws.com/project-a/springboot-maven-course-micro-svc:mar6 . ----------> for aws ecr
+
+sudo docker image build -t azureloginserver/springboot-maven-course-micro-svc:14 .---------------> for azure acr 
+
+based on login registries
+##########
+
+sudo docker login -u mannemharitha -p mannem123 https://index.docker.io/v1/       -----------> for dockerhub
+
+docker login -u azureusername -p azurepassword azureloginserver		--------------> for azure
+
+aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 255766941731.dkr.ecr.us-east-1.amazonaws.com	----------->for aws ecr
+
+
+based on docker registry we push the docker images
+###################
+
+sudo docker image push mannemharitha/springboot-maven-course-micro-svc:mar6		---------> for dockerhub
+
+sudo docker image push azureservername/springboot-maven-course-micro-svc:mar6		-----------> for azure
+
+
+sudo docker image push 255766941731.dkr.ecr.us-east-1.amazonaws.com/project-a/springboot-maven-course-micro-svc:mar6	-----------> for aws ecr
+
+ci process is done
+
+####################
+
+
+
+
+for CD process
+#############
+1.cd process create a new server
+2.and install docker on that serverand get iam role for that service(if you want to pull that images from amazon ecr)
+
+now
+1. insatll docker
+2. login to ecr
+3. create container
+
+1. insatll docker
+sudo yum install docker -y
+systemctl start docker
+
+2. login to ecr
+before login to ecr set the region
+#########
+aws configure set default.region us-east-1
+login to ecr
+##########
+aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 255766941731.dkr.ecr.us-east-1.amazonaws.com	----------->for aws ecr
+
+3. create container
+
+docker container run --name=springbootcontainer -p 8080:8080-d 255766941731.dkr.ecr.us-east-1.amazonaws.com/project-a/springboot-maven-course-micro-svc:mar6
+
+
+	1 id
+    2  whoami
+    3  yum install docker -y
+    4  syatemctl start docker
+    5  systemctl start docker
+    6  systemctl status docker
+    7  aws configure set default.region us-east-1
+    8  aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 255766941731.dkr.ecr.us-east-1.amazonaws.com
+    9  docker container run --name=springbootcontainer -p 8080:8080-d 255766941731.dkr.ecr.us-east-1.amazonaws.com/project-a/springboot-maven-course-micro-svc:mar6
+   10  docker container run --name=springbootcontainer -p 8080:8080 -d 255766941731.dkr.ecr.us-east-1.amazonaws.com/project-a/springboot-maven-course-micro-svc:mar6
+   11  docker container ps
+
+
+
+latest trend is to run the this same image with k8s
+#################
+
+1. single node minikube k8s cluster
+2. i will use the images which can be created to run on this k8s cluster(single node)
+
+
+minikube
+##############
+curl -Lo minikube https://github.com/kubernetes/minikube/releases/download/v1.25.2/minikube-linux-amd64
+chmod +x minikube
+sudo mv minikube /usr/local/bin/
+yum install conntrack -y
+export PATH=/usr/local/bin:$PATH
+minikube start --driver=none
+
+
+kubectl
+##########
+curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+
+
+	1. curl -Lo minikube https://github.com/kubernetes/minikube/releases/download/v1.25.2/minikube-linux-amd64
+   24  chmod +x minikube
+   25  sudo mv minikube /usr/local/bin/
+   26  yum install conntrack -y
+   27  export PATH=/usr/local/bin:$PATH
+   28  minikube start --driver=none
+   29  curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+   30  chmod +x kubectl
+   31  cp kubectl /usr/bin/
+   32  kubectl get nodes
+
+
+we need to create a deployment and then we need to expose deployment as a service
+
+this can be done with kubectl commands for docker based users
+or this can be done with yaml files for k8s users which we will called as manifest files
+
+
+kubectl create deployment --image=javaregistrydemo.azurecr.io/springboot-maven-course-micro-svc:mar6 springboot-deployment
+
+
+	34 kubectl create deployment --image=javaregistrydemo.azurecr.io/springboot-maven-course-micro-svc:mar6 springboot-deployment
+   35  kubectl get deployments
+   36  kubectl get pods
+   37  kubectl get service
+   38  kubectl expose deployment springboot-deployment --port=8080 --name=springboot-service --type=NodePort
+   39  kubectl get service
+
+above all these are manual process, 
+
+by using automation with jenkins pipeline
+#################
+jenkins pipeline to push the image to dockerhub or amazon ecr or azure acr
+ jenkins pipeline to pull the docker images and run containers on docker server or k8s cluster
+
+
+
+jenkins pipeline to push the image to dockerhub or amazon ecr or azure acr
+#################
+
+
+sudo wget -O /etc/yum.repos.d/jenkins.repo \
+    https://pkg.jenkins.io/redhat-stable/jenkins.repo
+sudo rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io.key
+
+sudo yum install jenkins
+
+pipeline syntax
+##############
+
+// Declarative //
+pipeline {
+    agent any
+    stages { 
+        stage('Example') {
+            steps {
+                echo 'Hello World'
+            }
+        }
+    }
+}
+// Script //
+
+	sudo usermod -aG docker jenkins
+   49  chmod 777 /var/run/docker.sock
+
+
+
+pipeline to push image to dockerhub
+################
+
+
+
+pipeline{
+    agent any
+    tools{
+        maven 'maven-3.8.7'
+    }
+    stages{
+        stage('git checkout'){
+            steps{
+                git 'https://github.com/MannemHaritha/springboot-maven-course-micro-svc.git'
+            }
+        }
+        stage('build maven project'){
+            steps{
+                sh 'mvn clean package'
+            }
+        }
+        stage('build docker image from docker file of project'){
+            steps{
+                sh 'docker image build -t mannemharitha/springboot-maven-course-micro-svc:${BUILD_ID} .'
+            }
+        }
+        stage('login to the dockerhub and push the image'){
+            steps{
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-mannemharitha-credentials', passwordVariable: 'password', usernameVariable: 'username')]){
+                sh 'docker login -u ${username} -p ${password} https://index.docker.io/v1/'
+                sh 'docker image push  mannemharitha/springboot-maven-course-micro-svc:${BUILD_ID}'
+            }
+        }
+        }
+    }
+}
