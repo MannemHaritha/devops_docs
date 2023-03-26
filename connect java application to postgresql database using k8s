@@ -1,0 +1,76 @@
+how to connect java application to postgresql database using k8s
+#####################
+while creaitng a database remember few things in ur mind
+1. username
+2. password
+3. databasename
+4. portnumber
+5. hostname
+out of above info few are sensitive like username and password,we should handel them with more secure way.
+for this reason in k8s we are going to use concept of secret.
+in the secret i mention username and password
+even databasename and hostname not that much sensitive .meaning even if someone knows these thing without username and password they couldnot connecting to database.
+
+in k8s if we want to store any data first we need to create base64 of that data. that means
+if 
+username: mannemharitha
+password: mannem123
+if u can't keep plane text formate in k8s, if trying to keep and running means it won't allow its failed.
+############
+1.we are going to create minikube single node k8s setup
+1. install kubectl 
+kubectl latest version
+############
+curl -o kubectl https://amazon-eks.s3.us-west-2.amazonaws.com/1.20.4/2021-04-12/bin/linux/amd64/kubectl
+chmod +x ./kubectl
+mkdir -p $HOME/bin
+cp ./kubectl $HOME/bin/kubectl
+export PATH=$HOME/bin:$PATH
+echo 'export PATH=$HOME/bin:$PATH' >> ~/.bashrc
+source $HOME/.bashrc
+kubectl version --short --client
+				or
+
+################
+curl -o kubectl https://amazon-eks.s3-us-west-2.amazonaws.com/1.14.6/2019-08-22/bin/linux/amd64/kubectl
+chmod +x ./kubectl
+mkdir -p $HOME/bin
+cp ./kubectl $HOME/bin/kubectl
+export PATH=$HOME/bin:$PATH
+echo 'export PATH=$HOME/bin:$PATH' >> ~/.bashrc
+source $HOME/.bashrc
+kubectl version --short --client
+					or browse set up steps
+https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/
+curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+chmod +x ./kubectl
+mkdir -p $HOME/bin
+cp ./kubectl $HOME/bin/kubectl
+export PATH=$HOME/bin:$PATH
+echo 'export PATH=$HOME/bin:$PATH' >> ~/.bashrc
+source $HOME/.bashrc
+kubectl version --short --client
+
+2. install docker
+yum install docker -y
+service docker start
+
+3. install minikube
+curl -Lo minikube https://github.com/kubernetes/minikube/releases/download/v1.25.2/minikube-linux-amd64
+chmod +x minikube
+sudo mv minikube /usr/local/bin/
+yum install conntrack -y
+export PATH=/usr/local/bin:$PATH
+minikube start --driver=none
+
+
+
+
+
+
+
+
+
+
+
+
