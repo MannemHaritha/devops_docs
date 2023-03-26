@@ -1,0 +1,125 @@
+how to run terraform script using jenkins pipeline
+##################
+
+
+1. create ec2 instance 
+2. attach iam role to ec2 instance so that jenkins can have permission to create another ec2 using terraform
+3. i will install jenkins 
+4. we will create jenkins pileline and call the terraform commands in the pipeline
+
+jenkins installation
+###########
+
+sudo wget -O /etc/yum.repos.d/jenkins.repo \
+    https://pkg.jenkins.io/redhat-stable/jenkins.repo
+sudo rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io.key
+sudo dnf upgrade
+# Add required dependencies for the jenkins package
+sudo dnf install java-11-openjdk
+sudo dnf install jenkins
+sudo systemctl daemon-reload
+sudo systemctl start jenkins
+
+terraform installation
+###################
+
+sudo yum install -y yum-utils shadow-utils
+sudo yum-config-manager --add-repo https://rpm.releases.hashicorp.com/AmazonLinux/hashicorp.repo
+sudo yum -y install terraform
+
+terraform aws provider
+###########
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 4.0"
+    }
+  }
+}
+
+# Configure the AWS Provider
+provider "aws" {
+  region = "us-east-1"
+}
+
+
+terraform aws ec2 instance
+############# we need to create the resource windows ec2
+resource "aws_instance" "web" {
+  ami           = data.aws_ami.ubuntu.id
+  instance_type = "t3.micro"
+
+  tags = {
+    Name = "HelloWorld"
+  }
+}
+
+
+
+
+###########################
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 4.0"
+    }
+  }
+}
+
+# Configure the AWS Provider
+provider "aws" {
+  region = "us-east-1"
+}
+resource "aws_instance" "web" {
+  ami           = "ami-0c2b0d3fb02824d92"
+  instance_type = "t2.micro"
+  key_name      = "k8s"
+  tags = {
+    Name = "HelloWorld"
+  }
+} 
+
+terraform pipeline script in jenkins
+####################
+pipeline{
+    agent any
+    stages{
+        stage('checkout terraform scripts'){
+            steps{
+                git branch: 'main', url: 'https://github.com/MannemHaritha/jenkins-terraform-pipeline.git'
+            }
+        }
+        stage('run terraform init'){
+            steps{
+                sh 'terraform init'
+            }
+        }
+        stage('terraform apply auto approve'){
+            steps{
+                sh 'terraform apply -auto-approve'
+            }
+        }
+    }
+}
+
+
+
+history
+###########
+1. sudo yum install java-11-amazon-corretto-headless -y
+2. sudo wget -O /etc/yum.repos.d/jenkins.repo \
+    https://pkg.jenkins.io/redhat-stable/jenkins.repo
+3. sudo rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io.key
+4. sudo systemctl start jenkins
+5. sudo systemctl status jenkins
+6. now connect ip address : accsess key  to jenkins
+7. sudo yum install -y yum-utils shadow-utils
+8. sudo yum-config-manager --add-repo https://rpm.releases.hashicorp.com/AmazonLinux/hashicorp.repo
+9. sudo yum -y install terraform
+10. terraform version
+11. sudo yum install git
+12. git -version
+13. java --version
+14. now connect git credentials to jenkins to write the pipeline
