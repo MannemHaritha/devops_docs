@@ -1,0 +1,69 @@
+docker compose with wordpress
+################
+what if one container is depenyt on another container?
+meaning is  first i need to make sure db is up and running then only after that my application should start 
+
+for example if i have java application connecting to postgres
+###########
+first postgres should be up and running once postgres is ready then only java container should start
+
+another example if we have wordpress application is connecting to db
+##################
+if db is up and running only then wordpress website application should start running
+
+
+
+services:
+  db:
+    # We use a mariadb image which supports both amd64 & arm64 architecture
+    image: mariadb:10.6.4-focal
+    # If you really want to use MySQL, uncomment the following line
+    #image: mysql:8.0.27
+    command: '--default-authentication-plugin=mysql_native_password'
+    volumes:
+      - db_data:/var/lib/mysql
+    restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD=somewordpress
+      - MYSQL_DATABASE=wordpress
+      - MYSQL_USER=wordpress
+      - MYSQL_PASSWORD=wordpress
+    expose:
+      - 3306
+      - 33060
+  wordpress:
+    image: wordpress:latest
+    ports:
+      - 80:80
+    restart: always
+    environment:
+      - WORDPRESS_DB_HOST=db
+      - WORDPRESS_DB_USER=wordpress
+      - WORDPRESS_DB_PASSWORD=wordpress
+      - WORDPRESS_DB_NAME=wordpress
+volumes:
+  db_data:
+
+44.211.241.175:80
+wordpress login 
+username: mannemharitha
+password : pLGc7wDrg3S3C$JzW8
+
+
+
+mkdir wordpresstest
+cd wordpresstest/
+docker-compose up --detach
+docker-compose ps
+docker ps
+docker exec -it 8c32e48f4523 bash
+mysql -u wordpress -p wordpress
+44.211.241.175:80
+wordpress login 
+username: mannemharitha
+password : pLGc7wDrg3S3C$JzW8
+use wordpress;
+show tables;
+
+
+
