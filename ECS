@@ -1,0 +1,66 @@
+ECS(elastic container service)
+#############
+aws has created a service called ECS
+(Elastic container service to run our docker image as containers)
+
+
+springbbot ecs
+ https://mydeveloperplanet.com/2021/09/07/how-to-deploy-a-spring-boot-app-on-aws-ecs-cluster/
+ 
+ Create Task Definition
+Now that the Docker image is available in ECR, next thing to do is to create a Task Definition by creating the Create new Task Definition button in the Task Definitions section (left menu).
+4. Create Task Definition
+Now that the Docker image is available in ECR, next thing to do is to create a Task Definition by creating the Create new Task Definition button in the Task Definitions section (left menu).
+
+
+In step 1, choose for an EC2 self managed task and click the Next step button.
+
+
+In step 2, give the task definiton the name myawsplanet.
+
+
+Select a Task execution role in the Task execution IAM role section. This role is necessary for pulling the Docker image. If the role does not exist yet, select Create new role in the dropdown list. The Task memory and Task CPU fields are optional, leave them empty for now. In the screenshot below, the container is already added. See below the screenshot how to accomplish this.
+
+
+Click the Add container button. Give the container the name myawsplanet. Fill in the Image to be pulled. This should be the Image URI of the Docker image from the ECR repository followed by the tag. Set the Memory Limits to 300 and add a Port mappings entry for host port 8080 to the container port 8080 (the Spring Boot application runs on port 8080 inside the container). Finally, click the Add button in order to add the container to the Task Definition.
+
+
+The only thing left to do is to finalize step 2 by clicking the Create button at the bottom of the page.
+
+5. Create Cluster
+Navigate in the left menu to the Clusters section and click the Create cluster button.
+
+In step 1, choose EC2 Linux + Networking and click the Next step button.
+
+
+In step 2, give the Cluster the name myawsplanet and choose the t2.micro as EC2 instance type. This will allow you to remain in the Free Tier. Leave the other options as default. This will launch 1 EC2 instance into your Cluster.
+
+
+In the Networking section, choose the default VPC and select all available subnets. Choose Create a new security group as Security group. You can also choose a Key pair if you want to be able to SSH to the EC2 instances. In the screenshot below, SSH access is not enabled.
+
+
+The new security group must allow all traffic for port 8080 otherwise the Rest endpoint will not be accessible. This is configured in the Security group inbound rules section. Next, choose a previously created Container instance IAM role or choose Create new role when this is the first time you are going to use this. Click the Create button.
+
+
+After a few minutes, the ECS Cluster is running. Navigate to the EC2 service and notice that the Auto Scaling group has been created and one EC2 instance is running.
+
+
+The EC2 instance:
+
+
+6. Create Service
+You have created a Cluster and a Task Definition. Now it is time to deploy the Task Definition containing the configuration for the Docker container into the Cluster. Navigate to the Cluster and click the Deploy button.
+
+
+Expand the Compute configuration (advanced) section and choose EC2 as Launch type.
+
+
+In the Deployment configuration section, choose the Task Definition myawsplanet as Family and choose the latest revision. As you can see, task definitons are version controlled. Give the Service the name myawsplanetservice and create the Service.
+
+
+Navigate to the EC2 service and copy the public URL of the EC2 instance. Use this URL in order to verify whether the endpoint is accessible.
+
+1
+2
+$ curl http://ec2-13-36-172-189.eu-west-3.compute.amazonaws.com:8080/hello
+Hello AWS! From host: a035a951c3c8/172.17.0.2
