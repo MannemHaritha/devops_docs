@@ -1,0 +1,215 @@
+k8s architecture
+##################
+what is the difference betweeen docker swarm and k8s?
+and for what type of projects we will use  in docker swarm?
+and for what type of projects we will use in  k8s?
+
+
+
+Kubernetes vs Docker Swarm: Comparison
+K8s and Docker Swarm have many of the same features, but each tool shines in different aspects. The table below offers a head-to-head Kubernetes vs Docker Swarm comparison:
+
+Point of comparison									Kubernetes																			Docker Swarm
+Main selling point				A complete container orchestration solution with advanced automation feature and high customization	An emphasis on ease of use and a seamless fit with other Docker products
+Installation					Somewhat complex as you need to install (and learn to use) kubectl					Quick and easy setup (if you already run Docker)  
+Learning curve  				High learning curve (but has more features)										Lightweight and easy to use (but limited functionality)
+GUI  							Detailed native dashboards										No out-of-the-box dashboards (but you can integrate a third-party tool)
+Cluster setup					Difficult to start a cluster (but the cluster is very strong once set up)			Easy to start a cluster
+Availability features  			Self-healing, intelligent scheduling, and replication features						Availability controls and service duplication  
+Scalability  					All-in-one scaling based on traffic	Values scaling quickly (approx. 5x faster than K8s) over scaling automatically
+Horizontal auto-scaling  		Yes																					No
+Monitoring capabilities  	Has built-in monitoring and logging						Basic server log and event tools, but needs a third-party tool for advanced monitoring
+Load balancing					No built-in mechanism for auto load-balancing														Internal load balancing
+Security features				Relies on transport layer security (TLS) and access control-related tasks				Supports multiple security (RBAC 		 		authorization, TLS/SSL, secrets management, policies, etc.)
+CLI								Needs a separate CLI											Integrated Docker CLI, which can limit the functionality in some use cases
+Community						Huge and active community						Reasonably popular, but the user base is getting smaller since the Mirantis acquisition
+Optimal use case				High-demand apps with a complex configuration									Simple apps that are quick to deploy and easy to manage
+
+
+
+what do you mean by orchestration?
+orchestration is the automated configuration, management and coordination of computer systems, applications and serevices. orchestration helps to more easily manage complex tasks and workflows.
+
+
+horizontal auto scalliung----------->if needed k8s can add the nodes automatically.
+docker swarm----------> in the swarm this support is not there, we need to add the  nodes manuallulu.
+
+
+
+
+what is teh command for run or create the container in docker?
+
+docker container run --name=containername -p outsideport:insideport -d containerimage
+
+in te same way what is the command for run container in k8s?
+
+#start the pod running nginx
+kubectl create deployment --image=nginx nginx-app
+#deployment.apps/nginx-app created
+kubectl create deployment --image=nginx nginx-app
+
+https://kubernetes.io/docs/reference/kubectl/docker-cli-to-kubectl/
+
+kubectl
+#############
+kubectl is the kubernaties command line which connects to the kubernaties cluster and we can create our deployment.
+
+whenever we run a kubectl command
+ https://medium.com/jorgeacetozi/kubernetes-master-components-etcd-api-server-controller-manager-and-scheduler-3a0179fc8186
+ 
+ k8s workflows
+###############
+whenever we run a kubectl command first it will goes to
+1. API server-->then API server call etcd--> etcd will notify and back to API server
+2. then again API server will calll the scheduler-->then scheduler will know which k8s node has capacity to run this particular pod.
+			
+					OR
+K8S ARCHITECTURE
+##############
+https://miro.medium.com/max/4800/0*c2N7STjiWZjCy8we.webp
+kubectl writes to the API Server.
+API Server validates the request and persists it to etcd.
+etcd notifies back the API Server.
+API Server invokes the Scheduler.
+Scheduler decides where to run the pod on and return that to the API Server.
+API Server persists it to etcd.
+etcd notifies back the API Server.
+API Server invokes the Kubelet in the corresponding node.
+Kubelet talks to the Docker daemon using the API over the Docker socket to create the container.
+Kubelet updates the pod status to the API Server.
+API Server persists the new state in etcd.
+
+example:
+let us say we have two nodes
+node1  and node2
+
+API server called scheduler and scheduler responded saying node1 is there,and we can use this
+
+API servere will call kubelet process running in node1
+
+
+#expose a port through with a service
+kubectl expose deployment nginx-app --port=80 --name=nginx-http
+#service "nginx-http" exposed
+
+
+now let us create a single node k8s cluster it is called minikube
+	1  sudo yum install docker -y
+    2  sudo systemctl start docker
+    3  curl -Lo minikube https://github.com/kubernetes/minikube/releases/download/v1.25.2/minikube-linux-amd64
+    4  ls
+    5  chmod +x minikube
+    6  sudo mv minikube /usr/local/bin/
+    7  yum install conntrack -y
+    8  sudo yum install conntrack -y
+    9  export PATH=/usr/local/bin:$PATH
+   10  sudo minikube start --driver=none
+   11  sudo /usr/local/bin/minikube start --driver=none
+   12  sudo kubectl get nodes
+   13  curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+   14  ls
+   15  chmod +x kubectl
+   16  sudo cp kubectl /usr/bin
+   17  sudo kubectl get nodes
+   18  sudo kubectl create deployment --image=nginx nginx-app
+   20  sudo kubectl get deployments
+   22  sudo kubectl expose deployment nginx-app --port=80 --name=nginx-service
+   24  sudo kubectl get svc
+   29  sudo kubectl delete svc nginx-app    -------->deleting the deployment
+   30  sudo kubectl delete svc nginx-service   ------------->deleting the deployment service as well
+   31  sudo kubectl get svc
+   32  sudo kubectl expose deployment nginx-app --port=80 --type=NodePort --name=nginx-service
+   sudo  kubectl get svc
+NAME            TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)        AGE
+kubernetes      ClusterIP   10.96.0.1        <none>        443/TCP        37m
+nginx-service   NodePort    10.104.203.185   <none>        80:30059/TCP   9s
+
+http://100.26.11.223:30059/   --------> NGINX PORTAL IS OPEN
+
+For deploying a docker image in this k8s cluster
+
+sudo kubectl create deployment --image=mannemharitha/springboot-maven-course-micro-svc:14 springboot-deployment
+
+	35  sudo kubectl create deployment --image=mannemharitha/springboot-maven-course-micro-svc:14 springboot-deployment
+   37  sudo  kubectl get svc
+   38  sudo kubectl get deployment
+   39  sudo kubectl expose deployment springboot-deployment --port=8080 --type=NodePort --name=springboot-service
+   40  sudo  kubectl get svc
+   [ec2-user@ip-172-31-62-235 ~]$ sudo  kubectl get svc
+NAME                 TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)          AGE
+kubernetes           ClusterIP   10.96.0.1        <none>        443/TCP          56m
+nginx-service        NodePort    10.104.203.185   <none>        80:30059/TCP     19m
+springboot-service   NodePort    10.97.58.180     <none>        8080:32494/TCP   10s
+
+http://100.26.11.223:32494/course-svc/getAllDevopsTools  --------> all devops tools are comming
+
+
+pull an image from an private registry/repository
+#########################
+if our image is private we can use a concept is called image pull secret docker registry/repositort.
+
+kubectl run hello-world -it --restart=Never --image=nginx:1.7.1 --image-pull-secrets=regcred
+
+#Create this Secret, naming it regcred:
+https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+
+kubectl create secret docker-registry regcred --docker-server=<your-registry-server> --docker-username=<your-name> --docker-password=<your-pword> --docker-email=<your-email>
+where:
+<your-registry-server> is your Private Docker Registry FQDN. Use https://index.docker.io/v1/ for DockerHub.
+<your-name> is your Docker username.
+<your-pword> is your Docker password.
+<your-email> is your Docker email.
+
+kubectl create secret docker-registry regcred --docker-server=https://index.docker.io/v1/ --docker-username=mannemharitha --docker-password=mannem123 --docker-email=harithamuppa123@gmail.com
+
+
+yaml file for pod
+############
+apiVersion: v1
+kind: Pod
+metadata:
+  name: private-reg
+spec:
+  containers:
+  - name: private-reg-container
+    image: <your-private-image>
+  imagePullSecrets:
+  - name: regcred
+
+
+
+history
+##########
+ 1. sudo kubectl create secret docker-registry regcred --docker-server=https://index.docker.io/v1/ --docker-username=mannemharitha --docker-password=mannem123 	 --docker-email=harithamuppa123@gmail.com
+ 2. sudo kubectl get secrets
+ 3. sudo kubectl get secret regcred
+ 4. sudo kubectl run springboot-deplotment -it --restart=Never --image=mannemharitha/springboot-maven-course-micro-svc:14 --image-pull-secrets=regcred
+		or
+now try to run on yaml file
+ 5.i will create a pod like this
+apiVersion: v1
+kind: Pod
+metadata:
+  name: private-reg
+spec:
+  containers:
+  - name: private-reg-container
+    image: <your-private-image>
+  imagePullSecrets:
+  - name: regcred
+
+ 6. vi springboot-pod.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: private-reg
+spec:
+  containers:
+  - name: private-reg-container
+    image: mannemharitha/springboot-maven-course-micro-svc:14
+  imagePullSecrets:
+  - name: regcred
+  
+7. sudo kubectl create -f springboot-pod.yaml	--------->pod created 
+8. sudo kubectl get pods
+9.sudo kubectl logs private-reg 		---->(private-reg =pod name)its running application
