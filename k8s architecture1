@@ -1,0 +1,179 @@
+k8s Architecture& Minikube
+#####################
+how to install single node k8s cluster using minikube?
+how to create single node k8s cluster using azure kubernates services(aks)?
+how to create multi node k8s cluster using eks?
+
+and then deploy  the java based spring boot micro services on all the 3 types of clusters i.e
+1. Minikube
+2. aks
+3. eks
+
+
+and then
+############
+config map and secret
+pv and pvc
+rbac concept
+daemonset
+
+###########
+
+deploy docker image or k8s manifest file to k8s cluster using jenkins pipeline or azure devops or github actions?
+
+
+and then
+monitoring k8s cluster
+send logs to elk using k8s
+
+#########################
+in ci process
+1.before doing deployment in k8s we need to make sure docker image is ready
+2.once docker image is ready in order to connect k8s cluster, we need to something is called KUBECTL.
+
+The Kubernetes command-line tool, kubectl, allows you to run commands against Kubernetes clusters. You can use kubectl to deploy applications, inspect and manage cluster resources, and view logs. 
+
+
+kubectl cmnds for docker user
+#############
+# start the pod running nginx
+kubectl create deployment --image=nginx nginx-app
+
+# expose a port through with a service
+kubectl expose deployment nginx-app --port=80 --name=nginx-http
+
+to create kubectl cmnd what exactly wll go?
+
+components of k8s
+###################
+
+https://medium.com/jorgeacetozi/kubernetes-master-components-etcd-api-server-controller-manager-and-scheduler-3a0179fc8186
+https://miro.medium.com/max/4800/0*c2N7STjiWZjCy8we.webp
+
+kubectl writes to the API Server.
+API Server validates the request and persists it to etcd.
+etcd notifies back the API Server.
+API Server invokes the Scheduler.
+Scheduler decides where to run the pod on and return that to the API Server.
+API Server persists it to etcd.
+etcd notifies back the API Server.
+API Server invokes the Kubelet in the corresponding node.
+Kubelet talks to the Docker daemon using the API over the Docker socket to create the container.
+Kubelet updates the pod status to the API Server.
+API Server persists the new state in etcd
+
+
+
+#################
+now i will connect with ec2 instance 
+then download the docker,kubectl,minikiube
+##########
+Install docker:
+yum install docker -y
+service docker start
+
+Minikube setup:
+curl -Lo minikube https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+chmod +x minikube
+sudo mv minikube /usr/local/bin/
+yum install conntrack -y
+export PATH=/usr/local/bin:$PATH
+minikube start --driver=none
+
+
+Minikube setup: (in case of latest version errors)
+curl -Lo minikube https://github.com/kubernetes/minikube/releases/download/v1.25.2/minikube-linux-amd64
+chmod +x minikube
+sudo mv minikube /usr/local/bin/
+yum install conntrack -y
+export PATH=/usr/local/bin:$PATH
+minikube start --driver=none
+
+kubectl donload
+##############
+
+curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+
+
+curl -LO "https://dl.k8s.io/release/v1.23.3/bin/linux/amd64/kubectl"
+
+
+deployment process start with ngnix
+###############
+
+kubectl create deployment --image=nginx nginx-app
+
+we can access user outside the cluster we can use service proxy  i.e 
+service expose cmnd
+
+kubectl expose deployment nginx-app --port=80 --name=nginx-http
+
+kubectl expose deployment nginx-app --port=80 --name ngnix-service --type NodePort
+
+
+or 
+
+if you want to do  through yaml file
+############
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-service
+spec:
+  selector:
+    app: nginx
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+      nodePort: 32698
+  type: NodePort
+
+
+if you want to know the api version of service is
+
+kubectl api-resources | grep service
+
+
+
+
+
+
+
+
+History
+############
+	
+    3  yum install docker -y
+    4  systemctl start docker
+    5  systemctl status docker
+    8  yum install conntrack -y
+   19  curl -Lo minikube https://github.com/kubernetes/minikube/releases/download/v1.25.2/minikube-linux-amd64
+   20  chmod +x minikube
+   21  sudo mv minikube /usr/local/bin/
+   22  yum install conntrack -y
+   23  export PATH=/usr/local/bin:$PATH
+   24  minikube start --driver=none
+   25  curl -LO "https://dl.k8s.io/release/v1.23.3/bin/linux/amd64/kubectl"
+   26  chmod +x kubectl
+   27  cp kubectl /usr/bin/
+   28  kubectl get nodes
+	29kubectl create deployment --image=nginx nginx-app
+   31  kubectl get deployments
+   32  kubectl get pods
+   33  kubectl logs nginx-app-7f6fdf9556-q8dvt
+	35  kubectl expose deployment nginx-app --port=80 --name ngnix-service --type NodePort
+   36  kubectl get services
+	38  kubectl get services
+   39  kubectl delete service ngnix-service
+   40  kubectl get services
+   41  kubectl api-resources | grep service
+   42  vi ngnix.service.yaml
+   48  kubectl apply -f ngnix.service.yaml
+   49  kubectl get services
+   50  cat ngnix.service.yaml
+
+
+
+
