@@ -1,0 +1,278 @@
+K8S GKE & EKS Cluster
+#############
+How to create and connect EKS cluster?
+How to deploy to eks cluster using jenkins pipeline?
+
+pv and pvc?
+
+
+
+#####################
+we can create eks cluster using cloudformation templates and terraform
+
+and also using AWS management consle
+and also using eksctl with yaml configuration or with commands as well
+
+
+Create a basic cluster in minutes with just one command
+############
+eksctl create cluster
+
+or
+
+Customize your cluster by using a config file. Just run
+##############
+eksctl create cluster -f cluster.yaml
+
+
+to apply a cluster.yaml file:
+###########
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+
+metadata:
+  name: basic-cluster
+  region: eu-north-1
+
+nodeGroups:
+  - name: ng-1
+    instanceType: m5.large
+    desiredCapacity: 10
+  - name: ng-2
+    instanceType: m5.xlarge
+    desiredCapacity: 2
+	
+	
+	
+	
+	
+i want to crete ec2 user to access with eks cluster
+###################3	
+	
+						ec2------------------------------------------------------>EKS
+						We need iam user
+						iam role with eks
+						permission so that 
+						ec2 can access eks cluster
+	
+
+EKS cluster setup
+#########################
+	
+Step1: Take EC2 Instance with t2.xlarge instance type
+
+
+Step2: Create IAM Role with Admin policy for eks-cluster and attach to ec2-instance 
+
+
+Step3: Install kubectl
+curl -o kubectl https://amazon-eks.s3-us-west-2.amazonaws.com/1.14.6/2019-08-22/bin/linux/amd64/kubectl
+chmod +x ./kubectl
+mkdir -p $HOME/bin
+cp ./kubectl $HOME/bin/kubectl
+export PATH=$HOME/bin:$PATH
+echo 'export PATH=$HOME/bin:$PATH' >> ~/.bashrc
+source $HOME/.bashrc
+kubectl version --short --client
+
+
+curl -o kubectl https://amazon-eks.s3.us-west-2.amazonaws.com/1.19.6/2021-01-05/bin/linux/amd64/kubectl
+chmod +x ./kubectl
+mkdir -p $HOME/bin
+cp ./kubectl $HOME/bin/kubectl
+export PATH=$HOME/bin:$PATH
+echo 'export PATH=$HOME/bin:$PATH' >> ~/.bashrc
+source $HOME/.bashrc
+kubectl version --short --client
+
+curl -o kubectl https://amazon-eks.s3.us-west-2.amazonaws.com/1.20.4/2021-04-12/bin/linux/amd64/kubectl
+chmod +x ./kubectl
+mkdir -p $HOME/bin
+cp ./kubectl $HOME/bin/kubectl
+export PATH=$HOME/bin:$PATH
+echo 'export PATH=$HOME/bin:$PATH' >> ~/.bashrc
+source $HOME/.bashrc
+kubectl version --short --client
+
+curl -o kubectl https://amazon-eks.s3.us-west-2.amazonaws.com/1.22.6/2022-03-09/bin/linux/amd64/kubectl
+chmod +x ./kubectl
+mkdir -p $HOME/bin
+cp ./kubectl $HOME/bin/kubectl
+export PATH=$HOME/bin:$PATH
+echo 'export PATH=$HOME/bin:$PATH' >> ~/.bashrc
+source $HOME/.bashrc
+kubectl version --short --client
+
+Step4: Install eksctl:
+curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
+sudo mv /tmp/eksctl /usr/bin
+eksctl version
+
+
+Step5: Cluster creation:
+eksctl create cluster --name=eksdemo \
+                  --region=us-east-1 \
+                  --zones=us-east-1a,us-east-1b \
+                  --without-nodegroup
+				  
+eksctl create cluster --name=eksdemo --region=us-east-1 --version=1.22 --zones=us-east-1a,us-east-1b --without-nodegroup
+
+				  
+Step6: Add Iam-Oidc-Providers:
+eksctl utils associate-iam-oidc-provider \
+    --region us-east-1 \
+    --cluster eksdemo \
+    --approve
+	
+	
+Step7: Create node-group:
+eksctl create nodegroup --cluster=eksdemo \
+                   --region=us-east-1 \
+                   --name=eksdemo-ng-public \
+                   --node-type=t2.medium \
+                   --nodes=2 \
+                   --nodes-min=2 \
+                   --nodes-max=4 \
+                   --node-volume-size=10 \
+                   --ssh-access \
+                   --ssh-public-key=devops-7am-aws \
+                   --managed \
+                   --asg-access \
+                   --external-dns-access \
+                   --full-ecr-access \
+                   --appmesh-access \
+                   --alb-ingress-access	
+				   
+				   
+###############################
+step1
+#### 
+create ec2 instance for eks cluster
+
+step2
+######
+create iam role for eks cluster
+
+step3
+#######
+Before we install the kubectl we need to know the eksctl version.
+
+eksctl version is 1.26
+
+so we need to install the same 1.26 kubectl version i.e
+
+
+curl -O https://s3.us-west-2.amazonaws.com/amazon-eks/1.26.2/2023-03-17/bin/darwin/amd64/kubectl
+
+step4
+############
+kubectl install 1.26 version
+##########
+
+curl -o kubectl https://amazon-eks.s3.us-west-2.amazonaws.com/1.26.2/2023-03-17/bin/linux/amd64/kubectl
+chmod +x ./kubectl
+mkdir -p $HOME/bin
+cp ./kubectl $HOME/bin/kubectl
+export PATH=$HOME/bin:$PATH
+echo 'export PATH=$HOME/bin:$PATH' >> ~/.bashrc
+source $HOME/.bashrc
+kubectl version --short --client
+
+step5
+########
+create eks cluster with v1.26 version
+
+eksctl create cluster --name=eksdemo --region=us-east-1 --version=1.22 --zones=us-east-1a,us-east-1b --without-nodegroup
+
+if you want u can create all the environments
+################33
+eksctl create cluster --name=eksdemo-dev --region=us-east-1 --version=1.26 --zones=us-east-1a,us-east-1b --without-nodegroup
+
+eksctl create cluster --name=eksdemo-qa --region=us-east-1 --version=1.26 --zones=us-east-1a,us-east-1b --without-nodegroup
+
+eksctl create cluster --name=eksdemo-staging --region=us-east-1 --version=1.26 --zones=us-east-1a,us-east-1b --without-nodegroup
+
+eksctl create cluster --name=eksdemo-prod --region=us-east-1 --version=1.26 --zones=us-east-1a,us-east-1b --without-nodegroup
+
+
+after creating a cluster we have to wit wait for couple of minutes bcz cluster creatio takes several minutes
+so instaed of this i will install the jenkins
+
+so  intall the jenkins as well
+#############
+
+sudo wget -O /etc/yum.repos.d/jenkins.repo \
+    https://pkg.jenkins.io/redhat-stable/jenkins.repo
+sudo rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
+
+
+
+if we assume eks cluster is ready
+
+and i just know the cluster name and region
+
+using thois information we need kubeconfig file.
+
+why kubeconfig file is needed?
+#############
+kubectl internally uses kubeconfig file to connect eks cluster.
+
+aws eks update-kubeconfig --name example
+
+we can run this aws cli command ,will get kubeconfig file
+
+aws eks update-kubeconfig --name eksdemo-dev --region us-east-1
+
+above command create kubeconfig file under .kube folder in the home directoryof the user.
+
+
+
+kubectl create deployment --image=mannemharitha/springboot-maven-course-micro-svc springboot-deployment
+
+mannemharitha/springboot-maven-course-micro-svc
+
+
+to expose deployments
+############
+kubectl expose deployment springboot-deployment --name=springboot-service --port=8080 --type=LoadBalancer
+
+kubectl get services
+
+
+History
+################
+
+1. sudo -i
+2.curl -o kubectl https://amazon-eks.s3.us-west-2.amazonaws.com/1.26.2/2023-03-17/bin/linux/amd64/kubectl
+  chmod +x ./kubectl
+	mkdir -p $HOME/bin
+	cp ./kubectl $HOME/bin/kubectl
+	export PATH=$HOME/bin:$PATH
+	echo 'export PATH=$HOME/bin:$PATH' >> ~/.bashrc
+	source $HOME/.bashrc
+	kubectl version --short --client
+
+3. kubectl version --short --client
+4. curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
+	sudo mv /tmp/eksctl /usr/bin
+	eksctl version
+5. eksctl create cluster --name=eksdemo-dev --region=us-east-1 --version=1.26 --zones=us-east-1a,us-east-1b --without-nodegroup
+
+6. kubectl create deployment --image=mannemharitha/springboot-maven-course-micro-svc springboot-deployment
+7. kubectl get deployments
+8. kubectl expose deployment springboot-deployment --name=springboot-service --port=8080 --type=LoadBalancer
+
+9. kubectl get services 
+
+
+6. sudo wget -O /etc/yum.repos.d/jenkins.repo \
+    https://pkg.jenkins.io/redhat-stable/jenkins.repo
+7. sudo rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
+
+8. systemctl start jenkins
+
+
+
+	
+	
+	
