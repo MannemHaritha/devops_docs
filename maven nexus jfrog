@@ -1,0 +1,242 @@
+Maven with nexus/jfrog
+####################
+nexus and jfrog are storing our project artifacts
+
+in realtime project u can either see nexus /jfrog
+
+it can be for storing jar files or war files or it can be used for storing docker images as well
+##########
+
+when we are working with java based projects we have total three types of repositories .
+1. loacl repository  ----------------->C:\Users\QC\.m2\repository
+2. central repository--------------------->https://repo.maven.apache.org/maven2/
+3. remote repository--->we want store these repositories for that we need remote repository that can be nexus or jfrog.
+
+then what is the order to look for when we want dependencies
+
+How does Maven searches for Dependencies?
+#################
+Basically, when maven starts executing the build commands, maven starts for searching the dependencies as explained below :
+
+1. It scans through the local repositories for all the configured dependencies. If found, then it continues with the further execution. If the configured dependencies 	 are not found in the local repository, then it scans through the central repository.
+2.If the specified dependencies are found in the central repository, then those dependencies are downloaded to the local repository for the future reference and usage. If not found, then maven starts scanning into the remote repositories.
+3. If no remote repository has been configured, then maven will throw an exception saying not able to find the dependencies & stops processing. If found, then those dependencies are downloaded to the local repository for the future reference and usage.
+
+why we do want store those repositories?
+####################
+in office we will restrict pulic download of dependencies from central repository 
+
+instead we will download from central repository we will check wheather the jar or dependencies is vulnerable or not
+if it is not vulnerable then it will be uploaded to remote repositories either nexus or jfrog
+
+once the jar is available in remote repositories application teams or devops teams uses those jars from nexus or jfrog for ci cd process
+
+####################################333
+if sonar says project analysis is success, then we need to upload project artifacts like jar or war tar.gz to nexus /jfrog as a part of ci process
+
+in CD process then we will download the version needed from nexus/jfrog and deploy to DEV OR QA OR UAT/STAGING OR PROD
+
+
+CI process
+maven deplot to nexus
+#######################
+https://www.baeldung.com/maven-deploy-nexus
+
+1. Overview
+
+In a previous article, I discussed how a Maven project can install locally a third party jar that has not yet been deployed on Maven Central (or on any of the other large and publicly hosted repositories).
+
+That solution should only be applied in small projects where installing, running and maintaining a full Nexus server may be overkill. However, as a project grows,
+
+Nexus quickly becomes the only real and mature option for hosting third party artifacts, as well as for reusing internal artifacts across development streams.
+
+This article will show how to deploy the artifacts of a project to Nexus, with Maven.
+
+
+
+2. Nexus Requirements in the pom.xml
+
+In order for Maven to be able to deploy the artifacts it creates in the package phase of the build, it needs to define the repository information where the packaged artifacts will be deployed, via the distributionManagement element:
+
+in pom.xml we need to add below elements
+
+freestar
+<distributionManagement>
+   <snapshotRepository>
+      <id>nexus-snapshots</id>
+      <url>http://localhost:8081/nexus/content/repositories/snapshots</url>
+   </snapshotRepository>
+   <Repository>
+      <id>nexus-snapshots</id>
+      <url>http://localhost:8081/nexus/content/repositories/snapshots</url>
+   </repository>
+</distributionManagement>
+Copy
+A hosted, public Snapshots repository comes out of the box on Nexus, so there's no need to create or configure anything further. Nexus makes it easy to determine the URLs of its hosted repositories – each repository displays the exact entry to be added in the <distributionManagement> of the project pom, under the Summary tab.
+
+ 
+3. Plugins
+
+By default, Maven handles the deployment mechanism via the maven-deploy-plugin – this mapped to the deployment phase of the default Maven lifecycle:
+
+<plugin>
+   <artifactId>maven-deploy-plugin</artifactId>
+   <version>2.8.1</version>
+   <executions>
+      <execution>
+         <id>default-deploy</id>
+         <phase>deploy</phase>
+         <goals>
+            <goal>deploy</goal>
+         </goals>
+      </execution>
+   </executions>
+</plugin>
+Copy
+The maven-deploy-plugin is a viable option to handle the task of deploying to artifacts of a project to Nexus, but it was not built to take full advantage of what Nexus has to offer. Because of that fact, Sonatype built a Nexus specific plugin – the nexus-staging-maven-plugin – that is actually designed to take full advantage of the more advanced functionality that Nexus has to offer – functionality such as staging.
+
+Although for a simple deployment process we do not require staging functionality, we will go forward with this custom Nexus plugin since it was built with the clear purpose to talk to Nexus well.
+
+The only reason to use the maven-deploy-plugin is to keep open the option of using an alternative to Nexus in the future – for example, an Artifactory repository. However, unlike other components that may actually change throughout the lifecycle of a project, the Maven Repository Manager is highly unlikely to change, so that flexibility is not required.
+
+
+
+4. The Global settings.xml
+
+Deployment to Nexus is a secured operation – and a deployment user exists for this purpose out of the box on any Nexus instance.
+
+Configuring Maven with the credentials of this deployment user, so that it can interact correctly with Nexus, cannot be done in the pom.xml of the project. This is because the syntax of the pom doesn't allow it, not to mention the fact that the pom may be a public artifact, so not well suited to hold credential information.
+
+The credentials of the server have to be defined in the global Maven setting.xml:
+
+<servers>
+   <server>
+      <id>nexus-snapshots</id>
+      <username>deployment</username>
+      <password>the_pass_for_the_deployment_user</password>
+   </server>
+</servers>
+Copy
+The server can also be configured to use key based security instead of raw and plaintext credentials.
+
+
+
+5. The Deployment Process
+
+Performing the deployment process is a simple task:
+
+mvn clean deploy -Dmaven.test.skip=true
+Copy
+Skipping tests is OK in the context of a deployment job because this job should be the last job from a deployment pipeline for the project.
+
+A common example of such a deployment pipeline would be a succession of Jenkins jobs, each triggering the next only if it completes successfully. As such, it is the responsibility of the previous jobs in the pipeline to run all tests suites from the project – by the time the deployment job runs, all tests should already pass.
+
+If ran a single command, then tests can be kept active to run before the deployment phase executes:
+
+
+#############
+for time being i will take another server and install docker and run nexus 
+sudo yum install docker -y
+sudo systemctl start docker 
+sudo docker container run --name=nexuscontainer -p 8081:8081 sonatype/nexus3 --detach
+
+
+http://54.164.90.236:8081/repository/maven-snapshots/
+http://54.164.90.236:8081/repository/maven-releases/
+
+we need to add distribution mamagement elementin pom.xml
+
+
+<distributionManagement>
+   <snapshotRepository>
+      <id>maven-snapshots</id>
+      <url>http://54.164.90.236:8081/repository/maven-snapshots/</url>
+   </snapshotRepository>
+   <Repository>
+      <id>maven-releases</id>
+      <url>http://54.164.90.236:8081/repository/maven-releases/</url>
+   </repository>
+</distributionManagement>
+
+
+we need to make sure we mensioned nexus username and password in maven setting.xml
+
+<servers>
+   <server>
+      <id>maven-snapshots</id>
+      <username>admin</username>
+      <password>admin123</password>
+   </server>
+   <servers>
+   <server>
+      <id>maven-releases</id>
+      <username>admin</username>
+      <password>admin123</password>
+   </server>
+</servers>
+
+to deeply expain above these
+###############
+now i will create 2 serversfor now
+in server-1 jenkins,maven, sonarscanner,git,java build process will be there in one machine
+in server-2 nexus will be up and running
+
+nexus is common for many projects each team should not run their own nexus.nexus will be a shared server
+
+
+
+
+
+Snapshot
+################
+snapshot is a build which can be replaced by another build which has the same name.
+
+RELEASE
+###################
+a release is a final build for a version which doesn't change
+
+
+
+
+history
+#################
+	1  sudo yum install docker -y
+    2  sudo systemctl start docker
+   17  sudo docker run --name nexuscontainer -p 8081:8081 -d sonatype/nexus3
+   26  sudo docker ps
+   27  sudo docker container logs sonatype/nexus3
+   28  sudo docker container logs nexuscontainer
+   29  sudo docker container exec -it nexuscontainer bash
+
+####################################
+
+
+
+
+
+
+
+
+
+
+few compenies will use jfrog instead of nexus
+maven deploy with jfrog
+########################
+jfrog login detailes
+karthikjune01@gmail.com
+Login@123
+
+<distributionManagement>
+   <repository>
+      <id>central</id>
+	  <name>a0m7a9d5n0kvu-artifactory-primary-0-releases</name>
+      <url>http://devopsrbapocjfrog.jfrog.io/artifactory/libs-release</url>
+   </repository>
+
+
+<servers>
+   <server>
+      <id>central</id>
+      <username>Karthikjune01@gmail.com</username>
+      <password>Login123</password>
+   </server>
