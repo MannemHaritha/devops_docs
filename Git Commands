@@ -1,5 +1,4 @@
  git clone https://github.com/srinadhm/devops-practise.git
-  386  ll
   387  cd devops-practise/
   388  git branch
   389  git branch -a
