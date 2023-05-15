@@ -5,6 +5,12 @@ Build pipeline types
 3. MiddleTire/UI(jAVA,Nodejs,Angular JS,REACT JS,MAVEN,SONARQUBE)
 
 
+Tools used in SCI apps for build
+
+BUILD: Java,Maven, Sonarqube, Jfrog repository,Angular js, Node js
+DEPLOY: Jfrog repository/salt stack
+
+
 Build CI pipeline sequence process for MiddleTire SCI different applications
 
 1. java with Node js /Java with React js Build process steps
