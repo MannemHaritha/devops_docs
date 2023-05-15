@@ -1,0 +1,121 @@
+Build pipeline types
+##################
+1. FrontEnd(XCODE,SWIFT,SDK)
+2. DB/Backend(REDGATE FLY)----------------->Database which operates ddl and dml operations with teh help of REDGATE Flyway
+3. MiddleTire/UI(jAVA,Nodejs,Angular JS,REACT JS,MAVEN,SONARQUBE)
+
+
+Build CI pipeline sequence process for MiddleTire SCI different applications
+
+1. java with Node js /Java with React js Build process steps
+
+1. clean workspace
+2. Git Checkout
+3. Install node pluggins/Dependencies(npm install)
+4. Build the Node js application(nom run build)
+5. Buiuld the application with mvn along with Sonarqube report generation
+6. Rename the war file(if required)
+7. Zip the opsconfig folder
+8. Upload the artifactory with war extension and Zip extension for opsconfig 
+
+2.Java CI without UI process steps
+
+1. Clean the Workspace
+2. Git Checkout
+3. Buiuld the application with mvn along with Sonarqube report generation
+4. Rename the war file(if required)
+5. Zip the opsconfig folder
+6. Upload the artifactory with war extension and Zip extension for opsconfig 
+
+3. KSH/Python/Jar/Queues Process steps
+
+1. Clean the Workspace
+2. Git Checkout
+3. Copy the files from folder impacted_ksh/python_scripts/jar and zip
+4. Upload the artifactory with war extension and Zip extension 
+
+
+4.Types of Pipelines/patterns in MiddleTire/UI
+
+KSH
+Python
+Jar
+Queues
+JAVA
+JAVA + NODE JS
+
+
+5. Build steps for JAVA application
+
+1. Clean the Workspace
+2. Git Checkout
+3. Buiuld the application with mvn along with Sonarqube report generation
+4. Rename the war file(if required)
+5. Zip the opsconfig folder
+6. Upload the artifactory with war extension and Zip extension for opsconfig 
+
+
+6. Build steps for PYTHON application
+
+1. Clean the Workspace
+2. Git Checkout
+3. copy the files from folder impacted_ksh/python_scripts/jar and zip
+4. Upload the artifactory of Zip Extension
+
+
+7. Build steps for QUEUE application
+
+1. Clean the Workspace
+2. Git Checkout
+3. copy the files from folder impacted_ksh/python_scripts/jar and zip
+4. Upload the artifactory of Zip Extension
+
+
+8. Build steps for KSH application/Pattern
+
+1. Clean the Workspace
+2. Git Checkout
+3. copy the files from folder impacted_ksh/python_scripts/jar and zip
+4. Upload the artifactory of Zip Extension
+
+
+9. Build steps for JAR application/Pattern
+
+1. Clean the Workspace
+2. Git Checkout
+3. copy the files from folder impacted_ksh/python_scripts/jar and zip
+4. Upload the artifactory of Zip Extension
+
+
+Different Apps teams we are supporting for
+
+GA
+PRICING APPS
+RODEO
+
+
+Jenkins Agents used for Build
+
+Jenkins Agents Pod:Buildagent-001
+Jenkins Agents Pod:Buildagent-002
+ec2-instance:sapcloud35
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
