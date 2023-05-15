@@ -1,0 +1,393 @@
+k8s objects
+##########
+what is config map secrets?
+what is the persintance volume and persistance claim?
+
+springboot with postgres and with above concepts?
+
+
+config map and secrets
+##################
+if yiu want to store any configaraton data which is not sensitive then we use config map
+
+for example if we want a db and connect to that db
+###############
+to connect any db we need following things
+1. db hostname
+2. db user name
+3. db password
+4. db url
+
+if the data is sensitive and needs to more security, so that we use secrets in k8s
+
+
+
+persistance volune and poersistance claim(PV AND PVC)
+###################
+
+PV-->a persistance volume is a piece of storage in the kubernetes cluster.
+PVC-->a persistance volume claim is a request for storage
+
+for example--->let say i want to storage of 100gb in k8s?
+
+i need to create a pv of 100 gb, out of this 100gb if we request some 10gb or 25gb or 50gb we call this as PVC
+
+
+
+what are the steps for installng postgres
+##############
+
+1. sudo yum install postgresql12 postgresql12-server   -----------------> for installing teh db server
+
+2. sudo /usr/pgsql-12/bin/postgresql-12-setup initdb 	------------------> for initialize the db
+
+3. sudo systemctl enable --now postgresql-12			-------------------->we created a service
+
+4. sudo su - postgres 								------------------------------------------> to start th db
+
+5. psql
+
+
+
+prerequisites of minikube/k8s
+#######################
+
+Install docker:
+#################33
+yum install docker -y
+systemctl start docker
+
+Minikube setup: (in case of latest version errors)
+##########33
+curl -Lo minikube https://github.com/kubernetes/minikube/releases/download/v1.25.2/minikube-linux-amd64
+chmod +x minikube
+sudo mv minikube /usr/local/bin/
+yum install conntrack -y
+export PATH=/usr/local/bin:$PATH
+minikube start --driver=none
+
+Kubectl installation
+##################33
+curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"				---------->installation of kubectl
+
+
+curl -LO "https://dl.k8s.io/release/v1.23.3/bin/linux/amd64/kubectl"			----------->(needed version)
+chmod +x kubectl
+cp kubectl /usr/bin/
+kubectl get nodes
+
+
+
+whenever if i connect to db ,we need to have username and password
+
+as username and password is sensitive information we need to do base64 encoded of them and create them as secrets
+
+if i assume
+username:postgres
+password:postgres
+
+for base64 encoded command
+##############
+echo -n "postgres" | base64 -d       --------------->for username
+
+echo -n "postgres" | base64 --------------------> for password
+
+if u want to decrepted
+echo -n "cG9zdGdyZXM=" | base64 -d
+
+if u want to see username and password, by using secrets encoded them
+
+kubectl create secret generic prod-db-secret --from-literal=postgres=produser --from-literal=password=postgres
+prod-db-secret
+postgres-secrets
+
+kubectl get secrets
+
+if u want to view the secret 
+
+kubectl get secret prod-db-secret
+
+kubectl describe secret prod-db-secret
+
+
+but still u want see the actual username and password
+###########
+
+--template={{.data.password}} | base64 -d
+
+kubectl get secret prod-db-secret --template={{.data.password}} | base64 -d			---------------> to get out secret value
+
+how to check when was the secret created
+#################
+kubectl get secret prod-db-secret --template={{.metadata.creationTimestamp}}
+
+
+pv & pvc commands##############
+##############
+kubectl api-resources | grep pv
+
+kubectl api-resources | grep pvc
+
+
+
+
+https://raw.githubusercontent.com/MannemHaritha/kubernetes/master/spring-boot-postgresql/postgres-storage.yaml			-------->postgres storage github yaml file
+
+curl https://raw.githubusercontent.com/MannemHaritha/kubernetes/master/spring-boot-postgresql/postgres-storage.yaml -o postgres-storage.yaml
+
+curl https://raw.githubusercontent.com/MannemHaritha/kubernetes/master/spring-boot-postgresql/postgres-storage.yaml -o postgres-storage.yaml
+	ls
+   cat postgres-storage.yaml
+   vi postgres-storage.yaml
+   kubectl apply -f postgres-storage.yaml
+   kubectl get pv
+   kubectl get pvc
+
+
+https://raw.githubusercontent.com/MannemHaritha/kubernetes/master/spring-boot-postgresql/postgres-deployment.yaml
+
+
+curl -O https://raw.githubusercontent.com/MannemHaritha/kubernetes/master/spring-boot-postgresql/postgres-deployment.yaml
+
+
+postgres-deployment.yaml
+#######################
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+spec:
+  selector:
+    matchLabels:
+      app: postgres
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:10.4
+          imagePullPolicy: "IfNotPresent"
+          ports:
+            - containerPort: 5432
+          env:
+           - name: POSTGRES_USER
+             valueFrom:
+               secretKeyRef:
+                 name: postgres-secrets
+                 key: username
+           - name: POSTGRES_PASSWORD
+             valueFrom:
+               secretKeyRef:
+                 name: postgres-secrets
+                 key: password
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: postgredb
+      volumes:
+        - name: postgredb
+          persistentVolumeClaim:
+            claimName: postgres-pv-claim
+
+
+
+
+
+
+
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+spec:
+  selector:
+    matchLabels:
+      app: postgres
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:15.2
+          imagePullPolicy: "IfNotPresent"
+          ports:
+            - containerPort: 5432
+          env:
+           - name: POSTGRES_USER
+             valueFrom:
+               secretKeyRef:
+                 name: prod-db-secret
+                 key: username
+           - name: POSTGRES_PASSWORD
+             valueFrom:
+               secretKeyRef:
+                 name: prod-db-secret
+                 key: password
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: postgredb
+      volumes:
+        - name: postgredb
+          persistentVolumeClaim:
+            claimName: postgres-pv-claim
+
+
+how to connect a pod
+###################
+
+kubectl exec -it pod name(postgres-578c8856f6-rz84l) -- /bin/bash
+
+how to connect username and password to postgres/psql
+###############
+
+psql -U postgres -W postgres
+
+/dt
+
+now we write the service and expose them as well
+#######################
+
+
+https://raw.githubusercontent.com/MannemHaritha/kubernetes/master/spring-boot-postgresql/postgres-service.yaml
+
+curl -O https://raw.githubusercontent.com/MannemHaritha/kubernetes/master/spring-boot-postgresql/postgres-service.yaml
+   ls
+   cat postgres-service.yaml
+   kubectl apply -f postgres-service.yaml
+   kubectl get services
+   
+   
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  labels:
+    app: postgres
+spec:
+  type: NodePort
+  ports:
+   - port: 5432
+  selector:
+   app: postgres
+
+create a configmap on hostname with postgres
+#####################
+
+kubectl get svc postgres -o jsonpath="{.spec.clusterIP}"
+
+
+kubectl create configmap hostname-config --from-literal=postgres_host=$(kubectl get svc postgres -o jsonpath="{.spec.clusterIP}")
+
+kubectl get cm
+kubectl describe cm hostname-config 
+
+now u know the hostname and user name and password
+so that we take one java application and connect to that postgres db.
+
+
+https://raw.githubusercontent.com/MannemHaritha/springboot-postgresql-docker-assignment/master/springboot-deployment-postgres.yml
+
+curl -O https://raw.githubusercontent.com/MannemHaritha/springboot-postgresql-docker-assignment/master/springboot-deployment-postgres.yml
+
+   cat springboot-deployment-postgres.yml
+   sed -i 's/postgres-secrets/prod-db-secret/g' springboot-deployment-postgres.yml
+   cat springboot-deployment-postgres.yml
+   kubectl apply -f springboot-deployment-postgres.yml
+   kubectl get pods
+
+now we need to expose the  deployment as a service . so that 
+
+
+vi springboot-service.yaml
+#####################
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: spring-boot-postgres-sample
+  name: spring-boot-postgres-sample
+spec:
+  ports:
+    - name: spring-boot-postgres-sample
+      port: 33333
+      protocol: TCP
+  selector:
+    app: spring-boot-postgres-sample
+  type: NodePort
+
+vi springboot-service.yaml
+kubectl apply -f springboot-service.yaml
+skubectl get services
+
+
+
+
+History
+##############33333
+	1.yum install docker -y
+    2  systemctl start docker
+    3  curl -Lo minikube https://github.com/kubernetes/minikube/releases/download/v1.25.2/minikube-linux-amd64
+    4  chmod +x minikube
+    5  sudo mv minikube /usr/local/bin/
+    6  yum install conntrack -y
+    7  export PATH=/usr/local/bin:$PATH
+    8  minikube start --driver=none
+    9  curl -LO "https://dl.k8s.io/release/v1.23.3/bin/linux/amd64/kubectl"
+   10  chmod +x kubectl
+   11  cp kubectl /usr/bin/
+   12  kubectl get nodes
+   15  echo -n "postgres" | base64 -d
+   16  echo -n "postgres" | base64
+   18  echo -n "cG9zdGdyZXM" | base64 -d
+   20  kubectl get secrets
+   21  kubectl api-resources | grep pv
+   22  kubectl api-resources | grep pvc
+	24  curl https://raw.githubusercontent.com/MannemHaritha/kubernetes/master/spring-boot-postgresql/postgres-storage.yaml -o postgres-storage.yaml
+   25  ls
+   26  cat postgres-storage.yaml
+   27  vi postgres-storage.yaml
+   28  kubectl apply -f postgres-storage.yaml
+   29  kubectl get pv
+   30  kubectl get pvc
+   35  curl -O https://raw.githubusercontent.com/MannemHaritha/kubernetes/master/spring-boot-postgresql/postgres-deployment.yaml
+   36  ls
+   37  vi postgres-deployment.yaml
+   38  kubectl get secrets
+   39  kubectl apply -f postgres-deployment.yaml
+   40  kubectl get pods
+   43  kubectl exec -it postgres-578c8856f6-rz84l --  /bin/bash
+   45  curl -O https://raw.githubusercontent.com/MannemHaritha/kubernetes/master/spring-boot-postgresql/postgres-service.yaml
+   46  ls
+   47  cat postgres-service.yaml
+   49  kubectl apply -f postgres-service.yaml
+   50  kubectl get services
+   53  kubectl get svc postgres -o jsonpath="{.spec.clusterIP}"
+   54  kubectl create configmap hostname-config --from-literal=postgres_host=$(kubectl get svc postgres -o jsonpath="{.spec.clusterIP}")
+   55  kubectl get cm
+   56  kubectl describe cm hostname-config
+   57  curl -O https://raw.githubusercontent.com/MannemHaritha/springboot-postgresql-docker-assignment/master/springboot-deployment-postgres.yml
+   58  cat springboot-deployment-postgres.yml
+   59  sed -i 's/postgres-secrets/prod-db-secret/g' springboot-deployment-postgres.yml
+   60  cat springboot-deployment-postgres.yml
+   61  kubectl apply -f springboot-deployment-postgres.yml
+   62  kubectl get pods
+	64 \dt
+	65 select * from customer;
+	65 vi springboot-service.yaml
+   66  kubectl apply -f springboot-service.yaml
+   67  kubectl get services
+
+
+
+
+
+
+
+
