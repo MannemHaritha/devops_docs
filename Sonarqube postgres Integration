@@ -1,0 +1,244 @@
+Sonarqube postgres Integration
+####################
+how to integrate postgresql db for sonarqube setup
+################
+1. create ec2 instance of t2.medium
+2. install java 17
+3. install postgres 14 or 15
+4. download sonar and integrate with postgresql database information
+
+
+ install java 17
+ ################
+ 
+ https://docs.aws.amazon.com/corretto/latest/corretto-17-ug/downloads-list.html
+ 
+ https://corretto.aws/downloads/latest/amazon-corretto-17-x64-linux-jdk.rpm
+ 
+ 1. wget https://corretto.aws/downloads/latest/amazon-corretto-17-x64-linux-jdk.rpm
+ 2. sudo rpm -ivh amazon-corretto-17-x64-linux-jdk.rpm
+ 3. java -version
+
+
+install postgres 14
+#####################
+
+1.sudo tee /etc/yum.repos.d/pgdg.repo<<EOF
+
+[pgdg14]
+
+name=PostgreSQL 14 for RHEL/CentOS 7 - x86_64
+
+baseurl=https://download.postgresql.org/pub/repos/yum/14/redhat/rhel-7-x86_64
+
+enabled=1
+
+gpgcheck=0
+
+EOF
+
+2. sudo yum install postgresql14 postgresql14-server		---------> installing the postgresql 14
+3. sudo /usr/pgsql-14/bin/postgresql-14-setup initdb		--------> we need to initialize the db
+
+4.  sudo su - postgres
+-bash-4.2$ whoami
+postgres
+-bash-4.2$ psql
+psql: error: connection to server on socket "/var/run/postgresql/.s.PGSQL.5432" failed: No such file or directory
+        Is the server running locally and accepting connections on that socket?
+-bash-4.2$ exit
+logout
+
+5. sudo systemctl start postgresql-14
+6. sudo systemctl status postgresql-14
+7.sudo netstat -plunt | grep :5432			-------------->to check nodeport running command
+
+8.  sudo su - postgres
+Last login: Wed May 17 12:18:42 UTC 2023 on pts/0
+-bash-4.2$ psql
+psql (14.8)
+Type "help" for help.
+
+9. postgres=# \q
+10.-bash-4.2$ exit
+logout
+
+11.sudo su - postgres
+12. psql
+13. postgres=# \password postgres
+	Enter new password for user "postgres":
+	Enter it again:
+	postgres=#
+
+
+and we need to make sure postgresql allows connection with password based authentication. for that there is a file called pg_hba.conf  ---(hba means host based authentication)
+we need to chang this file.
+
+if u want to know the full path
+
+14.sudo find / -name pg_hba.conf
+/var/lib/pgsql/14/data/pg_hba.conf
+
+15. vi /var/lib/pgsql/14/data/pg_hba.conf
+16. sudo vi /var/lib/pgsql/14/data/pg_hba.conf 			----------> we have to change 0.0.0.0/0 and md5
+
+17. sudo systemctl restart postgresql-14
+[ec2-user@ip-172-31-19-203 ~]$ sudo su - postgres
+Last login: Wed May 17 12:28:24 UTC 2023 on pts/0
+-bash-4.2$ psql
+psql (14.8)
+Type "help" for help.
+
+postgres=# \q
+-bash-4.2$ psql -U postgres -W postgres
+Password:
+psql (14.8)
+Type "help" for help.
+
+
+
+sonarqube installation
+####################3
+
+https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-10.0.0.68432.zip?_gl=1*jx4st3*_ga*ODIxNzQ5NDc5LjE2ODQzMjgwMzc.*_ga_9JZ0GZ5TC6*MTY4NDMyODAzNy4xLjEuMTY4NDMyODA2MS4zNi4wLjA.
+
+
+https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-10.0.0.68432.zip
+
+1. wget https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-10.0.0.68432.zip
+
+2. unzip sonarqube-10.0.0.68432.zip
+
+3. sudo find / -name sonar.properties 	----------> to know the complete sonar path folder
+/home/ec2-user/sonarqube-10.0.0.68432/conf/sonar.properties
+
+4.  vi /home/ec2-user/sonarqube-10.0.0.68432/conf/sonar.properties
+
+sonar.jdbc.username=postgres
+sonar.jdbc.password=postgres
+
+sonar.jdbc.url=jdbc:postgresql://localhost/postgres
+
+5. cat /home/ec2-user/sonarqube-10.0.0.68432/conf/sonar.properties | grep sonar.jdbc
+  # - Changes to database connection URL (sonar.jdbc.url) can affect SonarSource licensed products.
+sonar.jdbc.username=postgres
+sonar.jdbc.password=postgres
+#sonar.jdbc.url=jdbc:oracle:thin:@localhost:1521/XE
+sonar.jdbc.url=jdbc:postgresql://localhost/postgres
+# Do not set sonar.jdbc.username or sonar.jdbc.password property if you are using Integrated Security
+#sonar.jdbc.url=jdbc:sqlserver://localhost;databaseName=sonar;integratedSecurity=true
+# Set the sonar.jdbc.username and sonar.jdbc.password appropriately.
+#sonar.jdbc.url=jdbc:sqlserver://localhost;databaseName=sonar
+# then sonar.jdbc.maxActive should be 1.2 * 50 = 60.
+#sonar.jdbc.maxActive=60
+#sonar.jdbc.minIdle=10
+#sonar.jdbc.maxWait=8000
+
+6.  cd sonarqube-10.0.0.68432/bin/linux-x86-64/			
+7. ls
+8. sh sonar.sh start		-------------> to start the sonarqube
+	/usr/bin/java
+	Starting SonarQube...
+	Started SonarQube.
+
+9. sh sonar.sh status
+	/usr/bin/java
+	SonarQube is running (3095).
+
+		or if not running(error is space) for that
+		 cd sonarqube-10.0.0.68432/logs/
+		 ls
+		 cat sonar.log
+		 cat es.log
+		 cat nohup.log
+		 sudo sysctl -w vm.max_map_count=262144		-----------> this is temporary
+			vm.max_map_count = 262144
+		 cd ..
+		 cd linux-x86-64/
+		 sh sonar.sh start
+			/usr/bin/java
+			Starting SonarQube...
+			Started SonarQube.
+		 sh sonar.sh status
+			/usr/bin/java
+			SonarQube is running (4560).
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	1  wget https://corretto.aws/downloads/latest/amazon-corretto-17-x64-linux-jdk.rpm
+    2  ls
+    3  sudo rpm -ivh amazon-corretto-17-x64-linux-jdk.rpm
+    4  java -version
+    5  sudo amazon-linux-extras install epel
+    6  sudo tee /etc/yum.repos.d/pgdg.repo<<EOF
+	[pgdg14]
+	name=PostgreSQL 14 for RHEL/CentOS 7 - x86_64
+	baseurl=https://download.postgresql.org/pub/repos/yum/14/redhat/rhel-7-x86_64
+	enabled=1
+	gpgcheck=0
+	EOF
+	7  cat /etc/yum.repos.d/pgdg.repo
+    8  sudo yum install postgresql14 postgresql14-server -y
+    9    Installing : postgresql14-libs-14.8-1PGDG.rhel7.x86_64 [######################                                                                                ] 1/3
+   10  sudo /usr/pgsql-14/bin/postgresql-14-setup initdb
+   11  sudo su - postgres
+   12  sudo systemctl start postgresql-14
+   13  sudo systemctl status postgresql-14
+   14  sudo netstat -plunt | grep :5432
+   15  sudo su - postgres
+   16  id
+   17  sudo su - postgres
+
+	sudo find / -name pg_hba.conf
+    2  vi /var/lib/pgsql/14/data/pg_hba.conf
+    3  sudo vi /var/lib/pgsql/14/data/pg_hba.conf
+    4  sudo systemctl restart postgresql-14
+    5  sudo su - postgres
+
+	 7  psql -U postgres -W postgres
+
+	1.wgat https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-10.0.0.68432.zip
+    2  wget https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-10.0.0.68432.zip
+    3  ls
+    4  unzip sonarqube-10.0.0.68432.zip
+    5  sudo find / -name sonar.properties
+    6  vi /home/ec2-user/sonarqube-10.0.0.68432/conf/sonar.properties
+    7  cat /home/ec2-user/sonarqube-10.0.0.68432/conf/sonar.properties | grep sonar.jdbc
+    8  cd sonarqube-10.0.0.68432/bin/linux-x86-64/
+    9  ls
+   10  sh sonar.sh start
+   11  sh sonar.sh status
+   12  sh sonar.sh start
+   13  sh sonar.sh status
+   14  sh sonar.sh start
+   15  sh sonar.sh status
+   16  sh sonar.sh start
+   17  sh sonar.sh status
+
+	1.cd sonarqube-10.0.0.68432/logs/
+    2  ls
+    3  cat sonar.log
+    4  cat es.log
+    5  ls
+    6  cat nohup.log
+    7  sudo sysctl -w vm.max_map_count=262144
+    8  cd ..
+    9  cd bin/
+   10  cd linux-x86-64/
+   11  sh sonar.sh start
+   12  sh sonar.sh status
+
+		 
