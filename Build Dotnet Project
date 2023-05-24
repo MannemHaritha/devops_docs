@@ -1,0 +1,110 @@
+Build Dotnet based Projects
+#######################
+Building dotnet and python based projects
+
+
+Building dotnet based projects
+#####################
+1.cerate a ec2 instance
+2. install dotnet latest version
+3. create a dotnet project with command line
+4. build and run dotnet project
+
+
+dotnet installation
+https://docs.servicestack.net/deploy-netcore-to-amazon-linux-2-ami#amazon-linux-2
+#############
+
+sudo rpm -Uvh <a href="https://packages.microsoft.com/config/centos/7/packages-microsoft-prod.rpm" target="_blank" rel="noopener noreferrer">https://packages.microsoft.com/config/centos/7/packages-microsoft-prod.rpm</a>
+
+1.  sudo wget https://packages.microsoft.com/config/centos/7/packages-microsoft-prod.rpm
+
+2.  sudo rpm -ivh packages-microsoft-prod.rpm		----------> install or update the rpm package
+
+3.  sudo rpm -qa |  grep microsoft-prod				---------------> to check the rpm is installed or not
+
+4. sudo yum install dotnet-sdk-7.0 -y
+
+5. dotnet --version
+
+build dotnet project
+https://dotnet.microsoft.com/en-us/learn/dotnet/hello-world-tutorial/intro
+##################
+1. RESTORE THE PROJRECT
+2. BUILD THE Projects
+3. RUN THE MAIN DLL FILE 
+###########
+dotnet new console -o MyConsoleApp -f net7.0	------------> if you want to build standalone application  --------> when you build a console applucation it creates a csproj file(c# shorp project file)
+
+dotnet new web -o MyWebApp -f net7.0	-------------> if you wnat to build web application
+
+dotnet new webapi -o MyWebApiApp -f net7.0
+
+
+
+dotnet for Console application
+######################
+1. dotnet new console -o MyConsoleApp -f net7.0
+2. ls
+3. cd MyConsoleApp/
+4. ls
+5. dotnet run Program.cs
+		or
+	cat Program.cs
+6. dotnet restore MyConsoleApp.csproj
+7. dotnet build MyConsoleApp.csproj			-----------> it would be create a debug directory
+		#####  MyConsoleApp -> /home/ec2-user/MyConsoleApp/bin/Debug/net7.0/MyConsoleApp.dll
+
+		or
+	dotnet build -c Release MyConsoleApp.csproj		------------>  it would be create a Release directory
+		#######    MyConsoleApp -> /home/ec2-user/MyConsoleApp/bin/Release/net7.0/MyConsoleApp.dll
+		
+		or
+	dotnet publish -c Release MyConsoleApp.csproj
+	
+	
+8. dotnet run /home/ec2-user/MyConsoleApp/bin/Release/net7.0/MyConsoleApp.dll
+
+
+dotnet for Web application
+#######################
+
+1. dotnet new web -o MyWebApp -f net7.0
+2. ls
+3. cd MyWebApp/
+4. dotnet restore MyWebApp.csproj
+5. dotnet build MyWebApp.csproj
+		or
+	dotnet build -c Release MyWebApp.csproj
+		or
+	dotnet publish -c Release MyWebApp.csproj
+	
+6. dotnet run /home/ec2-user/MyWebApp/bin/Release/net7.0/publish/MyWebApp.dll
+
+7. ASPNETCORE_URLS=http://+:5000 dotnet /home/ec2-user/MyWebApp/bin/Release/net7.0/publish/MyWebApp.dll 
+
+8. sudo telnet 44.211.149.88 5000     ----------> it checks the server is open or not
+		or
+     44.211.149.88:5000		-----------> it prints Hellow world
+
+
+dotnet for webapi application
+#############################
+
+1. dotnet new webapi -o MyWebApiApp -f net7.0
+2. ls
+3. cd MyWebApiApp/
+4. dotnet restore MyWebApiApp.csproj
+5. dotnet build -c Release MyWebApiApp.csproj
+		or 
+	dotnet publish -c Release MyWebApiApp.csproj
+
+6. ASPNETCORE_URLS=http://+:5000 dotnet /home/ec2-user/MyWebApp/MyWebApiApp/bin/Release/net7.0/MyWebApiApp.dll
+
+7. 44.211.149.88:5000/weatherforecast   ---------------> to check the server is running or not
+
+
+
+
+
+
