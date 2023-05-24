@@ -1,0 +1,251 @@
+ All Devops tools installation
+########################
+1. Install jenkins on amazon linux2 and ubuntu
+2. Install nexus on amazon linux2
+3.Install tomcat on amazon linux2
+4. Install terraform on amazon linux2
+5. Install prometheus and grafana on amazon linux2
+6. Install ansible on amazon linux2
+7. Install docker on amazon linux2
+8. Install Mongodbon amazon linux2
+9. Install ELK on amazon linux2
+
+###############################
+if we want to install any packages in linux we follow bwlow four steps
+and assume if it is amazon linux
+
+1. find if rpm is present for that package
+		like grafana  ---->find if grafana is given rpm files
+2. if rpm present try to download that repo files
+		grafana.repo file
+3. if rpm and repo files are not present look for tar.gz file
+4. if rpm and repo and tar.gz file are not present  finally look for zip file
+
+######################
+
+1. Install jenkins on amazon linux2 and ubuntu
+####################
+if u want to install jenkins java is mandatory
+
+even if u want to use jenkins for dotnet or python projects still to setup jenkins java is mandatory.
+
+jenkins port- 8080
+nexus port-8081
+tomcat port-8080
+prometheus- 9090
+grafana-3000
+
+we need to make sure either we need to change port num for jenkins or tomcat.
+
+java installation
+############
+1. sudo yum install java-11-amazon-corretto-headless -y
+		or
+   sudo yum install java-17-amazon-corretto -y
+
+2. sudo alternatives --config java				-------------->switch to java version
+3. java -version
+4. sudo find / -name java			-----------------> to know the where java is located
+
+
+Jenkins installation on aws
+#############
+1.sudo wget -O /etc/yum.repos.d/jenkins.repo https://pkg.jenkins.io/redhat-stable/jenkins.repo
+2.sudo rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io.key
+3. sudo yum install jenkins
+4. sudo systemctl start jenkins
+
+
+jenkins on ubuntu
+##############
+1.  sudo apt install openjdk-17-jre openjdk-17-jdk -y
+
+2. curl -fsSL https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key | sudo tee \
+  /usr/share/keyrings/jenkins-keyring.asc > /dev/null
+
+3. echo deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] \
+  https://pkg.jenkins.io/debian-stable binary/ | sudo tee \
+  /etc/apt/sources.list.d/jenkins.list > /dev/null
+4. sudo apt update -y
+5. sudo apt-get install jenkins
+6. sudo netstat -plunt | grep :8080				------> to check jenkins running using port number
+		or
+	sudo telnet 204.236.196.255 8080		-------->to check jenkins running using port number
+  
+  
+2. Install terraform on amazon linux2
+
+Terraform on amazon linux2
+###################
+
+https://developer.hashicorp.com/terraform/downloads
+  
+  
+1. sudo yum install -y yum-utils shadow-utils
+2. sudo yum-config-manager --add-repo https://rpm.releases.hashicorp.com/AmazonLinux/hashicorp.repo
+3. sudo yum -y install terraform
+4. terraform version 
+  
+Terraform on ubuntu
+######################
+  
+1. wget -O- https://apt.releases.hashicorp.com/gpg | sudo gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
+2. echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list
+3. sudo apt update && sudo apt install terraform
+4. terraform version
+		or
+	terraform -v
+
+  
+3. Install Grafana on amazon linux2
+
+1. https://dl.grafana.com/oss/release/grafana-9.5.2-1.x86_64.rpm
+		or
+    sudo yum install -y https://dl.grafana.com/oss/release/grafana-9.5.2-1.x86_64.rpm
+
+2. sudo systemctl start grafana
+		or 
+		or
+	sudo find / -name grafana-server
+3. sudo systemctl start grafana-server
+
+
+grafana on ubuntu
+###############
+1. sudo apt-get install -y adduser libfontconfig1
+wget https://dl.grafana.com/oss/release/grafana_9.5.2_amd64.deb
+2. sudo dpkg -i grafana_9.5.2_amd64.deb
+3. 3. sudo systemctl start grafana-server
+
+
+4. Install docker on amazon linux
+
+1. sudo yum install docker -y
+2. sudo systemctl start docker
+
+Docker on ubuntu
+##############
+1. sudo apt install docker.io
+2. 2. sudo systemctl start docker
+
+
+5. Install Ansible on amazon linux
+
+1. sudo amazon-linux-extras install ansible2 -yum
+
+
+Ansible on ubunu
+###########
+1. sudo apt install ansible -y
+
+
+6. Install Nexus on amazon linux2
+
+why we need nexus
+################
+when we do a bulid for java based projects we get a jar file and we need to save jar files in common locations. that common locations are amazon s3 or nexxus or jfrog.
+ so that whenever we want to do a release we can download the jar file from the common location  and run the application.
+
+nexus on amazon linux2
+#############
+1. pre requisit for nexus is java is mandatory. 
+	so that trying to install java8.
+
+java 8
+############
+1. sudo amazon-linux-extras install corretto8
+2. sudo find / -name java        ------------------>where java is located
+
+nexus
+############
+https://help.sonatype.com/repomanager3/product-information/download
+#############
+1. wget https://download.sonatype.com/nexus/3/nexus-3.53.1-02-unix.tar.gz
+2. tar xvf nexus-3.53.1-02-unix.tar.gz
+3. ls
+4. cd nexus-3.53.1-02/bin/
+5. ls
+6. ./nexus start
+7. ./nexus status
+8. 44.204.158.44:8081	------------> to check the server up
+
+9. sign in to nexus
+	username:admin
+	password:sudo cat /home/ec2-user/sonatype-work/nexus3/admin.password
+				1746029d-26f7-45c5-bc9f-0b419cf00fb4
+
+
+
+7. Install Tomcat on amazon linux2
+
+tomcat
+https://archive.apache.org/dist/tomcat/tomcat-8/v8.5.88/bin/
+#########
+1. wget https://archive.apache.org/dist/tomcat/tomcat-8/v8.5.88/bin/apache-tomcat-8.5.88.tar.gz
+2.  tar xvf apache-tomcat-8.5.88.tar.gz
+3. ls
+4. cd apache-tomcat-8.5.88/bin/
+5.  pwd
+6. ls
+7. sh catalina.sh start			------------> to start tomcat
+		or
+	sh startup.sh start
+		or
+	sh catalina.sh stop			----------> to stop the tomcat
+	
+8. 44.204.158.44:8080		-------------> to check the server up
+
+
+
+8. install PROMETHEUS amazon linux2
+
+PROMETHEUS
+https://www.howtoforge.com/tutorial/how-to-install-prometheus-and-node-exporter-on-centos-7/
+
+https://prometheus.io/download/
+############
+1. sudo useradd -m -s /bin/bash prometheus		--------> first we need to create user for promethes
+
+2. sudo cat /etc/passwd | grep prometheus		----------> to check the user is created or not
+
+3. sudo cat /etc/group |grep prometheus 		-----------> to check promethes group(created  user by default group also created)
+
+4. sudo su - prometheus							----------> switch to prometheus user which u are created
+
+5. wget https://github.com/prometheus/prometheus/releases/download/v2.37.8/prometheus-2.37.8.linux-amd64.tar.gz					-------> to download promethes
+6. tar xvf prometheus-2.37.8.linux-amd64.tar.gz
+7. mv prometheus-2.37.8.linux-amd64 prometheus			-----> to change rename is optional
+
+8. cd ~/			----------> to write the service file as normal user or root
+9. whenever we start a prometheus will write service file i.e
+	sudo vi /etc/systemd/system/prometheus.service
+				i.e
+
+[Unit]
+Description=Prometheus Server
+Documentation=https://prometheus.io/docs/introduction/overview/
+After=network-online.target
+
+[Service]
+User=prometheus
+Restart=on-failure
+
+#Change this line if you download the 
+#Prometheus on different path user
+ExecStart=/home/prometheus/prometheus/prometheus \
+  --config.file=/home/prometheus/prometheus/prometheus.yml \
+  --storage.tsdb.path=/home/prometheus/prometheus/data
+
+[Install]
+WantedBy=multi-user.target
+
+10. sudo systemctl daemon-reload
+11. sudo systemctl start prometheus.service
+12. sudo systemctl status prometheus
+13. sudo netstat -plunt | grep :9090
+14. 44.204.158.44:9090				------------> to check server is running up
+
+
+
+
+
