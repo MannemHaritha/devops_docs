@@ -1,0 +1,208 @@
+Build Dotnet,Python and Java Projects
+#######################
+Building dotnet,python and Java based projects
+
+
+Building dotnet based projects
+#####################
+1.cerate a ec2 instance
+2. install dotnet latest version
+3. create a dotnet project with command line
+4. build and run dotnet project
+
+
+dotnet installation
+https://docs.servicestack.net/deploy-netcore-to-amazon-linux-2-ami#amazon-linux-2
+#############
+
+sudo rpm -Uvh <a href="https://packages.microsoft.com/config/centos/7/packages-microsoft-prod.rpm" target="_blank" rel="noopener noreferrer">https://packages.microsoft.com/config/centos/7/packages-microsoft-prod.rpm</a>
+
+1.  sudo wget https://packages.microsoft.com/config/centos/7/packages-microsoft-prod.rpm
+
+2.  sudo rpm -ivh packages-microsoft-prod.rpm		----------> install or update the rpm package
+
+3.  sudo rpm -qa |  grep microsoft-prod				---------------> to check the rpm is installed or not
+
+4. sudo yum install dotnet-sdk-7.0 -y
+
+5. dotnet --version
+
+build dotnet project
+https://dotnet.microsoft.com/en-us/learn/dotnet/hello-world-tutorial/intro
+##################
+1. RESTORE THE PROJRECT
+2. BUILD THE Projects
+3. RUN THE MAIN DLL FILE 
+###########
+dotnet new console -o MyConsoleApp -f net7.0	------------> if you want to build standalone application  --------> when you build a console applucation it creates a csproj file(c# shorp project file)
+
+dotnet new web -o MyWebApp -f net7.0	-------------> if you wnat to build web application
+
+dotnet new webapi -o MyWebApiApp -f net7.0
+
+
+
+dotnet for Console application
+######################
+1. dotnet new console -o MyConsoleApp -f net7.0
+2. ls
+3. cd MyConsoleApp/
+4. ls
+5. dotnet run Program.cs
+		or
+	cat Program.cs
+6. dotnet restore MyConsoleApp.csproj
+7. dotnet build MyConsoleApp.csproj			-----------> it would be create a debug directory
+		#####  MyConsoleApp -> /home/ec2-user/MyConsoleApp/bin/Debug/net7.0/MyConsoleApp.dll
+
+		or
+	dotnet build -c Release MyConsoleApp.csproj		------------>  it would be create a Release directory
+		#######    MyConsoleApp -> /home/ec2-user/MyConsoleApp/bin/Release/net7.0/MyConsoleApp.dll
+		
+		or
+	dotnet publish -c Release MyConsoleApp.csproj
+	
+	
+8. dotnet run /home/ec2-user/MyConsoleApp/bin/Release/net7.0/MyConsoleApp.dll
+
+
+dotnet for Web application
+#######################
+
+1. dotnet new web -o MyWebApp -f net7.0
+2. ls
+3. cd MyWebApp/
+4. dotnet restore MyWebApp.csproj
+5. dotnet build MyWebApp.csproj
+		or
+	dotnet build -c Release MyWebApp.csproj
+		or
+	dotnet publish -c Release MyWebApp.csproj
+	
+6. dotnet run /home/ec2-user/MyWebApp/bin/Release/net7.0/publish/MyWebApp.dll
+
+7. ASPNETCORE_URLS=http://+:5000 dotnet /home/ec2-user/MyWebApp/bin/Release/net7.0/publish/MyWebApp.dll 
+
+8. sudo telnet 44.211.149.88 5000     ----------> it checks the server is open or not
+		or
+     44.211.149.88:5000		-----------> it prints Hellow world
+
+
+dotnet for webapi application
+#############################
+
+1. dotnet new webapi -o MyWebApiApp -f net7.0
+2. ls
+3. cd MyWebApiApp/
+4. dotnet restore MyWebApiApp.csproj
+5. dotnet build -c Release MyWebApiApp.csproj
+		or 
+	dotnet publish -c Release MyWebApiApp.csproj
+
+6. ASPNETCORE_URLS=http://+:5000 dotnet /home/ec2-user/MyWebApp/MyWebApiApp/bin/Release/net7.0/MyWebApiApp.dll
+
+7. 44.211.149.88:5000/weatherforecast   ---------------> to check the server is running or not
+
+
+
+
+Build Python based Projects
+####################
+if you want to build a python application/project, we have to choose wheather the applicatuon is standalone or web application
+
+for web application we have to build flask or django.
+
+
+Flask
+https://pythonbasics.org/flask-tutorial-hello-world/
+#############
+
+1. python --version				-----(it is already exist)
+2. mkdir flaskexample
+3. cd flaskexample/
+4. python3 -m venv venv			----------> create new virtual environment
+5. ls -l venv/
+6. source venv/bin/activate			-------------> it activates the created virtual environment
+7. sudo pip3 install flask				------------> intsalling flask package
+8. ls -l venv/
+9. ls -l venv/lib
+10.ls -l venv/lib/python3.7/
+11.ls -l venv/lib/python3.7/site-packages/			--------------> it shows flask
+
+12. vi demo.python
+
+from flask import Flask						
+
+app = Flask(__name__)						---------------> it creates the app for that host name
+
+@app.route('/')								----------> it create the route
+def index():
+    return 'Web App with Python Flask!'
+
+app.run(host='0.0.0.0', port=81)				-----------> it is used to return the response OF PORT
+
+
+13. sudo python3 demo.py  					------------> run python application
+
+14. 54.90.239.44:80/						----------> to hit the response
+
+
+
+History
+##############
+
+	1  python --version
+    2  python3 --version
+    3  mkdir flaskexample
+    4  cd flaskexample/
+    5  python3 -m venv venv
+    6  ls
+    7  ls -l venv/
+    8  source venv/bin/activate
+    9  pip3 install flask
+   10  ls
+   11  ls -l venv/
+   12  ls -l venv/lib
+   13  ls -l venv/lib/python3.7/
+   14  ls -l venv/lib/python3.7/site-packages/
+   15  ll
+   16  vi demo.py
+   17  python demo.py
+   18  sudo python3 demo.py
+   19  sudo pip3 install flask
+   20  sudo python3 demo.py
+
+
+Build Java based Projects
+####################
+
+
+spring-boot-log4j
+https://mkyong.com/spring-boot/spring-boot-log4j-2-example/
+######################
+
+1. sudo yum install git java-11-amazon-corretto-headless -y
+
+2. git --version
+3. java --version
+
+4. wget https://archive.apache.org/dist/maven/maven-3/3.9.2/binaries/apache-maven-3.9.2-bin.tar.gz
+
+5. tar xvf apache-maven-3.9.2-bin.tar.gz
+
+6. export PATH=$PATH:/home/ec2-user/apache-maven-3.9.2-bin/
+
+7. git clone https://github.com/mkyong/spring-boot.git
+	
+8. cd logging-log4j2
+9. ls
+10. mvn clean package
+11. ls
+12. ll target/
+13. java -jar target/logging-log4j2-1.0.jar
+14. 54.90.239.44:8080
+
+
+
+
+
