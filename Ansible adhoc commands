@@ -1,0 +1,91 @@
+
+Ansible adhoc commands
+#############
+
+https://www.middlewareinventory.com/blog/ansible-ad-hoc-commands/
+
+1.how to create a empty file and directory using ansible adhoc command
+######################
+adhoc commands --- single line, cannot be resuable
+playbook --- group of tasks and it will be reusable
+
+ansible localhost -m file -a "dest=/home/ec2-user/sample.txt mode=664 owner=ec2-user group=ec2-user state=touch"
+
+ansible localhost -m file -a "dest=/home/ec2-user/demodir mode=755 owner=ec2-user group=ec2-user state=directory"
+
+
+
+2.how to create user nad group using adhoc commands
+#############
+ ansible localhost -m user -a "name=haritha password=haritha"
+
+
+3.how to install packages using adhoc commands
+################
+
+ansible webservers -m ansible.builtin.yum -a "name=acme state=present"
+
+
+ansible localhost -m yum -a "name=git state=present"
+
+remove package
+##############
+ansible localhost -m yum -a "name=git state=absent"
+
+4. how to download or install files from remote repository
+########################
+
+ansible localhost -m get_url -a "url=https://nodejs.org/dist/v14.17.4/node-v14.17.4-linux-x64.tar.xz dest=/home/ec2-user mode=0755"
+
+ansible localhost -m get_url -a "url=https://archive.apache.org/dist/maven/maven-3/3.8.8/binaries/apache-maven-3.8.8-bin.tar.gz dest=/home/ec2-user mode=0755"
+
+
+
+
+https://archive.apache.org/dist/maven/maven-3/3.8.8/binaries/apache-maven-3.8.8-bin.tar.gz
+
+
+
+5.how to extarct ytar or zip file
+############3
+
+ansible localhost -m unarchive -a "src=/home/ec2-user/apache-maven-3.8.8-bin.tar.gz dest=/home/ec2-user/demodir remote_src=true"
+
+ansible localhost -m unarchive -a "src=/home/ec2-user/node-v14.17.4-linux-x64.tar.xz dest=/demodir remote_src=yes"
+
+
+node-v14.17.4-linux-x64.tar.xz
+
+
+6.how to check the uptime
+
+ansible localhost -m command -a uptime
+
+ansible localhost -m shell -a uptime
+
+
+7.How to check the free memory or memory usage of  hosts using ansible ad hoc command
+
+
+
+
+
+- name: Unarchive a file that is already on the remote machine
+  ansible.builtin.unarchive:
+    src: /tmp/foo.zip
+    dest: /usr/local/bin
+	
+	
+	
+	tomcat or jboss wildfly server 
+	
+	war --- webapps 
+	standalone deployments
+	
+    remote_src: yes
+
+
+
+
+
+
