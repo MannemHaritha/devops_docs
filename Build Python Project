@@ -1,0 +1,71 @@
+Build Python based Projects
+####################
+if you want to build a python application/project, we have to choose wheather the applicatuon is standalone or web application
+
+for web application we have to build flask or django.
+
+
+Flask
+https://pythonbasics.org/flask-tutorial-hello-world/
+#############
+
+1. python --version				-----(it is already exist)
+2. mkdir flaskexample
+3. cd flaskexample/
+4. python3 -m venv venv			----------> create new virtual environment
+5. ls -l venv/
+6. source venv/bin/activate			-------------> it activates the created virtual environment
+7. sudo pip3 install flask				------------> intsalling flask package
+8. ls -l venv/
+9. ls -l venv/lib
+10.ls -l venv/lib/python3.7/
+11.ls -l venv/lib/python3.7/site-packages/			--------------> it shows flask
+
+12. vi demo.python
+
+from flask import Flask						
+
+app = Flask(__name__)						---------------> it creates the app for that host name
+
+@app.route('/')								----------> it create the route
+def index():
+    return 'Web App with Python Flask!'
+
+app.run(host='0.0.0.0', port=81)				-----------> it is used to return the response OF PORT
+
+
+13. sudo python3 demo.py  					------------> run python application
+
+14. 54.90.239.44:80/						----------> to hit the response
+
+
+
+History
+##############
+
+	1  python --version
+    2  python3 --version
+    3  mkdir flaskexample
+    4  cd flaskexample/
+    5  python3 -m venv venv
+    6  ls
+    7  ls -l venv/
+    8  source venv/bin/activate
+    9  pip3 install flask
+   10  ls
+   11  ls -l venv/
+   12  ls -l venv/lib
+   13  ls -l venv/lib/python3.7/
+   14  ls -l venv/lib/python3.7/site-packages/
+   15  ll
+   16  vi demo.py
+   17  python demo.py
+   18  sudo python3 demo.py
+   19  sudo pip3 install flask
+   20  sudo python3 demo.py
+
+
+
+
+
+	
