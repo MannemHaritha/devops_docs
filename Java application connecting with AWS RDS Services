@@ -1,0 +1,112 @@
+Java application connecting with AWS RDS Services
+#######################
+
+java appliaction connecting into few aws services like
+1. Message System ----> RabbitmQ
+2. Database ----------->RDS
+3. Storage ------------>S3
+
+
+
+Java application is connecting to amazon RDS
+AWS RDS SERVICE(Relational Database Service)
+##########################
+its supporting 6-7 database engines like
+	MYSQL
+	POSTGRESQL
+	SQL SERVER
+	ORACLE
+	MARIADB
+	AMAZON AURORA
+	
+In case of banking project SQL Server and ORACLE will be used more 
+if not an banking project and open source everybody will use POSTGRESQL more.
+
+Create RDS with POSTGRESQL
+##################
+
+USERNAME : postgres
+PASSWORD : Haritha#123
+
+how to connect to the database/postgresql
+	we can connect with command like with psql command 
+		OR
+	we can use some DB tools like
+		SQL workbench
+		Db weaver
+		HiediSQL
+		OR
+	if you have postgres installed in windows machine we can use pgadmin also to connect to Postgres running in  AWS RDS
+	
+if it RDS is public we will use all these dbs.
+right now all the above editor options are not applicable bcz our RDS is not public
+if it is not public the only option iswe can connect with database using ec2 instance command.
+
+
+1. create a ec2 instance and install postgre packages and connect to the RDS 
+	while doing so make sure we are open ec2 security group in RDS security group.
+
+2. install postgresql
+	https://linux.how2shout.com/how-to-install-postgresql-14-on-ec2-amazon-linux-2/
+
+	sudo tee /etc/yum.repos.d/pgdg.repo<<EOF
+	[pgdg14]
+	name=PostgreSQL 14 for RHEL/CentOS 7 - x86_64
+	baseurl=https://download.postgresql.org/pub/repos/yum/14/redhat/rhel-7-x86_64
+	enabled=1
+	gpgcheck=0
+	EOF
+	
+	sudo yum install postgresql14 postgresql14-server -y	
+	sudo /usr/pgsql-14/bin/postgresql-14-setup initdb
+	
+	sudo systemctl enable --now  postgresql-14
+	sudo systemctl status postgresql-14
+
+3. we need to switch to user /postgres
+	sudo su - postgres
+	psql -U username -W databasename -h hostname/endpointname
+			or
+	psql -U postgres -W postgres -h database-1.cnho708cyia6.us-east-1.rds.amazonaws.com
+	PASSWORD : Haritha#123
+
+			
+
+
+
+
+
+
+
+
+
+
+
+In case of banking project SQL Server / ORACLE will be used more 
+
+SQL Server
+#################
+
+username: admin
+password: Haritha#123
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
