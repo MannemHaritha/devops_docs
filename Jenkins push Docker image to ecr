@@ -1,0 +1,221 @@
+jenkins push Docker image to ecr
+#######################
+
+How to build and push docker images to amazon ECR using jenkins pipeline?
+How to build and push docker images to azure ACR using jenkins pipeline?
+
+
+for CD process
+###########
+how to run docker container and group them together as aws load balancer?
+either classic load balancer
+or   application load balancer
+	
+	
+using ansible how to run docker container?
+
+CI process
+#############################################
+
+How to build and push docker images to amazon ECR using jenkins pipeline?
+#############
+we can run jenkins  on Azure machine and there can be push imgage to Amazon ECR.
+
+1. Now we can login to azure account and create virtual machine.
+	create resouce group
+		create virtual machine
+			open networking add jenkins port 8080
+			and also download the keypair which you are given in  the creating of vm
+			copy the ip address of vm in overview section
+			and open mobaexterm and create azureuser as azure vm
+
+2. in azure vm we have to install below things
+	git
+	java
+	maven/gradel
+	jenkins
+	docker
+	aws cli
+	
+
+3. 	azureuser on ubuntu
+	git --version (alredy there)
+	sudo apt update -y
+	
+	sudo apt install openjdk-17-jre openjdk-17-jdk -y
+	java --version
+
+	cd /opt
+	sudo wget https://archive.apache.org/dist/maven/maven-3/3.9.1/binaries/apache-maven-3.9.1-bin.tar.gz
+	sudo tar xvf apache-maven-3.9.1-bin.tar.gz
+	ls
+	
+	https://get.jenkins.io/debian-stable/
+	wget https://get.jenkins.io/debian-stable/jenkins_2.387.1_all.deb
+	sudo apt install net-tools -y
+	sudo dpkg -i jenkins_2.387.1_all.deb
+	20.119.98.230:8080
+	sudo cat /var/lib/jenkins/secrets/initialAdminPassword
+
+
+	sudo apt install docker.io -y
+	sudo usermod -aG docker jenkins
+
+
+4. push jenkins pipeline image to amazon ECR
+		we need to make sure aws cli is installed and docker and ecr pluggins are installed in jenkins
+			sudo spt install awscli -y
+		
+		go to jenkins dashboard and open manage pluggins and add pluggins and avaiable pluggins
+			Add Docker pluggins
+			Amazon ECR pluggins
+
+
+5. from the azure vm if we want to deploy/push docker image to aws ecr we need IAM user
+	create IAM user
+	Access key : AKIATXDHF2ARR4AKGQ4C
+	Secret access key : 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
+
+
+6. we want to store these access key and secret access key in jenkins credentials
+	we will add those credentials in manage jenkins->credentials-->system-->global-->aws credentials
+	under that we add those credentoals
+	id : aws-credentials-for-ecr
+	Access key : AKIATXDHF2ARR4AKGQ4C
+	Secret access key : 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
+
+7. i need to mension where is the maven located
+	go to dashboard-->manage jenkins-->global tool configuration-->add maven path
+		/opt/apache-maven-3.9.1
+
+8. and also create amazon ecr new repository
+	i.e myrepo
+
+9. pipeline will be
+	https://stackoverflow.com/questions/59084989/push-to-ecr-from-jenkins-pipeline
+
+
+pipeline{
+    agent any
+    tools{
+        maven 'maven-3.9.1'
+    }
+    environment {
+    registry = '255766941731.dkr.ecr.us-east-1.amazonaws.com/myrepo'
+    registryCredential = 'aws-credentials-for-ecr'
+    dockerImage = ''
+  }
+    stages{
+        stage('git'){
+            steps{
+                git branch: 'master', url: 'https://github.com/MannemHaritha/springboot-maven-course-micro-svc.git'
+            }        
+            
+        }
+        stage('build maven project'){
+            steps{
+                sh 'mvn clean package'
+            }
+        }
+        stage('Building image') {
+            steps{
+                script {
+                    dockerImage = docker.build registry + ":$BUILD_NUMBER"
+                    
+                }
+                
+            }
+            
+        }
+        stage('Deploy image') {
+            steps{
+                script{
+                    docker.withRegistry("https://" + registry, "ecr:us-east-1:" + registryCredential) {
+                        dockerImage.push()
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+
+
+
+For CD Process
+#################
+
+1. cd process i will create Load Balancer
+2. and i will run two or more instances
+		i will run us-east-1a in one instance and 
+		i will run us-east-1b in another instance
+		or
+		or else if u want to go in all availability zones.
+
+3. and both of them i will group together in load balancer.
+
+4. in both the ec2-instance make sure docker is installed
+5. and attach ec2 role or IAM user for that server
+6. and thwn run docker container
+7. once instances are up and running add them to load balancer
+
+##############################
+
+
+1. i will create two instances one as ec2 and another as ubuntu
+2. make sure both the servers having docker installed
+		sudo yum install docker -y
+		sudo apt install docker.io -y
+		sudo systemctl start docker
+3. to list the images in aws ecr on both linux and ubiuntu servers
+	https://docs.aws.amazon.com/cli/latest/reference/ecr/list-images.html
+	sudo tum install awscli -y
+	
+	aws ecr list-images \
+    --repository-name cluster-autoscaler
+	OR
+	aws ecr list-images    --repository-name myrepo --region us-east-1
+		{
+    "imageIds": [
+        {
+            "imageTag": "8",
+            "imageDigest": "sha256:b746a5733dc0edbfa1637ce945cf7b5b39ba9d6f059fc3296d4a31d659228e14"
+        }
+    ]
+}
+
+3. first we need  login to ecr on both servers and 
+	go to ecr repo-->push commands
+	aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 255766941731.dkr.ecr.us-east-1.amazonaws.com
+	sudo usermod -aG docker ubuntu
+
+4. run the containers on both the servers to pull the docker image from amazon ECR
+	 docker container run --name=java-app-instance-2 -p 8080:8080 --detach 255766941731.dkr.ecr.us-east-1.amazonaws.com/myrepo:8
+
+
+5.	18.204.212.226:8080/course-svc/actuator/health
+6.	100.26.22.227:8080/course-svc/actuator/health
+
+
+7. both are up and running so we need to add them to a Load Balancer
+	and create a application load balancer
+	and hit the dns name/course-svc/actuator/health
+
+now u can running up the application using loadbalancer
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
