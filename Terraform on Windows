@@ -1,0 +1,214 @@
+Terraform on Windows
+######################
+Terraform (Infrastructure as a code)
+which is known as iaas
+teffaroem as a tool which is from one of the Hashicorp tool
+
+what is terraform
+############
+
+terraform is infrastrucutre as a code tool that lets us build ,change and version cloud and on -premise resources safely and efficiently.
+it can be aws cloud or azure cloud or gcp cloud
+
+so far whatever the infra we need we are creating manuaally like ec2 instance or s3 bucket or IAM roel/user etc.
+
+can i create a multiple instances using terraform?
+
+Agenda
+#############
+i want to create ec2 instance using terraform------ which means IAM user should have permissions for ec2 instance.
+
+Terraform on windows machine
+###############
+
+1. download the terraform
+2. we need to integrate terraform with aws account in one of the way which it supports
+3. create the resources as per the terraform syntax
+####################
+1.now we have terraform 1.4.6 which is latest
+
+2.we need aws provider for terraform and extension should be .tf and to write terraform scripts or code we use visual studio code
+
+visual studio code
+###################
+open terminal and write
+1. mkdir may-terraformwork
+2.open folder of may-terraformwork
+	https://registry.terraform.io/providers/hashicorp/aws/latest/docs
+			or
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 4.0"
+    }
+  }
+}
+
+# Configure the AWS Provider
+provider "aws" {
+  region = "us-east-1"
+}
+
+3. we need to create IAM user or IAM role so that terraform can use these credentials ,to connect to aws account with provider
+	create IAM user
+	access key: AKIATXDHF2AR2W4M2SFN
+	secret access key: 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
+
+
+now we have aws provider and IAM user and the next thing is
+
+4. Authentication and Configuration
+	we have several ways in authentication and configuration
+	https://registry.terraform.io/providers/hashicorp/aws/latest/docs#authentication-and-configuration
+	Configuration for the AWS Provider can be derived from several sources, which are applied in the following order:
+		Parameters in the provider configuration
+		Environment variables
+		Shared credentials files
+		Shared configuration files
+		Container credentials
+		Instance profile credentials and region
+
+1.Parameters in the provider configuration
+###############
+	provider configuration
+		access_key = "my-access-key"
+		secret_key = "my-secret-key"
+
+
+i.e 
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 4.0"
+    }
+  }
+}
+
+# Configure the AWS Provider
+provider "aws" {
+  region = "us-east-1"
+  access_key = "AKIATXDHF2AR2W4M2SFN"
+  secret_key = "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"
+}
+
+5. create ec2 instance on ubuntu
+https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/instance
+
+create a new file in ec2.tf and paste the below data
+
+data "aws_ami" "ubuntu" {
+  most_recent = true
+
+  filter {
+    name   = "name"
+    values = ["ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*"]
+  }
+
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+
+  owners = ["099720109477"] # Canonical
+}
+
+resource "aws_instance" "web" {
+  ami           = data.aws_ami.ubuntu.id
+  instance_type = "t3.micro"
+
+  tags = {
+    Name = "HelloWorld"
+  }
+}
+
+and open new terminal
+	1.terraform init			----------->it initialize the terraform
+	2. terraform plan			------------>it shows what are the resouces that we are created i.e ec2 instance created.
+	3. terraform apply --auto-approve      --------------> it creates ec2 instance in aws console.
+	
+###########################
+or else in authentication and configuration step we do another way to give access-key by using environment variable
+
+2.Environment variables
+########################
+
+Credentials can be provided by using the AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY
+
+export AWS_ACCESS_KEY_ID="AKIATXDHF2AR2W4M2SFN"
+export AWS_SECRET_ACCESS_KEY="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"
+
+
+now open git bash and paste it above credentials
+i.e 
+	1. export AWS_ACCESS_KEY_ID="AKIATXDHF2AR2W4M2SFN"
+	2. export AWS_SECRET_ACCESS_KEY="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"
+	3. echo $AWS_ACCESS_KEY_ID and press enter
+	4. echo $AWS_SECRET_ACCESS_KEY and press enter
+	5. terraform plan
+	6. terraform destroy --autp-approve
+
+
+
+3. Shared Configuration and Credentials Files
+##################
+
+provider "aws" {
+  shared_config_files      = ["/Users/tf_user/.aws/conf"]
+  shared_credentials_files = ["/Users/tf_user/.aws/creds"]
+  profile                  = "customprofile"
+}
+
+in command prompt we have to create a profile i.e called customprofile.
+
+1. aws configure --profile customprofile
+	AWS Access Key ID [None]: AKIATXDHF2AR2W4M2SFN
+	AWS Secret Access Key [None]: 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
+	Default region name [None]:
+	Default output format [None]:
+
+2.provider "aws" {
+  shared_config_files      = ["C:\\Users\\QC\\.aws\\config"]
+  shared_credentials_files = ["C:\\Users\\QC\\.aws\\creds"]
+  profile                  = "customprofile"
+}
+		
+i.e 
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 4.0"
+    }
+  }
+}
+
+# Configure the AWS Provider
+provider "aws" {
+  shared_config_files      = ["C:\\Users\\QC\\.aws\\config"]
+  shared_credentials_files = ["C:\\Users\\QC\\.aws\\creds"]
+  profile                  = "customprofile"
+}
+
+3. terraform plan
+4. terraform apply --auto-approve
+
+###################################
+
+
+can i create a multiple instances using terraform?
+################
+
+
+
+
+
+
+
+
+
+
+
+
+
