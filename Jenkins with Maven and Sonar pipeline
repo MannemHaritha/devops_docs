@@ -1,0 +1,120 @@
+Jenkins with Maven and Sonar pipeline
+#######################
+
+now i want to created 2 servers
+server-1 --->where our jenkins is running
+server-2 --->sonarqube will be running
+
+
+jenkins
+###########3
+
+1. sudo yum install git java-17-amazon-corretto-headless -y
+		or
+	sudo yum install git java-17-amazon-corretto-headless -y
+2. sudo alternatives --config java
+
+3. java --version
+4. git --version
+
+5. cd /tmp/
+6. wget https://archive.apache.org/dist/maven/maven-3/3.9.2/binaries/apache-maven-3.9.2-bin.tar.gz
+7. tar xvf apache-maven-3.9.2-bin.tar.gz
+8. cd apache-maven-3.9.2/
+9. pwd
+10. 
+
+8. sudo wget -O /etc/yum.repos.d/jenkins.repo \
+    https://pkg.jenkins.io/redhat-stable/jenkins.repo
+9. sudo rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
+10. sudo yum install jenkins -y
+11. sudo systemctl start jenkins
+		or
+	sudo netstat -plunt | grep :8080
+
+12. sudo systemctl ststus jenikns
+13. sudo cat /var/lib/jenkins/secrets/initialAdminPassword
+
+
+we can create a muiltiple jobs of jenkins
+	freestyle jobs
+	maven jobs
+	pipeline jobs
+	
+	
+
+sonarqube
+#############
+
+1. sudo yum install java-17-amazon-corretto-headless -y
+
+
+https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-10.0.0.68432.zip?_gl=1*xjlov1*_gcl_au*MTk0MjA2MDAwNS4xNjg0MzI4MDM3*_ga*ODIxNzQ5NDc5LjE2ODQzMjgwMzc.*_ga_9JZ0GZ5TC6*MTY4NTYzMzgwNC40LjEuMTY4NTYzMzgyMC40NC4wLjA.
+
+
+2. wget https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-10.0.0.68432.zip
+
+3. unzip sonarqube-10.0.0.68432.zip
+4. pwd
+5. /home/ec2-user/sonarqube-10.0.0.68432/bin/linux-x86-64/sonar.sh start
+6. /home/ec2-user/sonarqube-10.0.0.68432/bin/linux-x86-64/sonar.sh status
+
+7. username: admin
+	password: admin
+8. go to account under my account 
+	token name: jenkins-sonar-token
+	token : squ_0bf3ee7ce496bf11c947de5b7a41475a8eed55a4
+
+
+
+Jenkins-Declerative-Pipeline
+#################
+
+pipeline{
+    agent any
+    tools{
+        maven 'maven-3.9.2'
+    }
+    stages { 
+        stage('git clone'){
+            steps{
+                git branch: 'develop', url: 'https://github.com/MannemHaritha/springboot-maven-course-micro-svc.git'
+            }
+        }
+        stage('Build') { 
+            steps { 
+               sh 'mvn clean package' 
+            }
+        }
+        stage('sonar scanner for maven project') { 
+            steps { 
+               sh 'mvn sonar:sonar -Dsonar.token=squ_0bf3ee7ce496bf11c947de5b7a41475a8eed55a4 -Dsoner.host.url=http://44.211.30.176:9000   -Dsonar.projectkey=springboot-maven-course-micro-svc -Dsonar.projectname=springboot-maven-course-micro-svc' 
+            }
+        }
+    }
+}
+
+
+jenkins check with the sonar good or bad using API command(automation)
+#########################
+
+curl -u $YOUR_TOKEN: -G --data-urlencode "branch=$YOUR_BRANCH" --data-urlencode "projectKey=$YOUR_PROJECT_KEY" ${SONAR_HOST}/api/qualitygates/project_status > result.json
+
+
+curl -u squ_0bf3ee7ce496bf11c947de5b7a41475a8eed55a4 --data-urlencode "projectKey=springboot-maven-course-micro-svc" http://44.211.30.176:9000/api/qualitygates/project_status > result.json
+
+curl --request GET -u squ_0bf3ee7ce496bf11c947de5b7a41475a8eed55a4: http://44.211.30.176:9000/api/qualitygates/project_status?projectKey=springboot-maven-course-micro-svc
+
+
+
+
+
+
+
+
+
+
+
+
+
+
