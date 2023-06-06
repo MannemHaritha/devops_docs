@@ -1,0 +1,245 @@
+CI CD Mannual Process
+###############
+
+if we want to do CI CD process we may need multiple servers.
+
+1. for CI process we create a machine/server and that machine has below tools installed.
+
+git
+java
+apache maven or gradle
+aws cli or curl commands to upload jat files to s3 or nexus
+
+2. we need second server to run sonarqube
+3. we need third server to run nexus
+
+in CI process we need minimum 3 servers
+######################
+
+server-1  ---git,java,apache maven or gradle
+server-2  --- java and sonarqube
+server-3  ---- java 8 and nexus(prerequisite for nexus is java 1.8.0)
+
+
+right now we are creating 3 servers manually ,in real time project these servers will be created in a automated way with infrastructure as a code i.e terraform
+
+server-1  ---git,java,apache maven or gradle
+##################
+1. sudo hostnamectl set-hostname build-server
+2. sudo -i
+
+3. sudo yum install java-17-amazon-corretto-headless -y
+4. java --version
+
+5. sudo yum install git -y
+6. git --version
+
+7. pwd
+8. cd /opt
+9. pwd
+10. wget https://downloads.apache.org/maven/maven-4/4.0.0-alpha-5/binaries/apache-maven-4.0.0-alpha-5-bin.tar.gz
+11. tar xvf apache-maven-4.0.0-alpha-5-bin.tar.gz
+12. export PATH=$PATH:/opt/apache-maven-4.0.0-alpha-5/bin/
+13.  mvn --version
+
+
+server-2  --- java and sonarqube
+###################
+
+1. sudo hostnamectl set-hostname sonar-server
+2. sudo -i
+3. cat /etc/hostname
+		or
+	hostname -f
+	
+4. sudo yum install java-17-amazon-corretto-headless -y
+5. java --version
+
+6. wget https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-10.0.0.68432.zip
+7. unzip sonarqube-10.0.0.68432.zip
+8.  mv sonarqube-10.0.0.68432 /opt/
+9.  cd /opt/
+10. /opt/sonarqube-10.0.0.68432/bin/
+11. cd /opt/sonarqube-10.0.0.68432/bin/
+12. pwd
+13. ls -lrt
+14. cd linux-x86-64/
+15. pwd
+16. sh sonar.sh start
+17. netstat -plunt | grep :9000
+18. sh sonar.sh status######(we are in root user if sonar not running go to below commands)########
+		or
+	exit
+	sudo mv /opt/sonarqube-10.0.0.68432/ .
+	pwd
+	/home/ec2-user/sonarqube-10.0.0.68432/bin/linux-x86-64/sonar.sh start
+		/usr/bin/java
+		Starting SonarQube...
+		/home/ec2-user/sonarqube-10.0.0.68432/bin/linux-x86-64/sonar.sh: line 162: ./SonarQube.pid: Permission denied
+		Failed to start SonarQube.
+		/home/ec2-user/sonarqube-10.0.0.68432/bin/linux-x86-64/sonar.sh: line 161: ../../logs/nohup.log: Permission denied
+	 ls -lrt
+		total 0
+		drwxr-xr-x 11 root root 172 Mar 31 07:00 sonarqube-10.0.0.68432  ---------> TO CHANGE OWNER SHIP OF SONAR
+	sudo chown ec2-user:ec2-user sonarqube-10.0.0.68432 -R
+	getfacl sonarqube-10.0.0.68432/
+		# file: sonarqube-10.0.0.68432/
+		# owner: ec2-user
+		# group: ec2-user
+		user::rwx
+		group::r-x
+		other::r-x
+	 /home/ec2-user/sonarqube-10.0.0.68432/bin/linux-x86-64/sonar.sh start
+	 /home/ec2-user/sonarqube-10.0.0.68432/bin/linux-x86-64/sonar.sh status
+			/usr/bin/java
+			SonarQube is running (13462).
+	sudo netstat -plunt | grep :9000
+			tcp6       0      0 :::9000                 :::*                    LISTEN      14295/java
+
+19. 184.72.114.254:9000
+20. login
+		username:admin
+		password:admin
+	sonar token 
+		sqa_c597e0d9053817ca58814a2e8030664ef0335281
+
+
+
+server-3  ---- java and nexus
+#################
+
+1. sudo hostnamectl set-hostname nexus-server
+2. sudo -i
+3.  cd /opt/
+
+4. sudo yum install java-1.8.0-openjdk-devel -y
+5. java -version
+
+6. wget https://download.sonatype.com/nexus/3/nexus-3.54.1-01-unix.tar.gz
+7. tar xvf nexus-3.54.1-01-unix.tar.gz
+8. ls -lrt
+9. /opt/nexus-3.54.1-01/bin/nexus start
+10. /opt/nexus-3.54.1-01/bin/nexus status
+11. 44.212.38.184:8081
+now we are in root user its not recommanded. so we are changing to ec2-user for below commands
+		ls
+		cd nexus-3.54.1-01/bin/
+		ls
+		cat nexus.rc
+		pwd
+		/opt/nexus-3.54.1-01/bin/nexus stop
+		vi nexus.rc
+				run_as_user="ec2-user"
+		cd /opt/
+		getfacl nexus-3.54.1-01
+		chown ec2-user:ec2-user nexus-3.54.1-01 -R
+		/opt/nexus-3.54.1-01/bin/nexus start
+				Last login: Wed May 24 14:22:01 UTC 2023 from 49.207.231.79 on pts/0
+				Starting nexus
+		 /opt/nexus-3.54.1-01/bin/nexus status
+				Last login: Wed May 24 14:59:56 UTC 2023 on pts/0
+				nexus is stopped.
+		 cd sonatype-work/
+		 ls
+		 cd nexus3
+		 ls
+		 cd log/
+		 ls
+		 rm -rf *			------------> it removes logs
+		ls -lrt
+		/opt/nexus-3.54.1-01/bin/nexus start
+				Last login: Wed May 24 14:22:01 UTC 2023 from 49.207.231.79 on pts/0
+				Starting nexus
+		 /opt/nexus-3.54.1-01/bin/nexus status
+				Last login: Wed May 24 14:59:56 UTC 2023 on pts/0
+				nexus is stopped.
+				
+		ls
+		cd ..
+		cd log/
+		ls
+		cd ..
+		pwd
+		cd ..
+		cd /opt/
+		chown ec2-user:ec2-user sonatype-work -R
+		/opt/nexus-3.54.1-01/bin/nexus start
+				Last login: Wed May 24 14:22:01 UTC 2023 from 49.207.231.79 on pts/0
+				Starting nexus
+				
+		/opt/nexus-3.54.1-01/bin/nexus status
+				Last login: Wed May 24 16:28:46 UTC 2023 on pts/
+				nexus is running.
+
+12. now sign in for nexus repository
+		usernsme:admin
+		passwoed: 629dad23-9200-424d-bb87-36f5318cc51c(cat /opt/sonatype-work/nexus3/admin.password )
+
+
+
+		
+CI process steps
+########################
+
+1. clone the code using below git commands
+	i.e git clone ProjectToBeWith https urls to ssh url
+
+	 git clone https://github.com/MannemHaritha/springboot-maven-course-micro-svc.git
+	 cd springboot-maven-course-micro-svc/
+	 git branch
+	 git checkout develop
+	 git checkout master
+	 git branch -r					------------> it displays all branches
+
+2. build a maven project
+
+	 mvn clean package
+		or
+	 mvn clean install
+
+
+3. scan the code for code quality and current thread
+	 i.e
+		mvn sonar:sonar -Dsonar.token=myAuthenticationToken            
+	 i.e
+		mvn sonar:sonar -Dsonar.token=sqa_c597e0d9053817ca58814a2e8030664ef0335281 -Dsonar.host.url=http://184.72.114.254:9000 -Dsonar.projectName=springboot-maven-course-micro-svc
+
+
+4. upload artifacts to nexus/amazon s3/jfrog/docker registry
+
+we need to add a tag called distributionManagement in pom.xml i.e
+https://www.baeldung.com/maven-deploy-nexus
+
+vi pom.xml
+
+<distributionManagement>
+   <snapshotRepository>
+      <id>nexus-snapshots</id>
+      <url>http://44.212.38.184:8081/repository/maven-snapshots/</url>
+   </snapshotRepository>
+	<repository>
+      <id>nexus-releases</id>
+      <url>http://44.212.38.184:8081/repository/maven-releases</url>
+   <repository>
+</distributionManagement>
+
+mvn clean package
+
+
+<server>
+      <id>nexus-snapshots</id>
+      <username>admin</username>
+      <password>nexus</password>
+ </server>
+
+mvn clean package
+mvn deploy
+
+
+
+
+
+
+
+
+
