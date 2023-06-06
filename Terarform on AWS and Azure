@@ -1,0 +1,325 @@
+Terarform on AWS and Azure
+####################
+In current market you might be working on amy domain like
+	Banking
+	Telecom
+	Insurance
+	E-commerce
+for their solution to work end to end and their might be working with some application ,which may involve different teams like
+	Application Teams
+	QA teams(Testing teams)
+	BA teams
+	Data Engineers
+	Devops or SRE OR TERRAFORM engineer
+each teams having some their own roles.
+
+for Example
+############# lets take different applications those are using different AWS services or Azure services or GCP services
+	1. spark application to a locally installed relational data base,as well as AWS RDS
+	2. Bulk Loading from amazon s3
+	3. springboot with aws s3 bucket from zero to useful
+	
+As a devops engineer or sre engineer or platform engineer or terraform engineer our role is, we have to make sure the infra is ready for all those teams to use it.
+
+In all the clousd what are the basic and important services which every one should know.
+
+	1. Virtual Machines(compute)
+	2. storage
+	3. Database
+	4. security
+	5. Network
+	6. Messaging
+	
+AWS services
+###############
+1. Virtual Machines(compute)
+	ec2-instance
+2. storage
+	S3(simple storage service)
+3. Database
+	RDS
+		mysql
+		postgres
+		oracle
+		sql server
+		aurora
+		mariadb
+	DYNAMODB
+	Redshift
+4. security
+	IAM
+5. Network
+	VPC
+6. Messaging
+	SQS
+	SNS
+
+
+AZURE services
+###############
+1. Virtual Machines(compute)
+	Azure VM
+2. storage
+	AZURE Blob, ADLS2
+3. Database
+	AZURE SQL
+	Azure Database for mysql
+	Azure Database for Postgersql
+	Azure cosmosdb
+4. security
+	IAM
+5. Network
+	Azure networks
+6. Messaging
+	Event Hub
+	Event Grid
+
+we need to know how to create these things in manually and then only can the automation easily.
+
+
+storage(S3 bucket(simple storage service on Windows))
+######################
+
+what are the different file extensions?
+	.txt
+	.xml
+	.pdf
+	.jpeg
+	.zip
+	.csv
+	.gz
+these all types of file formates we can store in s3.
+
+we need to create something called a bucket in aws account which should be unique across the golbe. Under the Bucket we should upload the files.
+
+How many ways we can upload the files?
+1. AWS management Console
+2. AWS cli(command line Interface)
+3. programatically
+	Java Code
+	Python Code
+	Dotnet Code
+	Nodejs Code
+	Golang Code
+
+Create s3 bucket manually
+#################
+1. AWS management Console
+	create bucket on aws s3
+	upload any .extension file
+	
+2. AWS cli(command line Interface)
+	in personal windows machine or aws ec2 instance, we have to make sure aws cli is installed.
+	we can create ec2 instance of amazon linux or rhel or ubuntu
+		if it is amazon linux by default aws cli is installed.
+		if it is rhel or ubuntu we need to install aws cli.
+		
+	first we create a bucket and upload .extension file  on remote to s3
+	we can create ec2 instance on ubuntu
+		1. create ec2 instance with ubuntu
+		2. connect instance ip with mobaexterm
+		3. sudo apt update -y
+		4. sudo apt install aws cli -y
+
+	from ec2 machine i want to upload a file to s3 bucket or from ec2 machine i want to download a file from s3 bucket
+	 now i want to 			
+		from ec2 machine i want to download a file from s3 bucket to local
+			now i want to download a file from s3 bucket so that the command is
+			aws s3 cp sources3uri dest
+			aws s3 cp s3://harithabkt/devops /home/ubuntu
+			we have to  give permission credentials of IAM user .so that create IAM user and open that user and go to security credentials
+					Access key : AKIATXDHF2ARRPPYMXWX
+					Secret access key : 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
+					or
+			we have to  give permission credentials of IAM role .so that create IAM role 
+				create role  and modift that role and upload the role then run the command is
+				aws s3 cp s3://harithabkt/devopsquestions /home/ubuntu
+				
+		from ec2 machine i want to upload a file local to s3 bucket
+			cp devops devops_s3
+
+			aws s3 cp /home/ubuntu/devops_s3 s3://harithabkt/ 	 ---------> upload file from  local to s3 bucket
+			
+			aws s3 ls  harithabkt					---------------> listing the  files
+
+3. programatically
+	now i upload the one python file to s3
+	so that i can create file in linux/mobaexterm
+	i.e  
+		1. vi students.csv
+		2. ls
+		3. cat students.csv
+		4. python3
+		https://boto3.amazonaws.com/v1/documentation/api/latest/guide/s3-uploading-files.html
+			import logging
+			import boto3
+			s3_client = boto3.client('s3')
+			s3_client.upload_file(file_name, bucket, object_name)
+							or
+			s3_client.upload_file('/home/ubuntu/students.csv', 'harithabkt', 'students.csv')
+			
+As a Devops engineer our goal is to make sure aws s3 bucket is created and if needed we need to upload file using terraform code as well.
+
+
+Create s3 bucket using terraform
+#############################
+we need to write terrafoem 	scripot or code to create s3 bucket and upload file to s3 bucket
+To work with terraform we need IAM user or IAM role and terraform provider and installing terraform
+
+Now im create IAM USER
+	Access key : AKIATXDHF2ARUX3D7EZP
+	Secret access key: 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
+		or
+Now iam create IAM role
+	
+
+S3 bucket using terraform
+1. We have to make sure first installl terraform on ubuntu i.each
+	https://developer.hashicorp.com/terraform/tutorials/aws-get-started/install-cli
+		 1. sudo apt-get update && sudo apt-get install -y gnupg software-properties-common
+		 2. sudo apt update
+		 3. wget -O- https://apt.releases.hashicorp.com/gpg | \
+		 gpg --dearmor | \
+		 sudo tee /usr/share/keyrings/hashicorp-archive-keyring.gpg
+		 4. echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] \
+		 https://apt.releases.hashicorp.com $(lsb_release -cs) main" | \
+		 sudo tee /etc/apt/sources.list.d/hashicorp.list
+		 5. sudo apt-get install terraform
+		 6. terraform --version
+		 
+2. now we have terraform provider		 
+1. mkdir terraform-s3
+2. cd terraform-s3
+3. pwd
+4. ls
+5. vi providers.tf
+i.e
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 4.0"
+    }
+  }
+}
+
+# Configure the AWS Provider
+provider "aws" {
+  region = "us-east-1"
+}
+		
+3. now we have to create terraform bucket,so that we have to write terraform script/resources i.e
+https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket
+	vi s3.tf
+	
+resource "aws_s3_bucket" "example" {
+  bucket = "haritha-bucket"
+
+  tags = {
+    Name        = "My bucket"
+    Environment = "Dev"
+  }
+}		
+		
+4. terraform init
+5. terraform plan
+6. terraform apply --auto-approve
+
+7. now s3 bucket created. now through this bucket i want to upload file using terraform. that is called aws s3 object.
+	Uploading a file to a bucket
+	vi s3.tf
+resource "aws_s3_object" "object" {
+  bucket = "your_bucket_name"
+  key    = "new_object_key"
+  source = "path/to/file"
+
+  # The filemd5() function is available in Terraform 0.11.12 and later
+  # For Terraform 0.11.11 and earlier, use the md5() function and the file() function:
+  # etag = "${md5(file("path/to/file"))}"
+  etag = filemd5("path/to/file")
+}
+
+
+resource "aws_s3_object" "object" {
+  bucket = "haritha-bucket"
+  key    = "devops"
+  source = "/home/ubuntu/students.csv"
+
+  # The filemd5() function is available in Terraform 0.11.12 and later
+  # For Terraform 0.11.11 and earlier, use the md5() function and the file() function:
+  # etag = "${md5(file("path/to/file"))}"
+  etag = filemd5("home/ubuntu/students.csv")
+}
+
+8. terraform apply
+
+
+
+
+Terraform on Azure 
+############################
+
+In azure we have service called Azure Storage Account
+We can store files in Storeage account like s3.
+
+how many ways to upload files in storage account?
+ Azure Portal
+ Azure command line Interface
+ programatically
+	Java Code
+	Python Code
+	Dotnet Code
+	Nodejs Code
+	Golang Code
+
+1. Azure Portal
+	open Azure account
+	open resouce groups and create resouce group(under resource group keep name and region then click on review and create)
+	go to that resource group and open storage account and create storage account(keep as name and review and create)
+	under storage open containers and create containers
+	open created container and upload the .extension file
+
+2. Azure command line Interface
+	we can install azure cli on aws ec2 or local windowd/macos machine or Azure vm		
+	For now i can create vm on azure
+		open virtual machine and create virtual machine
+			under vm keep as resourcegroupname as already u created and 
+			keep as virtual machine name
+			and by default image name as ubuntu as u can change linux/redhat
+			Authentication type
+				SSH public key
+				Password
+			Username
+				azureuser
+			Key pair name
+				haristoragedemo_key
+
+
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
