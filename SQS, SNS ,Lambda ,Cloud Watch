@@ -1,0 +1,195 @@
+SQS, SNS ,Lambda ,Cloud Watch
+###################
+
+AWS services
+#####
+SQS
+SNS
+IAM
+RDS
+VPC
+S3
+SES
+Lambda
+CLOUD WATCH
+
+
+SQS
+#############
+SQS means (simple queue service) is a message queue service used by distribution applications.
+
+Basically we have to run two different applications on a different machines with in the same network and from one application we are sending the message and second application we are receiving the message
+
+we take 2 servers
+server-1 -------->we run distributed applications-1 where we send message to sqs queue
+serever-2---------->we run distributed applications-2 where we receive message from sqs queue
+
+And also we need IAM role for SQS full access
+
+
+sqs (server-1)
+##########
+https://docs.aws.amazon.com/cli/latest/reference/sqs/list-queues.html
+
+1. aws sqs list-queues --region us-east-1
+	{
+    "QueueUrls": [
+        "https://queue.amazonaws.com/255766941731/Haritha-queue"
+    ]
+}
+
+2. if you want to send the message
+	https://docs.aws.amazon.com/cli/latest/reference/sqs/send-message.html
+	
+	vi send-message.json
+		{
+  "City": {
+    "DataType": "String",
+    "StringValue": "Any City"
+  },
+  "Greeting": {
+    "DataType": "Binary",
+    "BinaryValue": "Hello, World!"
+  },
+  "Population": {
+    "DataType": "Number",
+    "StringValue": "1250800"
+  }
+}
+
+3.  aws sqs send-message --queue-url https://queue.amazonaws.com/255766941731/Haritha-queue --message-body "Information about the largest city in Any Region." --delay-seconds 10 --message-attributes file://send-message.json --region us-east-1
+
+
+4. if you want to see the sqs list count
+	https://docs.aws.amazon.com/cli/latest/reference/sqs/get-queue-attributes.html
+	aws sqs get-queue-attributes --queue-url https://sqs.us-east-1.amazonaws.com/80398EXAMPLE/MyQueue --attribute-names All
+			or
+	aws sqs get-queue-attributes --queue-url https://queue.amazonaws.com/255766941731/Haritha-queue --attribute-names All
+
+		1
+	{
+    "Attributes": {
+        "ApproximateNumberOfMessagesNotVisible": "0",
+        "Policy": "{\"Version\":\"2012-10-17\",\"Id\":\"__default_policy_ID\",\"Statement\":[{\"Sid\":\"__owner_statement\",\"Effect\":\"Allow\",\"Principal\":{\"AWS\":\"arn:aws:iam::255766941731:root\"},\"Action\":\"SQS:*\",\"Resource\":\"arn:aws:sqs:us-east-1:255766941731:Haritha-queue\"}]}",
+        "SqsManagedSseEnabled": "true",
+        "MessageRetentionPeriod": "345600",
+        "ApproximateNumberOfMessagesDelayed": "0",
+        "MaximumMessageSize": "262144",
+        "CreatedTimestamp": "1685973288",
+        "ApproximateNumberOfMessages": "1",
+        "ReceiveMessageWaitTimeSeconds": "0",
+        "DelaySeconds": "0",
+        "VisibilityTimeout": "30",
+        "LastModifiedTimestamp": "1685973288",
+        "QueueArn": "arn:aws:sqs:us-east-1:255766941731:Haritha-queue"
+    }
+}
+
+
+sqs server-2
+###########
+
+5. if you run same command in server-2, this will read the message i.east-1
+	
+	aws sqs get-queue-attributes --queue-url https://queue.amazonaws.com/255766941731/Haritha-queue --attribute-names All --region us-east-1
+
+
+		{
+		"Attributes": {
+        "ApproximateNumberOfMessagesNotVisible": "0",
+        "Policy": "{\"Version\":\"2012-10-17\",\"Id\":\"__default_policy_ID\",\"Statement\":[{\"Sid\":\"__owner_statement\",\"Effect\":\"Allow\",\"Principal\":{\"AWS\":\"arn:aws:iam::255766941731:root\"},\"Action\":\"SQS:*\",\"Resource\":\"arn:aws:sqs:us-east-1:255766941731:Haritha-queue\"}]}",
+        "SqsManagedSseEnabled": "true",
+        "MessageRetentionPeriod": "345600",
+        "ApproximateNumberOfMessagesDelayed": "0",
+        "MaximumMessageSize": "262144",
+        "CreatedTimestamp": "1685973288",
+        "ApproximateNumberOfMessages": "1",
+        "ReceiveMessageWaitTimeSeconds": "0",
+        "DelaySeconds": "0",
+        "VisibilityTimeout": "30",
+        "LastModifiedTimestamp": "1685973288",
+        "QueueArn": "arn:aws:sqs:us-east-1:255766941731:Haritha-queue"
+    }
+}
+
+
+6. if you want to receive the message
+	https://docs.aws.amazon.com/cli/latest/reference/sqs/receive-message.html
+
+	aws sqs receive-message --queue-url https://sqs.us-east-1.amazonaws.com/80398EXAMPLE/MyQueue --attribute-names All --message-attribute-names All --max-number-of-messages 10
+			or
+	aws sqs receive-message --queue-url https://queue.amazonaws.com/255766941731/Haritha-queue --attribute-names All --message-attribute-names All --max-number-of-messages 10 --region us-east-1
+
+			 "Messages": [
+		{
+            "Body": "Information about the largest city in Any Region.",
+            "ReceiptHandle": "AQEBbLUx4YJv1mJBN92om/HGiEwiUhN5xo86KzDFFbHmN8ieOHU0oJD3CETRRDYg0PcSK2BMUEWVh+QG3hbJ/Cx40A0ddyu9zJqmPemQTPsAd/eLHPVAAaEzywPsQctI79iKxfa67FRh3zxJCygnQ64oKAvDHDq0X9hvC1sFJprybKt28+QVaXI+H4TooKKmy64DTG1p2FKFyy8EA8NQ7kp/RdW6MxxSYxsZnBZ3V/iHv9qv1sJnVAcZtj32z7CVfCpOJY7TUA87WUNe1sTkOxEOsj5jMmPWMEwpijDrCajgEtcgzCQUjbUuwR6a9IpaBYEw46qcoVc1IecG3AjFs13aifmzpDdNiICx8dC4Pid79hkmU94VUaZgW4sRRoXMv8J8PNwc7ztUCyeuVBSgBLG7Nw==",
+            "MD5OfBody": "51b0a3256d59467f973009b739163aa0",
+            "MD5OfMessageAttributes": "28eb0e573cf8e8a77e349a2f968eac4a",
+            "MessageId": "af39ae87-c6a4-4a60-9c46-2a910a5e3138",
+            "Attributes": {
+                "ApproximateFirstReceiveTimestamp": "1685976146306",
+                "SenderId": "AROATXDHF2AR37U5567Y6:i-0b204a601cb3e9d15",
+                "ApproximateReceiveCount": "1",
+                "SentTimestamp": "1685974919879"
+            },
+            "MessageAttributes": {
+                "City": {
+                    "DataType": "String",
+                    "StringValue": "Any City"
+                },
+                "Greeting": {
+                    "DataType": "Binary",
+                    "BinaryValue": "SGVsbG8sIFdvcmxkIQ=="
+                },
+                "Population": {
+                    "DataType": "Number",
+                    "StringValue": "1250800"
+                }
+            }
+        }
+    ]
+}
+
+7. after reading/receiving a message and delete a specific message
+	https://docs.aws.amazon.com/cli/latest/reference/sqs/delete-message.html
+	
+	aws sqs delete-message --queue-url https://sqs.us-east-1.amazonaws.com/80398EXAMPLE/MyQueue --receipt-handle AQEBRXTo...q2doVA==
+			or
+	aws sqs delete-message --queue-url https://queue.amazonaws.com/255766941731/Haritha-queue --receipt-handle AQEB+O6ahxaulBpvR2Iy5XSJ3U9CBIUEFrUf/1XRvf1pGTO+9eO3PgT1TglgnhGKOp81M41o/hABhK1/JpLb9kyIhdcpFzDpykmR8dxGYvnwbJosHxaEfwPnRWZxhMIobSAZ2FScAf3xtZKFb+pC0o4K2ckDT+a8uHJ5evJ1l/X3l66HtSGxfVEcUtb+y8UnaoYL4XiyvR2/VQjSO60uR3OI189j1mTdB7D35P/6bQrQxT3a6W+8mlfxn62909BJ6dncANnB8WjGITPiICket0AE6N2GU6sXjJBH8XMqwY+YGGAWbh5QFXwJgPBbqquJuOkAXGd+WOO6F0Wc3O+f0gL1nb5uXBHXeOshHNKbm8FuKcf41QlKjzteeYpyp5jiM02kL5jA7AXFGRQAiJyXkTFDOA=="
+            
+
+
+
+8. Let say when somebody send a message, i want that messgae to multiple applications in various forms like sometimes i want message in email or sometimes i want message in SMS or sometimes i want that message in application. but the sender will send one time but we need to send multiple times.
+			or
+	WE need to send several applications in several ways that time we need SMS
+			or
+	if you want to send any real time notifications and if you want to send same any real time notifications to multiple appliacions we need to use SMS.
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
