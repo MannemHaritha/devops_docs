@@ -1,0 +1,56 @@
+Jenkins and Sonar With Nexus Pipeline
+######################
+
+Jenikins with sonarqube so that if sonar is sucess we will proceed and upload in nexus
+If sonar is failure we will stop the build there itself
+
+
+
+#####################
+I will create two machines
+server-1 ----->will run jenkins
+server-2 ---------->will run sonar and nexus(for time being will use docker)
+Both of  the machines will use t2.medium
+
+
+Sonar installation using Docker
+#####################
+1  sudo yum install docker -y
+2  sudo systemctl start docker
+3  sudo systemctl status docker
+4  sudo docker container run --name=sonarcontainer -p 9000:9000 -d sonarqube
+5  sudo docker ps
+6. 3.83.93.254:9000
+7. token name: jenkins-sonar-token
+	token	: sqa_2351752330489d8ed530b75e7692ee44225e8370
+	
+
+
+Nexus installation using Docker
+##################
+
+1  sudo yum install docker -y
+2  sudo systemctl start docker
+3  sudo systemctl status docker
+4  sudo docker container run --name=nexus3 -p 8081:8081 -d sonatype/nexus3
+5. 54.173.21.137:8081
+6. sudo docker exec -it nexus3  bash
+7. sign in to the nexus
+	cat /nexus-data/admin.password
+
+jenkins
+##############
+
+1. sudo yum install git java-17-amazon-corretto-headless -y
+
+2. sudo wget -O /etc/yum.repos.d/jenkins.repo \
+    https://pkg.jenkins.io/redhat-stable/jenkins.repo
+sudo rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
+
+3. sudo yum install jenikins -y
+4.  sudo systemctl start jenkins
+5. 54.173.21.137:8080
+6. sudo cat /var/lib/jenkins/secrets/initialAdminPassword
+
+
+
