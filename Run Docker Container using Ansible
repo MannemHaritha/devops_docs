@@ -1,0 +1,304 @@
+Run Docker Container using Ansible
+###################
+
+how to do CD process automatically?
+
+using ansible will try to run docker container on remote machines
+
+we will be creating 2 machines and if needed create more as well.
+
+machine-1---> we will install ansible
+machine-2--->we will try to run application using ansible adhoc commands are playbooks
+
+
+####################
+
+1. let create two servers
+	we need to install ansible only in control node no need to install in all machines.
+	from the control node we need to generate as ssh key and makue sure key is copied to the ansible-node authorized_key
+	you can do this process as a normal user or root user or nwely created user
+	
+2. in master install ansible
+	amazon-linux-extreas install ansible2 -yes
+	ansible --version
+	
+3. we need to make there will be a password less  connection between both the servers i.e
+	we can enable password authentication and then use ssh-copy-id commands in node servers
+	i.e	in master--->	ssh-copy-id root@172.31.18.19
+		in node	--->	vi /etc/ssh/sshd_config
+							PermitRootLogin yes
+							PasswordAuthentication yes
+						sudo systemctl restart sshd
+		in master--->	ssh-copy-id root@172.31.18.19
+		in node	--->	passwd root
+							make passwoed as root
+		in master--->	enter passwoed as root
+						ssh 'root@172.31.18.19' -----------> now this is login as node to master using password authentication.
+
+		OR
+	manually copy the ssh key of user in control node to ansible-node authorized_key
+	
+
+
+4. now we will try to run docker container on remote machines
+	so what we need to is,sometimes the remote machine can be a single machine or the remote can be a group of machines.
+	so that first we need to create a group of remote machines we call that as ansible inventory.i.enable
+		[somename]
+		server-1
+		server-2
+		server-3
+			OR
+		add private ip or public ip used during ssh key coping process
+			OR
+	vi /etc/ansible/hosts
+		[amazonlinux2-servers]
+		172.31.18.19
+
+
+5. now first will check the ansible is to reach node or not. so that using ADHOC commands will ckeck.
+
+adhoc command sysntax
+		ansible [pattern] -m [module] -a "[module options]"
+
+For ping module 
+
+	ansible amazonlinux2-servers -m ping 
+	
+		172.31.18.19 | SUCCESS => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python"
+    },
+    "changed": false,
+    "ping": "pong"
+}
+
+File module
+1. first i create a file in ansible-node at /tmp location
+		ansible [pattern] -m [module] -a "[module options]"
+
+	ansible webservers -m ansible.builtin.file -a "dest=/path/to/c mode=755 owner=mdehaan group=mdehaan state=directory"
+					OR
+	in master
+	ansible amazonlinux2-servers -m file -a "path=/tmp/sample.txt state=touch"
+	
+		172.31.18.19 | CHANGED => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python"
+    },
+    "changed": true,
+    "dest": "/tmp/sample.txt",
+    "gid": 0,
+    "group": "root",
+    "mode": "0644",
+    "owner": "root",
+    "size": 0,
+    "state": "file",
+    "uid": 0
+
+
+	now check in node 
+	ls -l /tmp 		------>it shows file is created
+
+2. now i want to create a directory
+	
+	ansible webservers -m ansible.builtin.file -a "dest=/path/to/c mode=755 owner=mdehaan group=mdehaan state=directory"
+					OR
+	in master
+		ansible amazonlinux2-servers -m file -a "path=/tmp/samplefolder state=directory"
+			
+	172.31.18.19 | CHANGED => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python"
+    },
+    "changed": true,
+    "gid": 0,
+    "group": "root",
+    "mode": "0755",
+    "owner": "root",
+    "path": "/tmp/samplefolder",
+    "size": 6,
+    "state": "directory",
+    "uid": 0
+}
+		
+
+
+	now check in node 
+		ls -l /tmp 		------>it shows directory is created
+
+
+3. now i want to remove/delete file/directory
+	ansible webservers -m ansible.builtin.file -a "dest=/path/to/c state=absent"
+
+	in master
+		ansible amazonlinux2-servers -m file -a "path=/tmp/samplefolder state=absent"
+	
+	172.31.18.19 | CHANGED => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python"
+    },
+    "changed": true,
+    "path": "/tmp/samplefolder",
+    "state": "absent"
+}
+
+	now check in node 
+		ls -l /tmp 		------>it shows directory is deleted
+
+
+
+Yum module
+1. i will install the packages using yum module.syntax is
+	ansible webservers -m ansible.builtin.yum -a "name=acme state=present"
+
+	in master
+		ansible amazonlinux2-servers -m yum -a "name=python3-pip state=present"
+		
+		172.31.18.19 | SUCCESS => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python"
+    },
+    "changed": false,
+    "msg": "",
+    "rc": 0,
+    "results": [
+        "python3-pip-20.2.2-1.amzn2.0.3.noarch providing python3-pip is already installed"
+    ]
+}
+
+	in node check
+		 python --version
+
+
+
+6. now i want to run docker container in remote machine
+	https://docs.ansible.com/ansible/2.9/modules/docker_container_module.html
+	ansible docker container module haaving some prerequisites
+		Docker API >= 1.20
+		Docker SDK for Python: Please note that the docker-py Python module has been superseded by docker (see here for details). For Python 2.6, docker-py must be used. Otherwise, it is recommended to install the docker Python module. Note that both modules should not be installed at the same time. Also note that when both modules are installed and one of them is uninstalled, the other might no longer function and a reinstall of it is required.
+		Docker SDK for Python >= 1.8.0 (use docker-py for Python 2.6)
+
+	1. i will install docker  using ansible yum module
+		in master
+			ansible amazonlinux2-servers -m yum -a "name=docker state=present"
+		in node
+			docker --version
+				or
+			rpm -qa | grep docker
+			
+	2. i want to run the docker  using ansible service module
+		in master
+			ansible amazonlinux2-servers -m service -a "name=docker state=started"
+
+		in node
+			systemctl status docker
+
+	3. i want to install docker-py package(Docker SDK for Python) i.e using  pip module
+			name: Install bottle for Python 3.3 specifically, using the 'pip3.3' executable
+			ansible.builtin.pip:
+			name: bottle
+			executable: pip3.3
+
+		in master
+			ansible amazonlinux2-servers -m pip -a "name=docker-py executable=pip3"
+
+		in node
+			pip3 show docker-py
+	
+	4. now willl go to the docker container sysntax. 
+		this is yaml file 
+		https://docs.ansible.com/ansible/latest/network/getting_started/first_playbook.html
+---
+
+- name: Network Getting Started First Playbook
+  connection: ansible.netcommon.network_cli
+  gather_facts: false
+  hosts: all
+  tasks:
+
+    - name: Get config for VyOS devices
+      vyos.vyos.vyos_facts:
+        gather_subset: all
+
+    - name: Display the config
+      debug:
+        msg: "The hostname is {{ ansible_net_hostname }} and the OS is {{ ansible_net_version }}"
+		
+				OR
+		ADHOC COMMAND
+			ansible-playbook --syntax-check run-docker-container.yml
+			ansible amazonlinux2-servers -m docker_container -a "name=myjavacontainer image=mannemharitha/springboot-maven-course-micro-svc:10 state=present ports="8080:8080" recreate=yes ansible_python_interpreter=/usr/bin/python3"
+
+
+
+
+
+history in master
+########
+	1  hostname -f
+    2  amazon-linux-extras ansible2 -y
+    3  amazon-linux-extras install ansible2 -y
+    4  ssh-keygen
+    5  ssh-copy-id root@172.31.18.19
+    6  ssh 'root@172.31.18.19'
+    7  vi /etc/ansible/hosts
+    8  ansible amazonlinux2-servers -m ping
+    9  ansible amazonlinux2-servers -m file -a "path=/tmp/sample.txt state=touch"
+   10  ansible amazonlinux2-servers -m file -a "path=/tmp/samplefolder state=directory"
+   11  ansible amazonlinux2-servers -m file -a "path=/tmp/samplefolder state=absent"
+   12  ansible amazonlinux2-servers -m yum -a "name=python-3-pip state=present"
+   13  ansible amazonlinux2-servers -m yum -a "name=python3-pip state=present"
+   14  ansible amazonlinux2-servers -m yum -a "name=docker state=present"
+   15  ansible amazonlinux2-servers -m service -a "name=docker state=started"
+   16  ansible amazonlinux2-servers -m pip -a "name=docker-py executable=pip3.3"
+   17  ansible amazonlinux2-servers -m pip -a "name=docker-py executable=pip3"
+   18  ansible amazonlinux2-servers -m docker_container -a "name=myjavacontainer image=mannemharitha/springboot-maven-course-micro-svc:10 state=present ports="8080:8080" recreate=yes"
+   19  ansible amazonlinux2-servers -m docker_container -a "name=myjavacontainer image=mannemharitha/springboot-maven-course-micro-svc:10 state=present ports="8080:8080" recreate=yes ansible_python_interpreter=/usr/bin/python3"
+   20  vi run docker-container.yml
+   21  vi run-docker-container.yml
+   22  ansible-playbook --syntax-check run-docker-container.yml
+   23  ansible-playbook run-docker-container.yml -e "ansible_python_interpreter=/usr/bin/python3"
+   24  vi run-docker-container.yml
+   25  which python
+   26  which python3
+   27  ansible-playbook run-docker-container.yml -e "ansible_python_interpreter=/bin/python3"
+   28  vi run-docker-container.yml
+   29  ansible-playbook --syntax-check run-docker-container.yml
+   30  cd /etc
+   31  ls -l
+   32  ls -l | grep ansible
+   33  cd ansible/
+   34  ls
+   35  vi ansible.cfg
+   36  vi /etc/ansible/hosts
+   37  ansible amazonlinux2-servers -m ping
+   38  cd ~
+   39  ls
+   40  ll
+   41  vi run
+   42  ansible-playbook run-docker-container.yml -e "ansible_python_interpreter=/usr/bin/python"
+   43  pip install docker-py
+
+
+history in node
+############
+	1. hostname -f
+    2  ifconfig
+    3  vi /etc/ssh/sshd_config
+    4  systemctl restart sshd
+    5  ssh-copy-id root@172.31.18.19
+    6  if
+    7  -f
+    8  passwd root
+    9  ls -l
+   10  ls -l /tmp
+   11  python --version
+   12  docker --version
+   13  rpm -qa | grep docker
+   14  systemctl status docker
+   15  pip3 show docker-py
+   16  docker container ps
+   17  which python
+   18  python --version
+   19  which python3
+   20  sudo docker ps
