@@ -1,0 +1,254 @@
+docker swarm
+#################
+what is docker swarm?
+what is aws ecs?
+how to create docker swarm cluster?
+how to run/deploy application on swarm cluster?
+
+what are the pros and cons of the swarm cluster and then we will start with k8s architecture?
+
+#####################################
+
+if we have only one machine and if the machine is  down we will not have the any containers running
+instaed we create a group oif machines and install docker in all the machines. 
+one of the machine we will make it as master and another macines we will make it as worker nodes/slaves/agents by joining docker swarm cluster.
+
+
+				OR	
+so far we are running docker containers on single machine and what if that machine is down?
+what happens to the containers running on that machine?
+
+docker swarm
+######
+we need to create multiple machines into a cluster is called docker swarm.
+for example i will take 3 machines
+1 or multiple machines we can make as master and other can be there as node/agent/slave
+
+
+in all machines docker should be there 
+
+machine-1: docker-master 
+
+machine-2: docker-node1 
+
+machine-3: docker-node2 
+
+
+1. in master
+		1. sudo hostnamectl set-hostname docker-master
+			hostname -f
+		2.  yum install docker -y
+		3  docker --version
+		4  systemctl start docker
+		5  systemctl status docker
+   in node1
+		1. sudo hostnamectl set-hostname docker-node1
+			hostname -f
+		2.  yum install docker -y
+		3  docker --version
+		4  systemctl start docker
+		5  systemctl status docker
+		
+	in node2
+		1. sudo hostnamectl set-hostname docker-node2
+			hostname -f
+		2.  yum install docker -y
+		3  docker --version
+		4  systemctl start docker
+		5  systemctl status docker
+
+
+2. we have to initialize the swarm/docker swarm
+	in master
+		docker swarm init
+				Swarm initialized: current node (vuh3whuvjeo9k78fbc2inroa5) is now a manager.
+
+				To add a worker to this swarm, run the following command:
+
+				docker swarm join --token SWMTKN-1-0x70k9vw9g2bknsovkg8w3t68j2j6jfv80ewtboh0vs5928nyc-1gm0fv80ovfo8v3c56kz7jxku 172.31.3.24:2377
+
+				To add a manager to this swarm, run 'docker swarm join-token manager' and follow the instructions.
+
+	in all nodes copy the above command
+	in node1	
+		docker swarm join --token SWMTKN-1-0x70k9vw9g2bknsovkg8w3t68j2j6jfv80ewtboh0vs5928nyc-1gm0fv80ovfo8v3c56kz7jxku 172.31.3.24:2377
+	in node2
+		docker swarm join --token SWMTKN-1-0x70k9vw9g2bknsovkg8w3t68j2j6jfv80ewtboh0vs5928nyc-1gm0fv80ovfo8v3c56kz7jxku 172.31.3.24:2377
+
+
+3. now you can see the all nodes in master
+	in master
+		docker node ls
+			ID                            HOSTNAME        STATUS    AVAILABILITY   MANAGER STATUS   ENGINE VERSION
+			vuh3whuvjeo9k78fbc2inroa5 *   docker-master   Ready     Active         Leader           20.10.23
+			krvfi6oytautfkriws75ad0hq     docker-node1    Ready     Active                          20.10.23
+			ffl3ojrkwqud2hlcmjw2cop3k     docker-node2    Ready     Active                          20.10.23
+
+4. in a swarm we need to create a service, in service we have to mentioned replicas and image name
+	https://docs.docker.com/engine/swarm/services/
+	for example
+		Run a three-task Nginx service on 3-node swarm
+		Imagine that you have a 3-node swarm, and you deploy an Nginx service running three tasks on a 3-node swarm:
+
+	in master
+		docker service ls
+		docker service create --name my_web \
+                        --replicas 3 \
+                        --publish published=80,target=80 \
+                        nginx
+		docker ps
+	in node1
+		docker ps
+	in node2
+		docker ps
+
+
+5. if you want to scale up /we can scalling the service upto 5 or 7 as upto you / we can change to run the containers 3 as 5
+	then it sees the nodes which are available and it schedules on those nodes.
+		
+	in master
+		https://docs.docker.com/engine/swarm/swarm-tutorial/scale-service/
+		docker service scale <SERVICE-ID>=<NUMBER-OF-TASKS>
+				or
+		docker service scale my_web=5
+		docker ps
+	in node1
+		docker ps
+	in node2
+		docker ps
+
+
+
+6. even if one of the node goes down on all that traffic automatically scheduled on the availabile nodes
+	let say i intentionally make node1 goes down, it will automatically scheduled to avalable nodes which are master and node2
+
+	in master 
+	Change node availability
+		docker node ls
+		docker node update --availability drain node-1  		-----------> it will drain/ stop the node1
+				or
+		
+		docker node update --availability drain  docker-node1 
+		docker node ls
+
+	in node1
+		docker ps
+	in node2
+		docker ps
+
+
+7. 	44.201.61.112:80
+
+8. if node is comes back again which went down what happens to already running 5 tasks?
+	even though node comes back online already running traffic will not moved to node which comes back again/online/availabile
+	only new traffic will be scheduled on that /available node/again comes node.
+
+	let say we have to make again node is actively and create a service/app/acontainer  and that traffic will automatically added to that newly added node
+	in master
+		docker node update --availability Active  docker-node1
+		docker node ls
+
+
+		lets try to create spring boot application/service before that we can login as docker hub
+			docker login -u mannemharitha -p mannem123
+			docker service create --with-registry-auth --name my_springboot \
+								  --replicas 3 \
+								  --publish published=8080,target=8080 \
+								  MannemHaritha/springboot-maven-course-micro-svc:10
+			docker ps
+	in node1
+		docker ps
+	in node2
+		docker ps
+
+
+9.  44.201.61.112:8080/course-svc/getAllDevopsTools
+
+
+
+
+docker master commands
+###############
+	1  hostname -f
+    2  yum install docker -y
+    3  docker --version
+    4  systemctl start docker
+    5  systemctl status docker
+    6  history
+    7  docker swarm init
+    8  docker node ls
+    9  docker service ls
+   10  docker service create --name my_web /                        
+							--replicas 3                         
+							--publish published=80,target=80                         
+							nginx
+   11  docker ps
+   12  docker service scale my_web=5
+   13  docker ps
+   14  docker node ls
+   15  docker node update --availability drain  docker-node1
+   16  docker node ls
+   17  docker ps
+   18  docker node update --availability Active  docker-node1
+   19  docker node ls
+   30  docker services ls
+   37  docker login -u mannemharitha -p mannem123
+   38  docker service create --name my_springboot /                        
+							--replicas 3 /                        
+							--publish published=8080,target=8080                         
+							mannemharitha/springboot-maven-course-micro-svc:10
+   39  docker service ls
+   53  docker ps
+   54. 44.201.61.112:8080/course-svc/getAllDevopsTools
+docker-node1 commands
+########################
+	1.  hostname -f
+    2  yum install docker -y
+    3  systemctl start docker
+    4  systemctl status docker
+    5  docker swarm join --token SWMTKN-1-0x70k9vw9g2bknsovkg8w3t68j2j6jfv80ewtboh0vs5928nyc-1gm0fv80ovfo8v3c56kz7jxku 172.31.3.24:2377
+    6  docker ps
+    9  docker login -u mannemharitha -p mannem123
+   10  docker ps
+
+docker-node2
+######################
+	1  yum install docker -y
+    2  systemctl start docker
+    3  systemctl status docker
+    4  docker swarm join --token SWMTKN-1-0x70k9vw9g2bknsovkg8w3t68j2j6jfv80ewtboh0vs5928nyc-1gm0fv80ovfo8v3c56kz7jxku 172.31.3.24:2377
+    5  docker ps
+    8  docker login -u mannemharitha -p mannem123
+    9  docker ps
+
+
+
+what are the pros and cons of the swarm cluster and then we will start with k8s architecture?
+########################
+
+Kubernetes vs Docker Swarm: Comparison
+K8s and Docker Swarm have many of the same features, but each tool shines in different aspects. The table below offers a head-to-head Kubernetes vs Docker Swarm comparison:
+##################################
+
+Point of comparison									Kubernetes																			Docker Swarm
+Main selling point				A complete container orchestration solution with advanced automation feature and high customization	An emphasis on ease of use and a seamless fit with other Docker products
+Installation					Somewhat complex as you need to install (and learn to use) kubectl					Quick and easy setup (if you already run Docker)  
+Learning curve  				High learning curve (but has more features)										Lightweight and easy to use (but limited functionality)
+GUI  							Detailed native dashboards										No out-of-the-box dashboards (but you can integrate a third-party tool)
+Cluster setup					Difficult to start a cluster (but the cluster is very strong once set up)			Easy to start a cluster
+Availability features  			Self-healing, intelligent scheduling, and replication features						Availability controls and service duplication  
+Scalability  					All-in-one scaling based on traffic	Values scaling quickly (approx. 5x faster than K8s) over scaling automatically
+Horizontal auto-scaling  		Yes																					No
+Monitoring capabilities  	Has built-in monitoring and logging						Basic server log and event tools, but needs a third-party tool for advanced monitoring
+Load balancing					No built-in mechanism for auto load-balancing														Internal load balancing
+Security features				Relies on transport layer security (TLS) and access control-related tasks				Supports multiple security (RBAC 		 		authorization, TLS/SSL, secrets management, policies, etc.)
+CLI								Needs a separate CLI											Integrated Docker CLI, which can limit the functionality in some use cases
+Community						Huge and active community						Reasonably popular, but the user base is getting smaller since the Mirantis acquisition
+Optimal use case				High-demand apps with a complex configuration									Simple apps that are quick to deploy and easy to manage
+
+
+
+
+
+
+
