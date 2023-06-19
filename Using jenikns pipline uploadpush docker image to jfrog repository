@@ -1,0 +1,62 @@
+Using jenikns pipline upload/push docker image to jfrog repository
+##############################
+1. i will create a jenkins server
+	git
+	maven
+	docker there
+2. will try to push image to jfrog
+
+
+intsalling jenkins
+#############
+1.sudo yum update -y
+2  sudo yum install git java-17-amazon-corretto-headless -y
+3  sudo yum install docker -y
+	sudo systemctl start docker
+
+4. sudo wget -O /etc/yum.repos.d/jenkins.repo https://pkg.jenkins.io/redhat-stable/jenkins.repo
+5. sudo rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
+6. sudo yum install jenkins
+7. sudo systemctl start jenkins
+
+7.  cd /tmp
+8.  wget https://archive.apache.org/dist/maven/maven-3/3.9.0/binaries/apache-maven-3.9.0-bin.tar.gz
+9.  tar xvf apache-maven-3.9.0-bin.tar.gz
+10.  ls
+
+
+Jfrog Installation
+#####################
+https://medium.com/@raguyazhin/step-by-step-guide-to-install-jfrog-artifactory-on-amazon-linux-6b832dd8097b
+1. sudo yum update -y
+2. sudo docker pull docker.bintray.io/jfrog/artifactory-oss:latest
+3. sudo docker images
+4. sudo mkdir -p /jfrog/artifactory
+5. sudo chown -R 1030 /jfrog/
+6. sudo docker run --name artifactory -d -p 8081:8081 -p 8082:8082 -v /jfrog/artifactory:/var/opt/jfrog/artifactory docker.bintray.io/jfrog/artifactory-oss:latest
+7. sudo vi /etc/systemd/system/artifactory.service
+
+[Unit]
+Description=Setup Systemd script for Artifactory Container
+After=network.target
+[Service]
+Restart=always
+ExecStartPre=-/usr/bin/docker kill artifactory
+ExecStartPre=-/usr/bin/docker rm artifactory
+ExecStart=/usr/bin/docker run --name artifactory -p 8081:8081 -p 8082:8082 \
+  -v /jfrog/artifactory:/var/opt/jfrog/artifactory \
+  docker.bintray.io/jfrog/artifactory-oss:latest
+ExecStop=-/usr/bin/docker kill artifactory
+ExecStop=-/usr/bin/docker rm artifactory
+[Install]
+WantedBy=multi-user.target
+
+8. sudo systemctl daemon-reload
+9. sudo systemctl start artifactory
+10. sudo systemctl enable artifactory
+11. sudo systemctl status artifactory
+12. 3.86.205.192:8081
+	allow for 8081 and 8082 port numbers
+13. login
+	username:admin
+	password: password
