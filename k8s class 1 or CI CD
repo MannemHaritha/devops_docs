@@ -1,0 +1,767 @@
+k8s class 1 /CI CD
+#####################
+
+Infra is needed for CI CD session
+	1. Ec2 to create eks cluster and run jenkins pipeline
+	2. Ec2 to store docker images
+	3. EKS cluster setup
+	4. IAM service to get permission for eks cluster
+		IAM role
+		IAM user to push the docker images to ECR
+
+#######################
+
+FOR CI 
+##########
+1. sudo yum install java-11-amazon-corretto-headless -y
+
+2. sudo yum install git docker -y
+	sudo systemctl start docker
+	sudo chmod 777 /var/run/docker.sock
+	
+3. cd /tmp/
+4. wget https://archive.apache.org/dist/maven/maven-3/3.8.7/binaries/apache-maven-3.8.7-bin.tar.gz
+5. tar xvf apache-maven-3.8.7-bin.tar.gz
+6. cd ~/
+
+7. sudo wget -O /etc/yum.repos.d/jenkins.repo \
+    https://pkg.jenkins.io/redhat-stable/jenkins.repo
+8. sudo rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
+9. sudo yum install jenkins
+10. sudo systemctl start jenkins
+11. sudo systemctl status jenkins
+12. 3.86.24.176:8080
+13. sudo cat /var/lib/jenkins/secrets/initialAdminPassword
+
+14. wget https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-10.0.0.68432.zip
+15. unzip sonarqube-10.0.0.68432.zip
+16. pwd
+17. /home/ec2-user/sonarqube-10.0.0.68432/bin/linux-x86-64/sonar.sh start
+18. /home/ec2-user/sonarqube-10.0.0.68432/bin/linux-x86-64/sonar.sh status
+		OR
+	 sudo docker container run --name=sonarcontainer -p 9000:9000 -d sonarqube
+	 3.86.24.176:9000
+19. username: admin
+	password: admin
+20. go to account under my account 
+	token name: jenkins-sonar-cicd
+	token : sqa_03ba14a02318dc21b4ae84be485de730f9620e32
+
+
+
+21. we need to login to ecr to push images
+
+	aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 255766941731.dkr.ecr.us-east-1.amazonaws.com
+
+22. we need to build
+	docker build -t harithacicd .
+			OR
+	docker build -t harithacicd:$BUILD_NUMBER .
+
+23. we need to tag
+	docker tag harithacicd:$BUILD_NUMBER 255766941731.dkr.ecr.us-east-1.amazonaws.com/harithacicd:latest
+				OR
+	docker tag harithacicd:$BUILD_NUMBER 255766941731.dkr.ecr.us-east-1.amazonaws.com/harithacicd:$BUILD_NUMBER
+
+24. we need to push
+	docker push 255766941731.dkr.ecr.us-east-1.amazonaws.com/harithacicd:latest
+				OR
+	docker push 255766941731.dkr.ecr.us-east-1.amazonaws.com/harithacicd:latest
+
+
+
+FOR CI PIPELINE APPROCH 1  -------------> this is purely driven with IAM ROLE
+################
+pipeline{
+    agent any
+    tools{
+        maven 'maven-3.8.7'
+    }
+    stages{
+        stage('git check out'){
+            steps{
+                git branch: 'master', url: 'https://github.com/MannemHaritha/springboot-maven-course-micro-svc.git'
+            }
+        }
+        stage('build maven project'){
+            steps{
+                sh 'mvn clean package'
+            }
+        }
+        stage('sonar scanner for maven project') { 
+            steps { 
+               sh 'mvn sonar:sonar -Dsonar.token=sqa_03ba14a02318dc21b4ae84be485de730f9620e32 -Dsoner.host.url=http://184.73.131.213:9000   -Dsonar.projectkey=springboot-maven-course-micro-svc -Dsonar.projectname=springboot-maven-course-micro-svc' 
+            }
+        }
+        stage('login to AMAZON ECR') { 
+            steps { 
+               sh 'aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 255766941731.dkr.ecr.us-east-1.amazonaws.com'
+            }
+        }
+        stage('build docker image/tag/push to ECR repository') { 
+            steps { 
+               	sh 'docker build -t harithacicd:$BUILD_NUMBER .'
+				sh 'docker tag harithacicd:$BUILD_NUMBER 255766941731.dkr.ecr.us-east-1.amazonaws.com/cicd:$BUILD_NUMBER'
+				sh 'docker push 255766941731.dkr.ecr.us-east-1.amazonaws.com/cicd:$BUILD_NUMBER'
+			}
+        }
+    }
+}
+
+
+
+
+
+
+
+FOR CI PIPELINE APPROCH 2  	------------>this is purely driven through IAM USER
+################
+the above pipeline is done with as another approch ,as a part of second approach we need 
+docker pluggin
+docker pipeline pluggin
+cloudbase aws creds
+amazon ECR
+IAM USER
+	Access key: AKIATXDHF2ARVTHYIVHH
+	Secret access key: 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
+
+
+1. NOW GO TO DASHBOADR---->MANAGE JENKINS ----->SECURITY----->CREDNTIALS---->SYSTEM---->GLOBAL CREDNTIALS--->ADD CREDENTIALS
+
+
+pipeline{
+    environment {
+    registry = '255766941731.dkr.ecr.us-east-1.amazonaws.com/cicd'
+    registryCredential = 'my-aws-jenkins-creds'
+    dockerImage = ''
+  }
+    agent any
+    tools{
+        maven 'maven-3.8.7'
+    }
+    stages{
+        stage('git check out'){
+            steps{
+                git branch: 'master', url: 'https://github.com/MannemHaritha/springboot-maven-course-micro-svc.git'
+            }
+        }
+        stage('build maven project'){
+            steps{
+                sh 'mvn clean package'
+            }
+        }
+        stage('sonar scanner for maven project') { 
+            steps { 
+               sh 'mvn sonar:sonar -Dsonar.token=sqa_81701bfcf6e191c265f4b513edb629dde074c479 -Dsoner.host.url=http://3.86.24.176:9000   -Dsonar.projectkey=springboot-maven-course-micro-svc -Dsonar.projectname=springboot-maven-course-micro-svc' 
+            }
+        }
+        stage('Building image') {
+           steps{
+               script {
+                    dockerImage = docker.build registry + ":$BUILD_NUMBER"
+                }
+            }    
+	    }
+        stage('Deploy image') {
+            steps{
+                script{
+                    docker.withRegistry("https://" + registry, "ecr:us-east-1:" + registryCredential) {
+                        dockerImage.push()
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+
+
+
+EKS cluster setup
+############
+Step1: Take EC2 Instance with t2.xlarge instance type
+
+Step2: Create IAM Role with Admin policy for eks-cluster and attach to ec2-instance
+
+Step3: Install kubectl
+	curl -o kubectl https://amazon-eks.s3.us-west-2.amazonaws.com/1.23.15/2023-01-11/bin/linux/amd64/kubectl
+	chmod +x ./kubectl
+	mkdir -p $HOME/bin
+	cp ./kubectl $HOME/bin/kubectl
+	export PATH=$HOME/bin:$PATH
+	echo 'export PATH=$HOME/bin:$PATH' >> ~/.bashrc
+	source $HOME/.bashrc
+	kubectl version --short --client
+	
+Step4: Install eksctl:
+	curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
+	sudo mv /tmp/eksctl /usr/bin
+	eksctl version
+	
+Step5: Cluster creation:
+eksctl create cluster --name=eksdemo \
+                  --region=us-east-1 \
+                  --zones=us-east-1a,us-east-1b \
+                  --without-nodegroup 
+			OR
+eksctl create cluster --name=eksdemo --region=us-east-1 --version=1.22 --zones=us-east-1a,us-east-1b --without-nodegroup
+		or
+eksctl create cluster --name=eksdemo-dev --region=us-east-1 --version=1.23 --zones=us-east-1a,us-east-1b --without-nodegroup
+
+eksctl create cluster --name=eksdemo-test --region=us-east-1 --version=1.23 --zones=us-east-1a,us-east-1b --without-nodegroup
+
+eksctl create cluster --name=eksdemo-staging/UAT/Pre-prod --region=us-east-1 --version=1.23 --zones=us-east-1a,us-east-1b --without-nodegroup
+
+eksctl create cluster --name=eksdemo-prod --region=us-east-1 --version=1.23 --zones=us-east-1a,us-east-1b --without-nodegroup
+
+
+step 6:
+
+eksctl create nodegroup --cluster=eksdemo-dev \
+                   --region=us-east-1 \
+                   --name=eksdemo-dev-ng1 \
+                   --node-type=t2.medium \
+                   --nodes=2 \
+                   --nodes-min=2 \
+                   --nodes-max=4 \
+                   --node-volume-size=10 \
+                   --ssh-access \
+                   --ssh-public-key=minikube \
+                   --managed \
+                   --asg-access \
+                   --external-dns-access \
+                   --full-ecr-access \
+                   --appmesh-access \
+                   --alb-ingress-access	
+
+
+
+
+
+
+
+
+
+for CD
+###############
+1. we need to get yaml file from github
+2. we need to have kubeconfig file to connect the dev cluster/uat/prod environment cluster  based on need
+3. once we have kubeconfig we can run kubectl commands against that cluster 
+
+we will  give a drop down for the user to select the cluster name or env name  which they want to deploy based on that we will call a shell script to get the kubeconfig file
+i.e aws eks
+
+
+
+select  env ,cluster name and region what they want/how to read choice parameter
+###########
+echo "params: ${params.RELEASE_SCOPE}"
+
+pipeline{
+    agent any
+    stages{
+        stage('print values selected by the user to do deployment'){
+            steps{
+                echo "selectEnvToDeploy: ${params.selectEnvToDeploy}"
+                echo "eks_cluster_name: ${params.eks_cluster_name}"
+                echo "aws_region: ${params.aws_region}"
+            }
+        }
+    }
+}
+
+
+aws update kubeconfig file  
+
+	aws eks update-kubeconfig  --name my-cluster  --region region-code
+	
+	aws eks update-kubeconfig  --name eksdemo-dev  --region us-east-1
+
+
+now once they pass this you need to run a shell script to generate the kubeconfig  file for that
+
+
+
+environment {
+    selectEnvToDeploy = "${selectEnvToDeploy}" 
+    eks_cluster_name = "eksdemo-${selectEnvToDeploy}" 
+    artifacts_dir = "${env.WORKSPACE}/artifacts"
+    aws_region = "${params.aws_region}"
+    job_root_dir="${env.WORKSPACE}"
+    }
+
+stage('Initialize workspace') {
+        steps {
+        // Make sure the directory is clean
+        dir("${artifacts_dir}") {
+            deleteDir()
+        }
+        sh(script: "mkdir -p ${artifacts_dir}", label: 'Create artifacts directory')
+        }
+    }
+
+stage('Generate kubeconfig for the cluster') {
+    steps {
+        script {
+            env.KUBECONFIG = "${artifacts_dir}/${eks_cluster_name}-kubeconfig"
+            sh 'chmod +x ${WORKSPACE}/generate_kubeconfig_eks.sh'
+        }
+        sh(script: '${WORKSPACE}/generate_kubeconfig_eks.sh', label: 'Generate kubeconfig file')
+    }
+}
+
+pipeline for to generate kubecongif file
+################
+
+pipeline{
+    agent any
+    environment {
+    selectEnvToDeploy = "${selectEnvToDeploy}" 
+    eks_cluster_name = "eksdemo-${selectEnvToDeploy}" 
+    artifacts_dir = "${env.WORKSPACE}/artifacts"
+    aws_region = "${params.aws_region}"
+    job_root_dir="${env.WORKSPACE}"
+    }
+    stages{
+       stage('Initialize workspace') {
+         steps {
+             
+          // Make sure the directory is clean
+            dir("${artifacts_dir}") {
+                deleteDir()
+            } 
+            sh(script: "mkdir -p ${artifacts_dir}", label: 'Create artifacts directory')
+          }
+        }
+        stage('git check out'){
+            steps{
+                git branch: 'master', url: 'https://github.com/MannemHaritha/springboot-maven-course-micro-svc.git'
+            }
+        }
+        stage('Generate kubeconfig for the cluster') {
+            steps {
+                script {
+                    env.KUBECONFIG = "${artifacts_dir}/${eks_cluster_name}-kubeconfig"
+                    sh 'chmod +x ${WORKSPACE}/generate_kubeconfig_eks.sh'
+                }
+                sh(script: '${WORKSPACE}/generate_kubeconfig_eks.sh', label: 'Generate kubeconfig file')
+            }
+        }
+    }
+}
+
+
+in jenkins machine/mobaxtrem we can see kubecongif file
+1. cd /var/lib/jenkins/workspace/
+2. ls
+3. cd jenkins-cicd-deplo-to-eks
+4. ls
+5. ll artifacts/
+		-rw-r--r-- 1 jenkins jenkins 2286 Jun 21 10:10 eksdemo-dev-kubeconfig
+
+using kubeconfig file we need to deploy yaml files.
+we neeed to make sure onec the pipeline is success we delete the artifact directory so that no one can see the kubeconfigfile and connect to the cluster
+
+
+by using yaml files we need to use 3 objects those are in manuall process
+pod
+deployment
+service
+
+pod: pod is the deployable unit with in the k8s cluster and pod can run one or more containers.
+	and a node can run zero pods or more pods
+	i.e a single pod can run java springboot application
+		a single pod can run pyton flask application
+		a single pod can run nodejs  application
+							
+how a typical pod looks
+#######
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx-pod
+  namespace: default
+  labels:
+    app: nginx
+spec:
+  containers:
+  - name: nginx-container
+    image: nginx
+    ports:
+      - containerPort: 80
+    resources:
+      limits:
+        cpu: "1"
+      requests:
+        cpu: "0.5"
+
+
+how to get api list
+https://stackoverflow.com/questions/49396607/where-can-i-get-a-list-of-kubernetes-api-resources-and-subresources
+	kubectl api-resources -o wide
+
+for pod
+	kubectl api-resources -o wide | grep pod
+		v1
+
+for deployment
+	 kubectl api-resources -o wide | grep deployment
+		deployments                       deploy       apps/v1                                true         Deployment                       [create delete deletecollection get list patch update watch]
+
+for pv
+	kubectl api-resources -o wide | grep pv
+		v1
+
+for rolebinding
+	kubectl api-resources -o wide | grep rolebinding
+		rbac.authorization.k8s.io/v1         
+
+
+
+now
+run pod
+1. vi nginx-pod.yaml
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx-pod
+  namespace: default
+  labels:
+    app: nginx
+spec:
+  containers:
+  - name: nginx-container
+    image: nginx
+    ports:
+      - containerPort: 80
+    resources:
+      limits:
+        cpu: "1"
+      requests:
+        cpu: "0.5"
+
+2.  cat nginx-pod.yaml
+
+3. kubectl apply -f nginx-pod.yaml
+		pod/nginx-pod created
+
+4. using this pod how to get lables
+	kubectl get pods -l 'app=nginx'
+		nginx-pod   1/1     Running   0          3m20s
+
+
+draw back of pod is scalability, we can not run multiple instances on pod so that people are using deployments.
+
+
+Deployment: it will internally creates a pod but deployment has a extra feature called scalability.
+
+how a typical deployment looks
+##########
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  labels:
+    app: nginx
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.14.2
+        ports:
+        - containerPort: 80
+
+
+5. kubectl delete pod -l 'app=nginx'
+		pod "nginx-pod" deleted
+6. vi nginx-deployment.yaml
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  namespace: default
+  labels:
+    app: nginx
+spec:
+  selector:
+    matchLabels:
+      app: nginx
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.14.2
+        ports:
+        - containerPort: 80
+
+7.  kubectl apply -f nginx-deployment.yaml
+		deployment.apps/nginx-deployment created
+		
+8.  kubectl get pods -l 'app=nginx'
+		NAME                               READY   STATUS    RESTARTS   AGE
+		nginx-deployment-9456bbbf9-9gxpt   1/1     Running   0          104s
+		nginx-deployment-9456bbbf9-c49tr   1/1     Running   0          104s
+		nginx-deployment-9456bbbf9-xdnfs   1/1     Running   0          104s
+
+service proxy
+	we need to deployment as a service
+	we have a deployment and we need to expose as service, do this as deployment or again using yaml file
+	now w e need to expose a service using yaml file i.e
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-service
+  namespace: default
+spec:
+  selector:
+    app: nginx
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  type: LoadBalancer
+
+
+9. kubectl api-resources -o wide | grep service
+		v1
+
+10.  vi nginx-service.yaml
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-service
+  namespace: default
+spec:
+  selector:
+    app: nginx
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  type: LoadBalancer
+
+
+11.  kubectl apply -f nginx-service.yaml
+		service/nginx-service created
+		
+12.  kubectl get services
+			or
+	 kubectl get services -n namespace
+
+13. go to im aws load balancer is in service
+		search in chrome/mobile ngnix will be displayed
+		abda30704387b481ebc87e3de3ac84e3-504279582.us-east-1.elb.amazonaws.com
+
+14. now to do application for deployment using ECR so that now we can delete the service and deployment also.
+	kubectl delete service nginx-service
+		service "nginx-service" deleted
+	kubectl delete deployment nginx-deployment
+		deployment.apps "nginx-deployment" deleted
+
+15. cp nginx-deployment.yaml springbbot-deployment.yaml
+	cp nginx-service.yaml springbbot-service.yaml
+
+
+16. sed 's/nginx/springboot/g' springboot-deployment.yaml		----------------->this command is used for where ever nginx is there springboot will be replace on that nginx place
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: springboot-deployment
+  namespace: default
+  labels:
+    app: springboot
+spec:
+  selector:
+    matchLabels:
+      app: springboot
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: springboot
+    spec:
+      containers:
+      - name: springboot
+        image: springboot:1.14.2
+        ports:
+        - containerPort: 80
+
+
+17. sed -i 's/nginx/springboot/g' springboot-deployment.yaml
+18. cat springboot-deployment.yaml
+
+19. in that yaml file we nedd to change docker image and port number rest all are same
+
+	vi springboot-deployment.yaml
+	
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: springboot-deployment
+  namespace: default
+  labels:
+    app: springboot
+spec:
+  selector:
+    matchLabels:
+      app: springboot
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: springboot
+    spec:
+      containers:
+      - name: springboot
+        image: 255766941731.dkr.ecr.us-east-1.amazonaws.com/cicd:2
+        ports:
+        - containerPort: 8080
+
+20. kubectl apply -f springboot-deployment.yaml
+21. kubectl get pods
+			or
+	kubectl get pods -l 'app=springboot'
+		NAME                                     READY   STATUS    RESTARTS   AGE
+		springboot-deployment-7bc4b5b884-5b984   1/1     Running   0          3m41s
+		springboot-deployment-7bc4b5b884-b4bww   1/1     Running   0          3m41s
+		springboot-deployment-7bc4b5b884-v6mpx   1/1     Running   0          3m41s
+
+
+22. cat springboot-service.yaml
+23. sed -i 's/nginx/springboot/g' springboot-service.yaml
+24. ls
+25. vi springboot-service.yaml
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: springboot-service
+  namespace: default
+spec:
+  selector:
+    app: springboot
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+  type: LoadBalancer
+
+26.  kubectl apply -f  springboot-service.yaml
+		service/springboot-service created
+
+27.  kubectl get services springboot-service
+			or
+	kubectl get service
+
+
+28.  go to im aws load balancer is in service
+		search in chrome/mobile ngnix will be displayed
+		a6766037c318d4549b3357ceb9a42afa-617643187.us-east-1.elb.amazonaws.com:8080/course-svc/getAllDevopsTools
+
+
+these two applications call it here in manually it it will call jenkins pipeline itself. so that
+let first delete the both deployment and service files 
+
+29. kubectl delete deployment springboot-deployment
+		deployment.apps "springboot-deployment" deleted
+	kubectl delete service springboot-service
+		service "springboot-service" deleted
+
+
+30. now i want to add cluster details in pipeline
+
+stage('Get the cluster details') {
+    steps {
+        script {
+            sh '''kubectl apply -f springboot-deployment-ecr.yml 
+                  kubectl apply -f springboot-service.yaml
+                  kubectl get all
+                '''
+        }
+    }
+}
+
+
+CD pipeline
+##################
+
+
+pipeline{
+    agent any
+    environment {
+    selectEnvToDeploy = "${selectEnvToDeploy}" 
+    eks_cluster_name = "eksdemo-${selectEnvToDeploy}" 
+    artifacts_dir = "${env.WORKSPACE}/artifacts"
+    aws_region = "${params.aws_region}"
+    job_root_dir="${env.WORKSPACE}"
+    }
+    stages{
+       stage('Initialize workspace') {
+         steps {
+             
+          // Make sure the directory is clean
+            dir("${artifacts_dir}") {
+                deleteDir()
+            } 
+            sh(script: "mkdir -p ${artifacts_dir}", label: 'Create artifacts directory')
+          }
+        }
+        stage('git check out'){
+            steps{
+                git branch: 'master', url: 'https://github.com/MannemHaritha/springboot-maven-course-micro-svc.git'
+            }
+        }
+        stage('Generate kubeconfig for the cluster') {
+            steps {
+                script {
+                    env.KUBECONFIG = "${artifacts_dir}/${eks_cluster_name}-kubeconfig"
+                    sh 'chmod +x ${WORKSPACE}/generate_kubeconfig_eks.sh'
+                }
+                sh(script: '${WORKSPACE}/generate_kubeconfig_eks.sh', label: 'Generate kubeconfig file')
+            }
+        }
+        stage('Get the cluster details') {
+            steps {
+                script {
+                    sh '''kubectl apply -f springboot-deployment-ecr.yml 
+                          kubectl apply -f springboot-service.yaml
+                          kubectl get all
+                       '''
+                }
+            }
+        }
+    }
+
+
+ post {
+	    cleanup {
+	          cleanWs(cleanWhenFailure: false)
+	   }
+}
+
+
+}
+
+
+
+
+
+
