@@ -1,0 +1,643 @@
+how to connect java application to postgres database using k8s
+#####################
+agenda
+############
+in today session i will use host path for storage.
+now we need to o two things here
+	1. username and password kept in postges-secrets
+	2. and storage can be kept in postges storage and then we need to do the deployment.
+
+#############
+
+how to connetc java application to postgres db using k8s?
+make sure first postgres db is up and running and u can run this from RDS OR k8s cluster setup as well.
+
+if u want to run this from k8s cluster setup we need to to make sure below things.
+
+1. we need to store db username and password securely in k8s secrets.
+
+2. we need to have a storage for db information to be maintained
+3. in regular installation  we need something is called data directory 
+	and coming to k8s cluster  and postgres we need  maintain same data directory . for that we need to decide where to keep this
+	do you want to keep on host path direcory/if u want to store in EBS / EFS OR soame other storage.
+	this is where PV and PVC comes into pucture
+	
+PV & PVC
+########
+PV MEANS PERSISTENT VOLUME
+	pv means its a piece of storage in the k8s cluster.
+	 
+PVC MEANS OERSISTENT VOLUME CLAIM
+	pvc is a request for storage.
+
+there are two ways to use persistent volumes in k8s
+	1. use an existing persistent volumes
+	2. dynamically provision new persistent volumes
+	
+in today session i will use host path for storage.
+now we need to o two things here
+	1. username and password kept in postges-secrets
+	2. and storage can be kept in postges storage and then we need to do the deployment.
+
+
+now i will install minikube setup
+
+1. install docker
+	sudo -i
+	yum install docker -y
+	systemctl start docker -y
+	chmod 777 /var/run/docker.sock
+
+2.  install minikube
+	curl -Lo minikube https://github.com/kubernetes/minikube/releases/download/v1.25.2/minikube-linux-amd64
+	chmod +x minikube
+	sudo mv minikube /usr/local/bin/
+	yum install conntrack -y
+	export PATH=/usr/local/bin:$PATH
+	minikube start --driver=none
+
+3. install kubectl
+https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/
+
+	curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+	chmod +x kubectl
+	cp kubectl /usr/bin/
+	kubectl get nodes
+			or
+
+	curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+	chmod +x ./kubectl
+	mkdir -p $HOME/bin
+	cp ./kubectl $HOME/bin/kubectl
+	export PATH=$HOME/bin:$PATH
+	echo 'export PATH=$HOME/bin:$PATH' >> ~/.bashrc
+	source $HOME/.bashrc
+	kubectl version --short --client
+			or
+	
+	kubectl latest version
+
+	curl -o kubectl https://amazon-eks.s3.us-west-2.amazonaws.com/1.20.4/2021-04-12/bin/linux/amd64/kubectl
+	chmod +x ./kubectl
+	mkdir -p $HOME/bin
+	cp ./kubectl $HOME/bin/kubectl
+	export PATH=$HOME/bin:$PATH
+	echo 'export PATH=$HOME/bin:$PATH' >> ~/.bashrc
+	source $HOME/.bashrc
+	kubectl version --short --client
+				or
+
+	curl -o kubectl https://amazon-eks.s3-us-west-2.amazonaws.com/1.14.6/2019-08-22/bin/linux/amd64/kubectl
+	chmod +x ./kubectl
+	mkdir -p $HOME/bin
+	cp ./kubectl $HOME/bin/kubectl
+	export PATH=$HOME/bin:$PATH
+	echo 'export PATH=$HOME/bin:$PATH' >> ~/.bashrc
+	source $HOME/.bashrc
+	kubectl version --short --client
+
+
+4. how to get pv api version
+	kubectl api-resources -o wide | grep pv
+		v1
+	
+5. how to show the pv attributes in k8s
+	kubectl explain pv
+
+
+while creaitng a database remember few things in ur mind
+1. username
+2. passwordASsss
+3. databasename
+4. portnumber
+5. hostname
+out of above info few are sensitive like username and password,we should handel them with more secure way.
+for this reason in k8s we are going to use concept of secret.
+in the secret i mention username and password
+even databasename and hostname not that much sensitive .meaning even if someone knows these thing without username and password they couldnot connecting to database.
+
+in k8s if we want to store any data first we need to create base64 of that data. that means
+if 
+username: mannemharitha
+password: mannem123
+if u can't keep plane text formate in k8s, if trying to keep and running means it won't allow its failed.
+	
+6. now i create in secrets-------> anything if u want to store sensetive information called secret.
+	it looks as
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: postgres-secrets
+type: Opaque
+data:
+  username: cG9zdGdyZXNhZG1pbg==					-----> this is the base64 encode
+  password: YWRtaW4xMjM=
+
+7.	echo "cG9zdGdyZXNhZG1pbg==" | base64 -d
+		postgresadmin[root@ip-172-31-17-39 ~]#			-------->postgresadmin is the username
+
+8.	echo "YWRtaW4xMjM=" | base64 -d
+		admin123[root@ip-172-31-17-39 ~]#			---------->admin123 is the password
+
+	
+9.	kubectl api-resources -o wide | grep secrets
+		v1
+
+10.	kubectl explain secrets
+	
+	
+if you want substitute actual values i.e without base64 encode it will give error  i.e	
+11. 	vi postges-secrets.yaml
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: postgres-secrets
+type: Opaque
+data:
+  username: postgresadmin					
+  password: admin123
+	
+12.	kubectl apply -f postges-secrets.yaml
+		Error from server (BadRequest): error when creating "postges-secrets.yaml": Secret in version "v1" cannot be handled as a Secret: illegal base64 data at input byte 12
+
+
+so that in k8s when u are creare in secrets always it should be a base64 encode not in plain text
+	
+13. vi postges-secrets.yaml
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: postgres-secrets
+type: Opaque
+data:
+  username: cG9zdGdyZXNhZG1pbg==					
+  password: YWRtaW4xMjM=
+	
+14. kubectl apply -f postges-secrets.yaml
+		secret/postgres-secrets created
+	
+15. kubectl get secrets
+		NAME                  TYPE                                  DATA   AGE
+		default-token-stzj5   kubernetes.io/service-account-token   3      46m
+		postgres-secrets      Opaque    
+	
+	
+16. how to get the kubectl secrets of json
+		kubectl get secret  postges-secrets -o json
+{
+    "apiVersion": "v1",
+    "data": {
+        "password": "YWRtaW4xMjM=",
+        "username": "cG9zdGdyZXNhZG1pbg=="
+    },
+    "kind": "Secret",
+    "metadata": {
+        "annotations": {
+            "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"v1\",\"data\":{\"password\":\"YWRtaW4xMjM=\",\"username\":\"cG9zdGdyZXNhZG1pbg==\"},\"kind\":\"Secret\",\"metadata\":{\"annotations\":{},\"name\":\"postgres-secrets\",\"namespace\":\"default\"},\"type\":\"Opaque\"}\n"
+        },
+        "creationTimestamp": "2023-06-22T09:36:50Z",
+        "name": "postgres-secrets",
+        "namespace": "default",
+        "resourceVersion": "2348",
+        "uid": "729e8b26-2160-4445-b2e7-6615a412c0e0"
+    },
+    "type": "Opaque"
+}
+
+	
+
+17. and also u can get username and password and time stamp of your creating secrets
+how can u get secret password
+	kubectl get secrets/db-user-pass --template={{.data.password}} | base64 -d
+			or
+	kubectl get secrets/postgres-secrets --template={{.data.password}} | base64 -d
+		admin123
+how can u get secret username
+
+	kubectl get secrets/db-user-pass --template={{.data.username}} | base64 -d
+			or
+	kubectl get secrets/postgres-secrets --template={{.data.username}} | base64 -d
+		postgresadmin
+	
+how can u get secret timestamp of secret which time u are created
+
+	kubectl get secrets/db-user-pass --template={{.metadata.creationTimestamp}}
+			or
+	kubectl get secrets/postgres-secrets --template={{.metadata.creationTimestamp}}
+		2023-06-22T09:36:50Z
+
+
+now we had secrets and the we copy the srorage.
+18. postges-storage.yaml file looks as  
+
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: postgres-pv-volume
+  labels:
+    type: local
+    app: postgres
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 250Mi
+  accessModes:
+    - ReadWriteMany
+  hostPath:
+    path: "/mnt/data"
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: postgres-pv-claim
+  labels:
+    app: postgres
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 250Mi
+
+
+19.and i will create 500 mb and request to 250 mb
+	
+	vi postges-storage.yaml
+
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: postgres-pv-volume
+  labels:
+    type: local
+    app: postgres
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 500Mi
+  accessModes:
+    - ReadWriteMany
+  hostPath:
+    path: "/mnt/data"
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: postgres-pv-claim
+  labels:
+    app: postgres
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 250Mi
+
+20. kubectl apply -f postges-storage.yaml
+		persistentvolume/postgres-pv-volume created
+		persistentvolumeclaim/postgres-pv-claim created
+
+21. kubectl get pv
+		NAME                 CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                       STORAGECLASS   REASON   AGE
+		postgres-pv-volume   500Mi      RWX            Retain           Bound    default/postgres-pv-claim   manual                  72s
+
+22.  kubectl get pvc
+		NAME                STATUS   VOLUME               CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+		postgres-pv-claim   Bound    postgres-pv-volume   500Mi      RWX            manual         76s
+
+
+
+23. now we have postges secret and storege then we go to postges deployment i.
+		vi postges-deployment
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+spec:
+  selector:
+    matchLabels:
+      app: postgres
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:10.4
+          imagePullPolicy: "IfNotPresent"
+          ports:
+            - containerPort: 5432
+          env:
+           - name: POSTGRES_USER
+             valueFrom:
+               secretKeyRef:
+                 name: postgres-secrets
+                 key: username
+           - name: POSTGRES_PASSWORD
+             valueFrom:
+               secretKeyRef:
+                 name: postgres-secrets
+                 key: password
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: postgredb
+      volumes:
+        - name: postgredb
+          persistentVolumeClaim:
+            claimName: postgres-pv-claim
+
+24. kubectl apply -f postges-deployment.yaml
+		deployment.apps/postgres created
+
+25. kubectl get deployments
+		NAME       READY   UP-TO-DATE   AVAILABLE   AGE
+		postgres   1/1     1            1           23s
+
+26.  kubectl get pods
+		NAME                        READY   STATUS    RESTARTS   AGE
+		postgres-7bd98f4849-kgzxb   1/1     Running   0          2m5s
+
+27. how to connect a pod
+	kubectl exec -it postgres-7bd98f4849-kgzxb -- /bin/bash
+		root@postgres-7bd98f4849-kgzxb:/#
+		
+28. how to connect postges db
+	
+	psql -U postgresadmin -W postgres
+		Password for user postgresadmin:admin123
+			postgres=#
+
+now u can't found any table so that first we can expose this service as nodeport internally it will take cluster ip only and then create configmap for that.
+
+
+29. vi postgres-service.yaml
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  labels:
+    app: postgres
+spec:
+  type: NodePort
+  ports:
+   - port: 5432
+  selector:
+   app: postgres
+
+
+30.  kubectl apply -f postgres-service.yaml
+		service/postgres created
+
+31. kubectl get service/svc
+		kubectl get svc
+			NAME         TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)          AGE
+			kubernetes   ClusterIP   10.96.0.1       <none>        443/TCP          127m
+			postgres     NodePort    10.98.110.127   <none>        5432:31782/TCP   59s
+
+	using this cluster ip(10.98.110.127)we can connect to the database
+
+32. kebectl get svc postgres -o json
+
+{
+    "apiVersion": "v1",
+    "kind": "Service",
+    "metadata": {
+        "annotations": {
+            "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"v1\",\"kind\":\"Service\",\"metadata\":{\"annotations\":{},\"labels\":{\"app\":\"postgres\"},\"name\":\"postgres\",\"namespace\":\"default\"},\"spec\":{\"ports\":[{\"port\":5432}],\"selector\":{\"app\":\"postgres\"},\"type\":\"NodePort\"}}\n"
+        },
+        "creationTimestamp": "2023-06-22T10:58:17Z",
+        "labels": {
+            "app": "postgres"
+        },
+        "name": "postgres",
+        "namespace": "default",
+        "resourceVersion": "5809",
+        "uid": "3320419c-f21a-4b0e-9606-9ab7158216a1"
+    },
+    "spec": {
+        "clusterIP": "10.98.110.127",
+        "clusterIPs": [
+            "10.98.110.127"
+        ],
+        "externalTrafficPolicy": "Cluster",
+        "internalTrafficPolicy": "Cluster",
+        "ipFamilies": [
+            "IPv4"
+        ],
+        "ipFamilyPolicy": "SingleStack",
+        "ports": [
+            {
+                "nodePort": 31782,
+                "port": 5432,
+                "protocol": "TCP",
+                "targetPort": 5432
+            }
+        ],
+        "selector": {
+            "app": "postgres"
+        },
+        "sessionAffinity": "None",
+        "type": "NodePort"
+    },
+    "status": {
+        "loadBalancer": {}
+    }
+}
+
+
+33. how to get the cluster ip from this json path
+
+	kubectl get svc postgres -o jsonpath="{.spec.clusterIP}"
+		10.98.110.127
+
+34. now i want create this cluster as aconfigmap and i can read it from the configmap
+
+	kubectl create configmap hostname-config --from-literal=postgres_host=$(kubectl get svc postgres -o jsonpath="{.spec.clusterIP}")
+		configmap/hostname-config created
+
+35. kubectl get configmap
+		NAME               DATA   AGE
+		hostname-config    1      53s
+		kube-root-ca.crt   1      140m
+		
+36. kubectl describe  configmap hostname-config
+		Name:         hostname-config
+		Namespace:    default
+		Labels:       <none>
+		Annotations:  <none>
+
+		Data
+		====
+		postgres_host:
+		----
+		10.98.110.127
+
+		BinaryData
+		====
+
+		Events:  <none>
+
+
+36. if you want to use hostname db is RDS db
+
+	kubectl create configmap rds-hostname-config --from-literal=postgres_host="rdshostname"
+		configmap/rds-hostname-config created
+37. kubectl describe  configmap rds-hostname-config
+		Name:         rds-hostname-config
+		Namespace:    default
+		Labels:       <none>
+		Annotations:  <none>
+
+		Data
+		====
+		postgres_host:
+		----
+		rdshostname
+
+		BinaryData
+		====
+
+		Events:  <none>
+
+38. now we have complete db setup is ready.and now our java application is connect to db so that we had 
+	vi springboot-deployment.yaml
+	
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spring-boot-postgres-sample
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app: spring-boot-postgres-sample
+  replicas: 1
+  template:
+    metadata:
+      name: spring-boot-postgres-sample
+      labels:
+        app: spring-boot-postgres-sample
+    spec:
+      containers:
+      - name: spring-boot-postgres-sample
+        env:
+          - name: POSTGRES_USER
+            valueFrom:
+              secretKeyRef:
+                 name: postgres-secrets
+                 key: username
+          - name: POSTGRES_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                 name: postgres-secrets
+                 key: password
+          - name: POSTGRES_HOST
+            valueFrom:
+              configMapKeyRef:
+                name: hostname-config
+                key: postgres_host
+        image: mannemharitha/springboot-postgres-docker-assignment:v2
+
+39. kubectl apply -f springboot-deployment.yaml
+		deployment.apps/spring-boot-postgres-sample created
+
+40. kubectl get pods
+		NAME                                           READY   STATUS    RESTARTS   AGE
+		postgres-7bd98f4849-kgzxb                      1/1     Running   0          51m
+		spring-boot-postgres-sample-54687f6589-2pfcf   1/1     Running   0          28s
+
+
+once deployment running in the dbtable is created.
+
+41. postgres=# \dt
+
+
+             List of relations
+ Schema |   Name   | Type  |     Owner
+--------+----------+-------+---------------
+ public | customer | table | postgresadmin
+(1 row)
+
+42. postgres=# select * from customer
+	postgres-# ;
+	
+	id | country_of_birth | country_of_residence | name | segment
+	----+------------------+----------------------+------+---------
+	(0 rows)
+
+now you can see the table.but values are not there bcz we havn't accessed it here
+
+
+now first we need to make the application exposed as a service after thet we hit the application and values are populated.
+
+
+
+43. now how to expose a deployment?
+	we need to ceate a service with commands or yaml files
+	
+	kubectl expose deployment spring-boot-postgres-sample --port=33333 --name=springboot-service --type=NodePort
+		service/springboot-service exposed
+
+44. kubectl get svc springboot-service
+		NAME                 TYPE       CLUSTER-IP     EXTERNAL-IP   PORT(S)           AGE
+		springboot-service   NodePort   10.96.235.95   <none>        33333:31673/TCP   79s
+
+45. and make sure open all trffic port or open specific traffic of the port i.e (31673)
+
+46. now hit the port number(31673) with postman
+	in body--->raw--->json
+	{
+    "country_of_birth":"INDIA",
+    "country_of_residence":"usa",
+    "name":"haritha",
+    "segment":"Retail"
+	}
+
+47. postgres=# select * from customer
+postgres-# ;
+ id | country_of_birth | country_of_residence |  name   | segment
+----+------------------+----------------------+---------+---------
+  1 | INDIA            | usa                  |         |
+  2 | INDIA            | usa                  | haritha | Retail
+(2 rows)
+			OR
+			
+	18.212.83.33:31673/listallcustomers
+		[{"name":null,"id":1,"country_of_birth":"INDIA","country_of_residence":"usa","segment":null},{"name":"haritha","id":2,"country_of_birth":"INDIA","country_of_residence":"usa","segment":"Retail"}]
+
+			or
+	curl http://18.212.83.33:31673/listallcustomers
+		[{"name":null,"id":1,"country_of_birth":"INDIA","country_of_residence":"usa","segment":null},{"name":"haritha","id":2,"country_of_birth":"INDIA","country_of_residence":"usa","segment":"Retail"}][root@ip-172-31-17-39 ~]#
+
+##############################################
+our kind is - deployment
+
+it is not recomanded to use deployment type for db instead of every one to prefer statefullset
+bcz in any
+db
+and some kind of clusters are run on many nodes
+and it has to maintain its own data and storage and need ot be in sync with the cluster
+and its always recommanded to use stsefulset.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
