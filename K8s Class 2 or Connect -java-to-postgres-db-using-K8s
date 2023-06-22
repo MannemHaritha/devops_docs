@@ -629,7 +629,86 @@ and it has to maintain its own data and storage and need ot be in sync with the 
 and its always recommanded to use stsefulset.
 
 
+History
+##############
 
+
+ 1  yum install dokcer -y
+    2  yum install docker -y
+    3  curl -Lo minikube https://github.com/kubernetes/minikube/releases/download/v1.25.2/minikube-linux-amd64
+    4  chmod +x minikube
+    5  sudo mv minikube /usr/local/bin/
+    6  yum install conntrack -y
+    7  export PATH=/usr/local/bin:$PATH
+    8  minikube start --driver=none
+    9  curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+   11  chmod +x kubectl
+   12  cp kubectl /usr/bin/
+   13  kubectl get nodes
+   14  kubectl api-resources -o wide | grep pv
+   15  kubectl explain pv
+   17  kubectl api-resources -o wide | grep storageclass
+   18  echo "cG9zdGdyZXNhZG1pbg==" | base64 -d
+   19  echo "YWRtaW4xMjM=" | base64 -d
+   20  kubectl api-resources -o wide | grep secrets
+   21  kubectl explain secrets
+   22  vi postges-secrets.yaml
+   23  kubectl apply -f postges-secrets.yaml
+   24  vi postges-secrets.yaml
+   25  kubectl apply -f postges-secrets.yaml
+   26  kubectl get secrets
+   27  ls
+   36  cat postges-secrets.yaml
+   37  kubectl get secret  postges-secrets -o json
+   38  kubectl get secret
+   39  kubectl get secrets
+   40  kubectl get secret postgres-secrets  -o json
+   41  kubectl get secrets/postgres-secrets --template={{.data.password}} | base64 -d
+   42  kubectl get secrets/postgres-secrets --template={{.data.username}} | base64 -d
+   43  kubectl get secrets/postgres-secrets --template={{.metadata.creationTimestamp}}
+   44  vi postges-storage.yaml
+   45  kubectl apply -f postges-storage.yaml
+   46  kubectl get pv
+   47  kubectl get pvc
+   48  vi postges-deployment.yaml
+   49  kubectl apply -f postges-deployment.yaml
+   50  kubectl get deployments
+   51  kubectl get pods
+   52  kubectl exec -it postgres-7bd98f4849-kgzxb -- /bin/bash
+   53 psql -U postgresadmin -w postgres
+   54 \dt
+   55 select * from customer
+   56 ;
+   57 select * from customer
+   58  ;
+   59  vi postgres-service.yaml
+    62  kubectl apply -f postgres-service.yaml
+    63  kubectl get svc
+    64  kebectl get svc postgres -o json
+    65  kubectl get svc postgres -o json
+    66  kubectl get svc postgres -o jsonpath="{.spec.clusterIP}"
+    67  kubectl create configmap hostname-config --from-literal=postgres_host=$(kubectl get svc postgres -o jsonpath="{.spec.clusterIP}")
+    68  kubectl get configmap
+    69  kubectl create configmap rds-hostname-config --from-literal=postgres_host="rdshostname"
+   70  kubectl describe  configmap rds-hostname-config
+   71  kubectl describe  configmap hostname-config
+   72  vi springboot-deployment.yaml
+   73  kubectl apply -f springboot-deployment.yaml
+   74  kubectl get pods
+   75  kubectl expose deployment spring-boot-postgres-sample --port=33333 --name=springboot-service --type=NodePort
+   76  kubectl get svc springboot-service
+   77  curl http://18.212.83.33:31673/listallcustomers
+	78 18.212.83.33:31673/createnewcustomer
+			{
+    "country_of_birth":"INDIA",
+    "country_of_residence":"usa",
+    "name":"haritha",
+    "segment":"Retail"
+	}
+	
+    79. select * from customer
+    80 ;
+   
 
 
 
