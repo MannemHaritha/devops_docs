@@ -1,0 +1,156 @@
+Create EKS 1.27 versun and deploy java springboot  application with manual process
+###############
+how to connect EKS cluster and connect to  EKS cluster?
+how to run or deploy springboot app on eks cluster?
+
+if you want to create EKS latest version you have to make sure/we need install aws cli2 version
+and run in ec2-user only bcz eks version is latest
+
+EKS cluster setup 
+############
+Step1: Take EC2 Instance with t2.xlarge instance type
+
+Step2: Create IAM Role with Admin policy for eks-cluster and attach to ec2-instance
+
+Step3: Install kubectl
+	curl -O https://s3.us-west-2.amazonaws.com/amazon-eks/1.27.1/2023-04-19/bin/linux/amd64/kubectl
+
+	curl -o kubectl https://amazon-eks.s3.us-west-2.amazonaws.com/1.27.1/2023-04-19/bin/linux/amd64/kubectl
+	chmod +x ./kubectl
+	mkdir -p $HOME/bin
+	cp ./kubectl $HOME/bin/kubectl
+	export PATH=$HOME/bin:$PATH
+	echo 'export PATH=$HOME/bin:$PATH' >> ~/.bashrc
+	source $HOME/.bashrc
+	kubectl version --short --client
+	
+Step4: Install eksctl:
+	curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
+	sudo mv /tmp/eksctl /usr/bin
+	eksctl version
+	
+Step5: Cluster creation:
+eksctl create cluster --name=eksdemo-dev \
+                  --region=us-east-1 \
+                  --zones=us-east-1a,us-east-1b \
+                  --without-nodegroup 
+			OR
+eksctl create cluster --name=eksdemo --region=us-east-1 --version=1.27 --zones=us-east-1a,us-east-1b --without-nodegroup
+		or
+eksctl create cluster --name=eksdemo-dev --region=us-east-1 --version=1.27 --zones=us-east-1a,us-east-1b --without-nodegroup
+
+eksctl create cluster --name=eksdemo-test --region=us-east-1 --version=1.27 --zones=us-east-1a,us-east-1b --without-nodegroup
+
+eksctl create cluster --name=eksdemo-staging/UAT/Pre-prod --region=us-east-1 --version=1.27 --zones=us-east-1a,us-east-1b --without-nodegroup
+
+eksctl create cluster --name=eksdemo-prod --region=us-east-1 --version=1.27 --zones=us-east-1a,us-east-1b --without-nodegroup
+
+step:5
+
+eksctl utils associate-iam-oidc-provider \
+    --region us-east-1 \
+    --cluster eksdemo-dev \
+    --approve
+	
+step 6:
+
+eksctl create nodegroup --cluster=eksdemo-dev \
+                   --region=us-east-1 \
+                   --name=eksdemo-dev-ng1 \
+                   --node-type=t2.medium \
+                   --nodes=2 \
+                   --nodes-min=2 \
+                   --nodes-max=4 \
+                   --node-volume-size=10 \
+                   --ssh-access \
+                   --ssh-public-key=minikube \
+                   --managed \
+                   --asg-access \
+                   --external-dns-access \
+                   --full-ecr-access \
+                   --appmesh-access \
+                   --alb-ingress-access	
+
+
+6. if you want to connect any kubernetes cluster we need kubeconfig file
+	and also we have to make for eks latest version we need aws cli 2
+
+
+7. aws --version
+	aws-cli/1.18.147 Python/2.7.18 Linux/5.10.179-171.711.amzn2.x86_64 botocore/1.18.6
+	with aws cli 1.18 version we can't connect proper way we install latest aws cli
+	
+
+8. curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+	unzip awscliv2.zip
+	sudo ./aws/install 
+	
+	aws --version
+		aws-cli/2.12.2 Python/3.11.4 Linux/5.10.179-171.711.amzn2.x86_64 exe/x86_64.amzn.2 prompt/off
+	export PATH=$PATH:/usr/local/bin
+	aws --version
+		aws-cli/2.12.2 Python/3.11.4 Linux/5.10.179-171.711.amzn2.x86_64 exe/x86_64.amzn.2 prompt/off
+
+
+9. NOW I WANT TO GENERATE aws update kubeconfig file  
+	aws eks update-kubeconfig  --name my-cluster  --region region-code
+			or
+	aws eks update-kubeconfig  --name eksdemo-dev  --region us-east-1
+			Added new context arn:aws:eks:us-east-1:255766941731:cluster/eksdemo-dev to /home/ec2-user/.kube/config
+	
+10.  kubectl get nodes
+			NAME                             STATUS   ROLES    AGE   VERSION
+			ip-192-168-23-130.ec2.internal   Ready    <none>   66m   v1.27.1-eks-2f008fe
+			ip-192-168-37-21.ec2.internal    Ready    <none>   66m   v1.27.1-eks-2f008fe
+
+
+
+NOW WE HAVE CLUSTER READY AND THEN WE DO A DEPLOYMENT.
+HOW CAN WE CREATE DEPLOYMENT FOR THIS PERTICULAR APPLICATION/PROJECT?
+
+11. kubectl create deployment --image=mannemharitha/springboot-maven-course-micro-svc:10 springboot-deployment
+			deployment.apps/springboot-deployment created
+
+
+12. kubectl get deployments
+		NAME                    READY   UP-TO-DATE   AVAILABLE   AGE
+		springboot-deployment   1/1     1            1           26s
+		or
+	kubectl get pods
+		NAME                                     READY   STATUS    RESTARTS   AGE
+		springboot-deployment-5bd67d8b77-tjgfg   1/1     Running   0          32s
+
+
+
+13. we need to expose as a service aa deployment bcz somebody wants to connect the container/deployment
+
+	kubectl expose deployment springboot-deployment --port 8080 --type LoadBalancer --name springboot-service
+		service/springboot-service exposed
+14. kubectl get services
+		NAME                 TYPE           CLUSTER-IP       EXTERNAL-IP                                                               PORT(S)          AGE
+		kubernetes           ClusterIP      10.100.0.1       <none>                                                                    443/TCP          122m
+		springboot-service   LoadBalancer   10.100.164.255   aa9a2a2ec78e14daca606b2209e2e9dc-2132460906.us-east-1.elb.amazonaws.com   8080:32043/TCP   13s
+
+15. now go the aws ec2 in LoadBalancer and check the deployment in inservice
+			or
+	hit in chrome
+	aa9a2a2ec78e14daca606b2209e2e9dc-2132460906.us-east-1.elb.amazonaws.com:8080/couse-svc/getAllDevopsTools
+		["git","maven","sonar","nexus","jenkins"]
+		or
+	curl http://aa9a2a2ec78e14daca606b2209e2e9dc-2132460906.us-east-1.elb.amazonaws.com:8080/course-svc/getAllDevopsTools
+			["git","maven","sonar","nexus","jenkins"]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
