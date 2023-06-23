@@ -1,0 +1,362 @@
+Creating EKS using Terraform  AND Deploy cluster using jenkins pipeline
+###################
+Agenda
+
+1. how to create eks cluster using terraform?
+2. how to deploy to eks cluster using jenkins pipeline?
+
+3. how to cretae aks cluster using terraform?
+
+4. liveliness prob and readiness prob on minikube?
+
+######################
+
+
+EKS cluster setup using terraform Script
+############
+first we will decide where u want to run the terraform script
+	1. from local windows/mac os, we need IAM user
+		or
+	2. from ec2-instance using IAM role/IAM user
+	
+	
+from local windows/mac os, we need IAM user
+#########
+ 1. open local disk E on windows/local machine
+	create folder as Haritha_Terraform
+	
+ 2. open visual studio code
+	open new terminal
+	 mkdir ekswork
+		Directory: E:\Haritha_Terraform
+			Mode                 LastWriteTime         Length Name   
+			----                 -------------         ------ ----   
+			d----           6/23/2023  6:17 PM                ekswork
+			
+3.  cd ./ekswork 
+
+4. git clone https://github.com/MannemHaritha/eks_cluster_with_terraform.git
+		now u can see the attributes of the cloning project.
+		
+5. now create IAM user
+	Access key: AKIATXDHF2ARQYJBJOUP
+	Secret access key: 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
+	
+	
+6. now we have terraform aws provider		-------> it stores access key and secret accesskey
+	
+	aws configure --profile customprofile
+		Access key: AKIATXDHF2ARQYJBJOUP
+		Secret access key: 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
+	
+	
+7. once git clone is done we had seen all attributes of creating eks cluster with pettaform
+	so that in provider.tf we have to change some changes like this and remaing all are same
+		provider "aws" {
+		shared_config_files      = ["C:\\Users\\QC\\.aws\\config"] 
+		shared_credentials_files = ["C:\\Users\\QC\\.aws\\credentials"]
+		profile                  = "customprofile"
+		}
+
+
+8. now initialize the terraform script in terminal
+	in terminal
+	terraform init
+		Terraform has been successfully initialized!
+		
+9.	terraform plan
+	
+	
+10. terraform apply --auto-approve	
+	
+	
+jenkins
+#######
+
+1. now we are going to create ec2 instance for deploying jenkins pipeline
+	for that we install git, java,maven and jenkins
+
+2.  sudo yum install git java-17-amazon-corretto-headless -y
+
+3. sudo wget -O /etc/yum.repos.d/jenkins.repo \
+    https://pkg.jenkins.io/redhat-stable/jenkins.repo
+4. sudo rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
+5. sudo yum install jenkins
+6. sudo systemctl start jenkins
+7. sudo systemctl status jenkins
+8. 3.89.141.202:8080
+9. sudo cat /var/lib/jenkins/secrets/initialAdminPassword
+		b9d34ff27ea24324af6bf4403a076672
+	
+	
+	
+how to deploy to eks cluster using jenkins pipeline?
+##############
+we shouls make our pipeline in suck a way that it can connet to any cluster with a given region and nameand get kubeconfig
+and then try to run kubectl commands.
+	
+now my cluster is ready if i want to connect any cluster what is the prerequisite is kubectl.
+1. kubectl should be there
+2. kubectl neeeds kubeconfig file for that cluster
+3. we need to run aws cli command to generate the kubeconfig file.
+
+	
+jenkins-terraform-eks-deploy pipeline
+############
+	
+pipeline{
+    agent any
+    environment {
+    eks_cluster_name = "${params.eks_cluster_name}"
+    artifacts_dir = "${env.WORKSPACE}/artifacts"
+    aws_region = "${params.aws_region}"
+    job_root_dir="${env.WORKSPACE}"
+    }
+    stages{
+        stage('Initialize workspace') {
+            steps {
+                // Make sure the directory is clean
+                dir("${artifacts_dir}") {
+                    deleteDir()
+                }
+                sh(script: "mkdir -p ${artifacts_dir}", label: 'Create artifacts directory')
+            }
+        }
+        stage('git stage'){
+            steps{
+                git branch: 'master', url: 'https://github.com/MannemHaritha/springboot-maven-course-micro-svc.git'
+            }
+        }
+        stage('Generate kubeconfig for the cluster') {
+            steps {
+                script {
+                    env.KUBECONFIG = "${artifacts_dir}/${eks_cluster_name}-kubeconfig"
+                    sh 'chmod +x ${WORKSPACE}/generate_kubeconfig_eks.sh'
+                }
+                sh(script: '${WORKSPACE}/generate_kubeconfig_eks.sh', label: 'Generate kubeconfig file')
+            }
+        }
+    }
+}
+	
+	
+now we are running this pipelinewe gor some aws configure credentials error so that 
+in mobaxterm
+
+10. swith jenkins user
+	 sudo su - jenkins -s /bin/bash
+11. -bash-4.2$ id
+		uid=995(jenkins) gid=993(jenkins) groups=993(jenkins)
+
+12 aws configure
+		Access key: AKIATXDHF2ARQYJBJOUP
+		Secret access key: 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
+		region : us-east-1
+		json
+13. exit
+
+14. and again run the pipeline and 
+15. now we have kubeconfig file ,using thsi kubeconfig file we run the kubectl command
+
+16. if you want  to run  kubectl againt eks cluster we need kubectl and eksctl 
+	for that reason im ging to download kubectl 1.23
+	
+17.	go to jenkins user and run the below commnds
+	curl -o kubectl https://amazon-eks.s3.us-west-2.amazonaws.com/1.23.15/2023-01-11/bin/linux/amd64/kubectl
+	chmod +x ./kubectl
+	mkdir -p $HOME/bin
+	cp ./kubectl $HOME/bin/kubectl
+	export PATH=$HOME/bin:$PATH
+	echo 'export PATH=$HOME/bin:$PATH' >> ~/.bashrc
+	source $HOME/.bashrc
+	kubectl version --short --client
+				-bash-4.2$ curl -o kubectl https://amazon-eks.s3.us-west-2.amazonaws.com/1.23.15/2023-01-11/bin/linux/amd64/kub
+
+	
+15. and we need create a dployment for that,aleady in dockerhub image is there.so
+			
+16. kubectl create deployment --image=mannemharitha/springboot-maven-course-micro-svc:10 java-deployment
+	
+	
+stage('Get the cluster details') {
+        steps {
+        script {
+            sh '''kubectl create deployment --image=mannemharitha/springboot-maven-course-micro-svc:10 java-deployment
+                  kubectl get all
+                '''
+        }
+        }
+	}
+	
+	
+	
+pipeline{
+    agent any
+    environment {
+    eks_cluster_name = "${params.eks_cluster_name}"
+    artifacts_dir = "${env.WORKSPACE}/artifacts"
+    aws_region = "${params.aws_region}"
+    job_root_dir="${env.WORKSPACE}"
+    }
+    stages{
+        stage('Initialize workspace') {
+            steps {
+                // Make sure the directory is clean
+                dir("${artifacts_dir}") {
+                    deleteDir()
+                }
+                sh(script: "mkdir -p ${artifacts_dir}", label: 'Create artifacts directory')
+            }
+        }
+        stage('git stage'){
+            steps{
+                git branch: 'master', url: 'https://github.com/MannemHaritha/springboot-maven-course-micro-svc.git'
+            }
+        }
+        stage('Generate kubeconfig for the cluster') {
+            steps {
+                script {
+                    env.KUBECONFIG = "${artifacts_dir}/${eks_cluster_name}-kubeconfig"
+                    sh 'chmod +x ${WORKSPACE}/generate_kubeconfig_eks.sh'
+                }
+                sh(script: '${WORKSPACE}/generate_kubeconfig_eks.sh', label: 'Generate kubeconfig file')
+            }
+        }
+        stage('Get the cluster details') {
+            steps {
+                script {
+                sh '''kubectl create deployment --image=mannemharitha/springboot-maven-course-micro-svc:10 java-deployment
+                      kubectl get all
+                   '''
+                }
+            }
+	    }
+    }
+}
+
+now it gives error is kubectl is not found.so that we install  kubectl in ec2-user
+
+17. curl -o kubectl https://amazon-eks.s3.us-west-2.amazonaws.com/1.23.15/2023-01-11/bin/linux/amd64/kubectl
+	chmod +x ./kubectl
+	sudo cp ./kubectl /usr/bin/
+
+18. now again run the command and now it success but container is not showing for that reason
+	in ec2-user
+	 cd /var/lib/jenkins/workspace/
+	 ls
+	 cd jenkins-terraform-eks-deploy
+	 ls
+	 cd artifacts/
+	 ls
+	 mkdir -p /home/ec2-user/.kube
+	 cp demoeks-cluster-kubeconfig /home/ec2-user/.kube/config
+
+     aws configure
+		Access key: AKIATXDHF2ARQYJBJOUP
+		Secret access key: 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
+		region : us-east-1
+		json
+	  kubectl get pods
+		NAME                              READY   STATUS    RESTARTS   AGE
+		java-deployment-58766f97f-2xqrf   1/1     Running   0          18m
+
+	
+Deploy EKS clusing jenkins pipeline
+###########
+
+pipeline{
+    agent any
+    environment {
+    eks_cluster_name = "${params.eks_cluster_name}"
+    artifacts_dir = "${env.WORKSPACE}/artifacts"
+    aws_region = "${params.aws_region}"
+    job_root_dir="${env.WORKSPACE}"
+    }
+    stages{
+        stage('Initialize workspace') {
+            steps {
+                // Make sure the directory is clean
+                dir("${artifacts_dir}") {
+                    deleteDir()
+                }
+                sh(script: "mkdir -p ${artifacts_dir}", label: 'Create artifacts directory')
+            }
+        }
+        stage('git stage'){
+            steps{
+                git branch: 'master', url: 'https://github.com/MannemHaritha/springboot-maven-course-micro-svc.git'
+            }
+        }
+        stage('Generate kubeconfig for the cluster') {
+            steps {
+                script {
+                    env.KUBECONFIG = "${artifacts_dir}/${eks_cluster_name}-kubeconfig"
+                    sh 'chmod +x ${WORKSPACE}/generate_kubeconfig_eks.sh'
+                }
+                sh(script: '${WORKSPACE}/generate_kubeconfig_eks.sh', label: 'Generate kubeconfig file')
+            }
+        }
+        stage('Get the cluster details') {
+            steps {
+                script {
+                sh '''kubectl create deployment --image=mannemharitha/springboot-maven-course-micro-svc:10 java-deployment
+				or
+					  kubectl apply -f springboot-deployment.yaml
+					  kubectl apply -f springboot-service.yaml
+                      kubectl get all
+                   '''
+                }
+            }
+	    }
+    }
+}
+
+
+
+vi java-service.yaml
+#################
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: java-service
+  namespace: default
+spec:
+  selector:
+    app: springboot
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+	
+	
+vi springboot-deployment
+############
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: springboot-deployment
+  labels:
+    app: springboot
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: springboot
+  template:
+    metadata:
+      labels:
+        app: springboot
+    spec:
+      containers:
+      - name: springboot-container
+        image: mannemharitha/springboot-maven-course-micro-svc:10
+        ports:
+        - containerPort: 8080
+		
+
+
+	
+	
+	
