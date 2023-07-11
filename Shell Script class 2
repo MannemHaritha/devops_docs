@@ -1,0 +1,215 @@
+Shell Script class 2
+#######################
+Agenda
+
+using shell script how to do mysql database backup and restore?
+
+if time permits we will try to create few services with shell script using aws cli
+and i will show the difference b/w regular shell script with aws cli and terraform?
+
+
+###################
+
+1. create ec2 instance and make sure mysql is  installed and up and running
+
+2. create some database and table and insert some data
+
+3. we will try to backup and then restore to the same server or another server.
+
+usually in production scenarios/ projects what we will do is 
+	we need to do some tesing in lower environment like DEV /QA/STAGING
+	in this scenarios we need to get live data from  production to replicate some scenarioes 
+	for that we take the backup of production database and then we restore in dev/qa/staging db 
+
+
+Mysql installation
+https://coderjony.com/blogs/installing-mysql-on-amazon-linux-2-ec2-instance-and-configure-it-for-remote-connections
+######################
+
+1. sudo yum install -y mariadb-serve
+
+2. sudo systemctl start mariadb
+
+3. sudo systemctl status mariadb
+
+if you want to connect with any database first we need to know the username and password.
+4. sudo mysql_secure_installation
+	new password: Mysql#123
+	Remove anonymous users? [Y/n]: press enter
+	Disallow root login remotely? [Y/n]: press enter
+	Remove test database and access to it? [Y/n]: press enter
+	Reload privilege tables now? [Y/n]: press enter
+
+5. mysql -u root -pMysql#123
+
+now will try to create couple of tables and try to insert data and then we try to restore the data
+
+
+6. noe let us create employee table with 3 columns
+#############
+employee tables
+
+empid	empname		empsal
+100		haritha		1000
+200		srinadh		2000
+
+
+	1. create database empdb;
+	2. use empdb;
+	create table tablename(column1 datatype,column2 datatype)
+	3. create table employee(empid int(10),empname varchar(40),empsal int(10) );
+		Query OK, 0 rows affected (0.01 sec)
+
+		MariaDB [empdb]> show tables;
+		+-----------------+
+		| Tables_in_empdb |
+		+-----------------+
+		| employee     
+		|
+	4. select * from employee;
+		Empty set (0.00 sec)
+
+
+
+7. now i want to insert the data
+	5. insert into employee(empid,empname,empsal) values(100,'haritha',1000);
+		Query OK, 1 row affected (0.00 sec)
+
+	6. select * from employee;
+		+-------+---------+--------+
+		| empid | empname | empsal |
+		+-------+---------+--------+
+		|   100 | haritha |   1000 |
+		+-------+---------+--------+
+
+	7. insert into employee(empid,empname,empsal) values(200,'srinadh',2000);
+		Query OK, 1 row affected (0.00 sec)
+
+	8. select * from employee;
+		+-------+---------+--------+
+		| empid | empname | empsal |
+		+-------+---------+--------+
+		|   100 | haritha |   1000 |
+		|   200 | srinadh |   2000 |
+		+-------+---------+--------+
+
+8. now how to  take backup
+https://tecadmin.net/bash-script-mysql-database-backup/
+
+
+sudo mysqldump -h ${MYSQL_HOST} \
+   -P ${MYSQL_PORT} \
+   -u ${MYSQL_USER} \
+   -p${MYSQL_PASSWORD} \
+   ${DATABASE_NAME} | gzip > ${DB_BACKUP_PATH}/${TODAY}/${DATABASE_NAME}-${TODAY}.sql.gz
+ 
+
+export PATH=/bin:/usr/bin:/usr/local/bin
+TODAY=`date +"%d%b%Y"`
+ 
+manually
+################## Update below values  ########################
+	DB_BACKUP_PATH='/backup/dbbackup'
+	MYSQL_HOST='localhost'
+	MYSQL_PORT='3306'
+	MYSQL_USER='root'
+	MYSQL_PASSWORD='Mysql#123'
+	DATABASE_NAME='empdb'
+	date +'%d'
+		03
+	date +'%d%b'
+		03Jul
+	date +'%d%b%y'
+		03Jul23
+	date +'%d%b%Y'
+		03Jul2023
+	date +'%Y%m%d'
+		20230703
+		or
+	TODAY=`date +'%Y%m%d'`
+    echo $TODAY
+
+
+9. now let us try to create dump/backup
+	switch to root user
+	
+ mysqldump -h ${MYSQL_HOST} \
+   -P ${MYSQL_PORT} \
+   -u ${MYSQL_USER} \
+   -p${MYSQL_PASSWORD} \
+   ${DATABASE_NAME} | gzip > ${DB_BACKUP_PATH}/${TODAY}/${DATABASE_NAME}-${TODAY}.sql.gz
+ 
+10. to check restore is working or not for that 
+we can create another database in same server or else same database name in another server.
+
+	create database emprestoredb;
+		Query OK, 1 row affected (0.00 sec)
+
+	show databases;
+		+--------------------+
+		| Database           |
+		+--------------------+
+		| information_schema |
+		| empdb              |
+		| emprestoredb       |
+		| mysql              |
+		| performance_schema |
+
+	use emprestoredb;
+		Database changed
+		
+	show tables;
+		Empty set (0.00 sec)
+
+11. in order to the restore the command is
+		mysql -u [user name] –p [target_database_name] < [dumpfilename.sql]
+		
+		mysql -u [root] –p emprestoredb < /home/ec2-uer/20230703.empdb-20230703.sql.gz
+
+		mysqldump -h ${MYSQL_HOST}    -P ${MYSQL_PORT}    -u ${MYSQL_USER}    -p${MYSQL_PASSWORD}    ${DATABASE_NAME} > ${DB_BACKUP_PATH}/${TODAY}/${DATABASE_NAME}-${TODAY}.sql
+
+			mysql -u [root] –p emprestoredb < empdb-20230703.sql.gz
+
+	in sql 
+		show tables;
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+
+History
+###################
+	1 sudo mysql_secure_installation
+    2  mysql -u root -p Mysql#123
+    3  mysql -u root -pMysql#123
+	
+	
+	
+	10  pwd
+   11  DB_BACKUP_PATH='/backup/dbbackup'
+   12  echo $DB_BACKUP_PATH
+   13  MYSQL_HOST='localhost'
+   14  MYSQL_PORT='3306'
+   15  MYSQL_USER='root'
+   16  MYSQL_PASSWORD='Mysql@123'
+   17  DATABASE_NAME='empdb
+   20  date +'%d'
+   21  date +'%d%b'
+   22  date +'%d%b%y'
+   23  date +'%d%b%Y'
+   24 date +'%Y%m%d'
+   30  TODAY='date +'%Y%m%d''
+   31  TODAY=`date +'%Y%m%d`'
+   32  TODAY=`date +'%Y%m%d'`
+   33  echo $TODAY
+
