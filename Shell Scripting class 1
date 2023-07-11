@@ -1,0 +1,749 @@
+Shell Scripting class 1
+###################
+
+what is shell scripting?
+
+what are the concepts involved in shell scripting?
+
+how to write basic shell scripts and execute them?
+
+using shell script if we have any task or work which will take time to execute, 
+rather than doing every time manual will use shell script.
+
+shell script is used for repetetive tasks.
+	like running java applcation
+	checking files/folders exists or not, if not create file/folders
+	database backup or restore
+	
+	installatio of packages
+	creation of users
+
+	copying files from one server to another server
+
+now if you want to write shell script firat you will understand 
+	what is shebang in shell script?
+	and in shell script what are different concepts?
+	in order to write a good shell script what are the basics/scenarios you need. so that we learn them first after rthat we will write shell script.
+	
+	
+shell script
+############################
+
+let me try to see one basic shell script i.e in search mysql backup and restore shell script
+https://tecadmin.net/bash-script-mysql-database-backup/
+
+
+what is shebang in shell script?
+https://bash.cyberciti.biz/guide/Shebang
+##########
+
+Starting a Script With #!
+It is called a shebang or a "bang" line.
+It is nothing but the absolute path to the Bash interpreter.
+It consists of a number sign and an exclamation point character (#!), followed by the full path to the interpreter such as /bin/bash.
+All scripts under Linux execute using the interpreter specified on a first line[1].
+Almost all bash scripts often begin with #!/bin/bash (assuming that Bash has been installed in /bin)
+This ensures that Bash will be used to interpret the script, even if it is executed under another shell[2].
+The shebang was introduced by Dennis Ritchie between Version 7 Unix and 8 at Bell Laboratories. It was then also added to the BSD line at Berkeley.
+
+
+USECASE
+now i want ro checking files/folders exists or not
+#########################
+
+1. first let me create a shell script for workspace
+	go to gitbash in windows
+	 mkdir shellscript-workspace
+	 cd shellscript-workspace/
+	 ls
+
+2. how to check my file is exist or not
+	let me take one example and create some file
+	in gitbash
+		touch sample.txt
+		pwd
+		find /c/Users/Srinadh/shellscript-workspace -name sample.txt
+			/c/Users/Srinadh/shellscript-workspace/sample.txt
+	it is showing like this is manual of one file ,
+	now imagine about automation find group of files using shell script howw to find this path(/c/Users/Srinadh/shellscript-workspace/sample.txt)
+
+	let me take another example
+	in gitbash
+		touch file1.txt
+		touch file2.txt
+		touch file3.txt
+		now i want/how to see these three files are exist or not in at a time.means will use shell script
+
+by using shell script we need to know some basic shell script operators.
+
+shell script operators
+https://www.tutorialspoint.com/unix/unix-basic-operators.htm
+###############
+Arithmetic Operators
+Relational Operators
+Boolean Operators
+String Operators
+File Test Operators
+
+
+File Test Operators
+#########################
+We have a few operators that can be used to test various properties associated with a Unix file.
+
+Assume a variable file holds an existing file name "test" the size of which is 100 bytes and has read, write and execute permission on −
+
+Show Examples
+
+Operator					Description																											Example
+-b file	Checks 				if file is a block special file; if yes, then the condition becomes true.											[ -b $file ] is false.
+-c file	Checks 				if file is a character special file; if yes, then the condition becomes true.										[ -c $file ] is false.
+-d file	Checks 				if file is a directory; if yes, then the condition becomes true.													[ -d $file ] is not true.
+-f file	Checks			 	if file is an ordinary file as opposed to a directory or special file; if yes, then the condition becomes true.		[ -f $file ] is true.
+-g file	Checks 				if file has its set group ID (SGID) bit set; if yes, then the condition becomes true.								[ -g $file ] is false.
+-k file	Checks				if file has its sticky bit set; if yes, then the condition becomes true.											[ -k $file ] is false.
+-p file	Checks 				if file is a named pipe; if yes, then the condition becomes true.													[ -p $file ] is false.
+-t file	Checks 				if file descriptor is open and associated with a terminal; if yes, then the condition becomes true.					[ -t $file ] is false.
+-u file	Checks 				if file has its Set User ID (SUID) bit set; if yes, then the condition becomes true.								[ -u $file ] is false.
+-r file	Checks				if file is readable; if yes, then the condition becomes true.														[ -r $file ] is true.
+-w file	Checks 				if file is writable; if yes, then the condition becomes true.														[ -w $file ] is true.
+-x file	Checks 				if file is executable; if yes, then the condition becomes true.														[ -x $file ] is true.
+-s file	Checks 				if file has size greater than 0; if yes, then condition becomes true.												[ -s $file ] is true.
+-e file	Checks				if file exists; is true even if file is a directory but exists.														[ -e $file ] is true.
+
+
+for our requirement we use file test operators ,by using this we know our file is existing or not
+
+3. File Test Operators
+	-f file	--->Checks if file is an o rdinary file as opposed to a directory or special file; if yes, then the condition becomes true. [ -f $file ] is true.
+	sysntax is 
+	[ -f $file ]
+
+	file="/c/Users/Srinadh/shellscript-workspace/sample.txt"
+
+	in gitbash
+		file="/c/Users/Srinadh/shellscript-workspace/sample.txt"
+		 echo $file
+			/c/Users/Srinadh/shellscript-workspace/sample.txt
+
+if you want to use/run this file operetor/[ -f $file ] we need to know about if else condition as well.
+
+if else condition using shell script for file Exist
+https://www.tutorialspoint.com/unix/if-else-statement.htm
+#############
+
+Syntax
+if [ expression ]
+then
+   Statement(s) to be executed if expression is true
+else
+   Statement(s) to be executed if expression is not true
+fi
+
+
+
+if [ -f $file ]
+then
+   echo "file exists"
+else
+   echo "file not exists"
+fi
+
+	file exists
+
+
+if else condition using shell script for file not Exist
+################
+in gitbash
+	filenotexist="/c/Users/Srinadh/shellscript-workspace/hello.txt"
+
+
+if [ -f $filenotexist ]
+then
+   echo "file exists"
+else
+   echo "file not exists"
+fi
+
+	file not exists
+	
+
+
+4. arrays and  looping the array
+now this is for one file but
+	i want to do it for multiple files using the concept called arrays and  looping the array
+	
+arrays and  looping the array
+https://www.cyberciti.biz/faq/bash-for-loop-array/
+#######################
+Array----->BY USING ARRAY ALL THE EXISTING FILES ARE GETTING IN ONE SHOT
+
+
+To declare an array in bash sysntax is
+# Let us declare an array called array and assign three values when using bash:
+
+	array=( one two three )
+				OR	
+
+# Indexed arrays (numbered list starting from zero )#
+
+	declare -a ARRAY_NAME_HERE=(value1 value2 .... valueN)
+	declare -a nameservers=(google cloudflare isp1)
+	nameservers[3]=isp2
+	
+IN OUR CASE sysntax is
+
+FileToBeExist=( file1.txt file2.txt file3.txt)
+				OR	
+				
+declare -a FileToBeExist=(file1.txt file2.txt file3.txt
+
+in git bash
+	FileToBeExist=( file1.txt file2.txt file3.txt)
+	echo $FileToBeExist
+		file1.txt
+
+				OR	
+				
+	declare -a FileToBeExist=(file1.txt file2.txt file3.txt)
+	 echo $FileToBeExist
+	file1.txt
+
+5. in this case we have seen only first parameter,but i want all files existing, so that sysntax is
+
+	${FileToBeExist[@]} 
+		or
+	
+	${FileToBeExist[*]}
+	
+in gitbash 
+	echo ${FileToBeExist[@]}	
+		file1.txt file2.txt file3.txt
+		or
+	echo ${FileToBeExist[*]}
+		file1.txt file2.txt file3.txt
+		
+6. if you want to know the length of array so that sysntax is
+
+	${#FileToBeExist[@]} 
+		or
+	
+	${#FileToBeExist[*]}
+	
+in gitbash 
+	echo ${#FileToBeExist[@]}
+		3
+		or
+	echo ${#FileToBeExist[*]}	
+		3
+		
+		
+Looping THROUGH ARRAY sysntax
+#############
+LOOP THROUGH ARRAY MEANS I GET ONE FILE NAME  EVERY TIME AND CHECT THIS IS EXIST OR NOT
+
+
+#!/bin/bash
+# declare an array called array and define 3 vales
+array=( one two three )
+for i in "${array[@]}"
+do
+	echo "$i"
+done
+
+		as
+		
+		
+for i in "${FileToBeExist[@]}"
+do
+	echo "$i"
+done
+
+	file1.txt
+	file2.txt
+	file3.txt
+
+
+
+7. use of file test operators
+in gitbash
+
+for FileToBeExist in "${FileToBeExist[@]}"
+do
+	if [ -f $FileToBeExist ]
+then
+   echo "file exists"
+else
+   echo "file not exists"
+fi
+done
+
+		file exists
+		file exists
+		file exists
+
+		or
+		
+in visual studiocode
+##########
+
+#!/bin/bash
+declare -a  FileToBeExist=(file1.txt file2.txt file3.txt)
+for FileToBeExist in "${FileToBeExist[@]}"
+do
+	if [ -f $FileToBeExist ]
+    then
+        echo "file exists"
+    else
+        echo "file not exists"
+    fi
+done
+
+		file exists
+		file exists
+		file exists
+
+
+8. if u want to know which file exist
+	in gitbash
+	
+for i in "${FileToBeExist[@]}"
+do
+	if [ -f $i ]
+    then
+        echo "$i exists"
+    else
+        echo "$i not exists"
+    fi
+done
+
+		file3.txt exists
+		file2.txt exists
+		file3.txt exists
+
+	in visual studiocode
+
+#!/bin/bash
+declare -a  FileToBeExist=(file1.txt file2.txt file3.txt)
+for i in "${FileToBeExist[@]}"
+do
+	if [ -f $i ]
+    then
+        echo "$i exists"
+    else
+        echo "$i not exists"
+    fi
+done
+
+	file1.txt exists
+	file2.txt exists
+	file3.txt exists
+	
+	or
+	it shows not existing file also
+	
+#!/bin/bash
+declare -a  FileToBeExist=(file1.txt file2.txt file3.txt hello.txt)
+for i in "${FileToBeExist[@]}"
+do
+	if [ -f $i ]
+    then
+        echo "$i exists"
+    else
+        echo "$i not exists"
+    fi
+done
+
+		file1.txt exists
+		file2.txt exists
+		file3.txt exists
+		hello.txt not exists
+		
+		
+8.	if you want to check Directory
+##############
+syntax is  [ -d $file ]
+
+CheckDirExists="/c/Users/Srinadh/shellscript-workspace"		
+		
+if [ -d $CheckDirExists ]
+then
+        echo "$CheckDirExists exist"
+else
+        echo "$CheckDirExists not exist"
+fi	
+		
+		CheckDirExists is exist
+		
+		or
+		
+CheckDirExists=""/c/Users/Srinadh/shellscript-workspace/jshjk"   
+		
+if [ -d $CheckDirExists ]
+then
+        echo "$CheckDirExists exist"
+else
+        echo "$CheckDirExists not exist"
+fi	
+	
+		CheckDirExists is  not exist
+		
+		
+in visual studio code
+
+CheckDirExists="/c/Users/Srinadh/shellscript-workspace"
+
+if [  -d $CheckDirExists ]
+    then
+        echo "$CheckDirExists is exist"
+else
+        echo "$CheckDirExists not exist"
+      
+fi
+
+		CheckDirExists is exist
+		
+		
+9. 	use of $?/ backup successfully completed/checking all previous commands
+######################
+
+in gitbash
+
+CheckDirExists="/c/Users/Srinadh/shellscript-workspace"
+$ if [  -d $CheckDirExists ];
+then
+        echo "$CheckDirExists is exist"
+else
+        echo "$CheckDirExists not exist"
+
+fi
+
+		/c/Users/Srinadh/shellscript-workspace exist
+echo $?
+
+ if [ $? -eq 0 ];
+then
+        echo "above command successfully completed"
+else
+        echo "Error found during running command"
+
+fi
+		above command successfully completed
+
+
+
+in visual studio code
+
+
+CheckDirExists="/c/Users/Srinadh/shellscript-workspace"
+
+if [  -d $CheckDirExists ];
+then
+        echo "$CheckDirExists is exist"
+else
+        echo "$CheckDirExists not exist"
+      
+fi
+
+################## use of $?/ backup successfully completed ###################
+echo $?
+
+if [ $? -eq 0 ]; 
+then
+        echo "above command successfully completed"
+else
+        echo "Error found during running command"
+  
+fi
+
+
+		/c/Users/Srinadh/shellscript-workspace is exist
+		0
+		above command successfully completed
+
+		or
+		
+CheckDirExists="/c/Users/Srinadh/shellscript-workspace/haritha"
+
+if [  -d $CheckDirExists ];
+then
+        echo "$CheckDirExists is exist"
+else
+        echo "$CheckDirExists not exist"
+      
+fi
+
+################## use of $?/ backup successfully completed ###################
+echo $?
+
+if [ $? -eq 0 ]; 
+then
+        echo "above command successfully completed"
+else
+        echo "Error found during running command"
+  
+fi
+
+		/c/Users/Srinadh/shellscript-workspace/haritha not exist
+		0
+		above command successfully completed
+
+
+
+Unix / Linux - Shell String Operators 
+
+https://www.tutorialspoint.com/unix/unix-string-operators.htm
+##################### 
+The following string operators are supported by Bourne Shell.
+Assume variable a holds "abc" and variable b holds "efg" then −
+
+Operator	    		 Description																										Example
+=	Checks 				if the value of two operands are equal or not; if yes, then the condition becomes true.								[ $a = $b ] is not true.
+!=	Checks 				if the value of two operands are equal or not; if values are not equal then the condition becomes true.				[ $a != $b ] is true.
+-z	Checks 				if the given string operand size is zero; if it is zero length, then it returns true.								[ -z $a ] is not true.
+-n	Checks 				if the given string operand size is non-zero; if it is nonzero length, then it returns true.						[ -n $a ] is not false.
+str	Checks 				if str is not the empty string; if it is empty, then it returns false.												[ $a ] is not false.
+
+file path using z flag is used for file is empty or not
+############
+10 . in gitbash
+	filepath="/c/Users/Srinadh/shellscript-workspace/sample.txt "
+
+ if [  -z $filepath ];
+then
+        echo "filepath is empty"
+    else
+        echo "filepath not empty"
+	
+fi
+
+		filepath not empty
+		or
+		
+filepath=""
+
+ if [  -z $filepath ];
+then
+        echo "filepath is empty"
+    else
+        echo "filepath not empty"
+	
+fi
+
+		filepath is empty
+
+in visual studio code
+
+
+filepath="/c/Users/Srinadh/shellscript-workspace/sample.txt"
+
+if [  -z $filepath ];
+then
+        echo "filepath is empty"
+else
+        echo "filepath not empty"
+      
+fi
+
+		filepath not empty
+
+		or
+		
+filepath=""
+
+if [  -z $filepath ];
+then
+        echo "filepath is empty"
+else
+        echo "filepath not empty"
+      
+fi
+
+		filepath is empty
+		
+		
+		
+		
+		
+		
+		
+
+
+Relational Operators
+####################
+1	some times we may need to check equality of two numbers
+		or
+2	less than or greater han equal
+
+Bourne Shell supports the following relational operators that are specific to numeric values. These operators do not work for string values unless their value is numeric.
+For example, following operators will work to check a relation between 10 and 20 as well as in between "10" and "20" but not in between "ten" and "twenty".
+Assume variable a holds 10 and variable b holds 20 then −
+
+
+
+Operator								Description																										Example
+-eq	Checks 				if the value of two operands are equal or not; if yes, then the condition becomes true.											[ $a -eq $b ] is not true.
+-ne	Checks 				if the value of two operands are equal or not; if values are not equal, then the condition becomes true.						[ $a -ne $b ] is true.
+-gt	Checks 				if the value of left operand is greater than the value of right operand; if yes, then the condition becomes true.				[ $a -gt $b ] is not true.
+-lt	Checks 				if the value of left operand is less than the value of right operand; if yes, then the condition becomes true.					[ $a -lt $b ] is true.
+-ge	Checks 				if the value of left operand is greater than or equal to the value of right operand; if yes, then the condition becomes true.	[ $a -ge $b ] is not true.
+-le	Checks 				if the value of left operand is less than or equal to the value of right operand; if yes, then the condition becomes true.		[ $a -le $b ] is true.
+
+
+11. in gitbash
+
+define a=10 b=20
+if [ $a -eq $b ]
+then
+        echo "a is eaual to b"
+else
+        echo "a is not equal to b"
+fi
+
+
+	a is not equal to b
+
+		or
+		
+if [ $a -eq $b ]
+then
+        echo "$a is eaual to $b"
+else
+        echo "$a is not equal to $b"
+fi
+
+		10 is not equal to 20
+
+
+in visualstudio code
+
+a=10
+b=20
+
+if [ $a -eq $b ]
+then
+        echo "a is eaual to b"
+else
+        echo "a is not equal to b"
+fi
+
+
+    a is not equal to b
+
+
+a=10
+b=20
+
+if [ $a -eq $b ]
+then
+        echo "$a is eaual to $b"
+else
+        echo "$a is not equal to $b"
+fi
+
+		10 is not equal to 20
+		
+		
+		
+		
+		
+
+
+
+Arithmetic Operators
+####################
+The following arithmetic operators are supported by Bourne Shell.
+
+Assume variable a holds 10 and variable b holds 20 then −
+
+
+Operator						Description																								Example
++ (Addition)				Adds values on either side of the operator															`expr $a + $b` will give 30
+- (Subtraction)				Subtracts right hand operand from left hand operand													`expr $a - $b` will give -10
+* (Multiplication)			Multiplies values on either side of the operator													`expr $a \* $b` will give 200
+/ (Division)				Divides left hand operand by right hand operand														`expr $b / $a` will give 2
+% (Modulus)					Divides left hand operand by right hand operand and returns remainder								`expr $b % $a` will give 0
+= (Assignment)				Assigns right operand in left operand																a = $b would assign value of b into a
+== (Equality)				Compares two numbers, if both are same then returns true.											[ $a == $b ] would return false.
+!= (Not Equality)			Compares two numbers, if both are different then returns true.										[ $a != $b ] would return true.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+################# use of file test operators ####################
+#!/bin/bash
+declare -a  FileToBeExist=(file1.txt file2.txt file3.txt hello.txt)
+for i in "${FileToBeExist[@]}"
+do
+	if [ -f $i ]
+    then
+        echo "$i exists"
+    else
+        echo "$i not exists"
+    fi
+done
+################# use of relational operators ###################
+
+a=10
+b=20
+
+if [ $a -eq $b ]
+then
+        echo "$a is eaual to $b"
+else
+        echo "$a is not equal to $b"
+fi
+
+
+#################### use of z flag/file path/unix shell operators ##################
+
+filepath="/c/Users/Srinadh/shellscript-workspace/sample.txt"
+
+if [  -z $filepath ];
+then
+        echo "filepath is empty"
+else
+        echo "filepath not empty"
+      
+fi
+
+################## use of d flag /directory/file test operators #####################
+
+CheckDirExists="/c/Users/Srinadh/shellscript-workspace/haritha"
+
+if [  -d $CheckDirExists ];
+then
+        echo "$CheckDirExists is exist"
+else
+        echo "$CheckDirExists not exist"
+      
+fi
+
+################## use of $?/ checking all previous commands/backup successfully completed ###################
+echo $?
+
+if [ $? -eq 0 ]; 
+then
+        echo "above command successfully completed"
+else
+        echo "Error found during running command"
+  
+fi
+
+
+
+
+
