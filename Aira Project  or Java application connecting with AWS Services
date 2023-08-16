@@ -1,0 +1,331 @@
+Aira Project  or
+Java application connecting with AWS Services
+#######################
+
+java appliaction connecting into few aws services like
+1. Message System ----> RabbitmQ
+2. Database ----------->RDS
+3. Storage ------------>S3
+
+
+
+Java application is connecting to amazon RDS
+AWS RDS SERVICE(Relational Database Service)
+##########################
+its supporting 6-7 database engines like
+	MYSQL
+	POSTGRESQL
+	SQL SERVER
+	ORACLE
+	MARIADB
+	AMAZON AURORA
+	
+In case of banking project SQL Server and ORACLE will be used more 
+if not an banking project and open source everybody will use POSTGRESQL more.
+
+
+create postgresql in amazon rds.
+########################################
+1. first we create postgresql in amazon rds.
+	 open rds
+	 create database
+	 select standard create as database method
+	 select engine as  postgresql
+	 select engine version as PostgreSQL 15.3-R2 as its recommanded
+	 select template as free tire
+	 
+	 in credentials settings 
+	 default  username:	postgres
+					password:	Haritha#123
+					
+	 in instance configuration select as db.t3.micro
+	 in storaging keep as default/same
+	 in connectivity select as dont connect to ec2 compute
+	 and in network type select as ipv4
+	 in vpc keep default
+	 and remaining all are same 
+	 and select create database.
+	 
+
+let say my project is banking server ,let us create sql server.
+create sql server in amazon rds
+###########################
+1. first we create sql server in amazon rds.
+	 first open amazon rds
+	 create database
+	 select standard create
+	 select engien as microsoft sql server
+	 Database management type select as 
+			Amazon RDS
+	 Edition select as 
+			SQL Server Express Edition
+	 Engine Version select as 
+			SQL Server 2019 15.00.4316.3.v1
+	 Templates selest as 
+			Dev/Test
+	 in credentials settings
+		default username:	admin
+		password:	Haritha#123
+	 DB instance classInfo select as 
+			db.t3.small
+	 in storage keep remaing as same
+	 in connectivity keep as defult and remaing all are keep as default
+	 and select create database.
+	 
+#################################
+how to connect to the database?
+################################
+	we can connect with command like with psql command 
+		OR
+	we can use some DB tools like
+		SQL workbench
+		Db weaver
+		HiediSQL
+		OR
+	if you have postgres installed in windows machine we can use pgadmin also to connect to Postgres running in  AWS RDS
+	
+if it RDS is public we will use all these dbs.
+right now all the above editor options are not applicable bcz our RDS is not public
+
+if it is not public the only option is we can connect with database using ec2 instance command.
+
+
+1. create a ec2 instance and install postgre packages and connect to the RDS 
+	while doing so make sure we are open ec2 security group in RDS security group.
+
+2. install postgresql
+	https://linux.how2shout.com/how-to-install-postgresql-14-on-ec2-amazon-linux-2/
+
+	sudo tee /etc/yum.repos.d/pgdg.repo<<EOF
+	[pgdg14]
+	name=PostgreSQL 14 for RHEL/CentOS 7 - x86_64
+	baseurl=https://download.postgresql.org/pub/repos/yum/14/redhat/rhel-7-x86_64
+	enabled=1
+	gpgcheck=0
+	EOF
+	
+	sudo yum install postgresql14 postgresql14-server -y	
+	sudo /usr/pgsql-14/bin/postgresql-14-setup initdb
+	
+	sudo systemctl enable --now  postgresql-14
+	sudo systemctl status postgresql-14
+
+3. we need to switch to user /postgres
+	sudo su - postgres
+	psql -U username -W databasename -h hostname/endpointname
+			or
+	psql -U postgres -W postgres -h database-1.cnho708cyia6.us-east-1.rds.amazonaws.com
+	PASSWORD : Haritha#123
+	
+4. make sure add the subnet range  of ec2 instance availability zone in rds security group which we are created
+
+then only db server is connected.
+
+now our database part is ready. then,
+
+i want to connect my java app with database
+#########################
+1	first we install the git and java for clonning a project.
+	 1 sudo yum install git java-17-amazon-corretto-headless -y
+    2  sudo wget https://archive.apache.org/dist/maven/maven-3/3.9.2/binaries/apache-maven-3.9.2-bin.tar.gz
+    3  tar xvf apache-maven-3.9.2-bin.tar.gz
+    4  ls
+    5  export PATH=$PATH:/home/ec2-user/apache-maven-3.9.2/bin
+    7  mvn --version
+    8  git clone https://github.com/MannemHaritha/springboot-postgresql-docker-assignment.git
+    9  ls
+   10  cd springboot-postgresql-docker-assignment/
+   12  git checkout master
+   13  mvn clean package
+
+
+2. in code where the db details are mensioned?
+		src
+	 default  username:	postgres
+					password:	Haritha#123
+
+spring.datasource.url=jdbc:postgresql://${POSTGRES_HOST}:5432/postgres
+spring.jpa.database-platform=org.hibernate.dialect.PostgreSQL94Dialect
+spring.datasource.username=${POSTGRES_USER}
+spring.datasource.password=${POSTGRES_PASSWORD}
+			as
+by using export command 
+
+3. export POSTGRES_HOST="database-1.cnho708cyia6.us-east-1.rds.amazonaws.com"
+4. export POSTGRES_USER="postgres"
+5. export POSTGRES_PASSWORD="Haritha#123"
+
+6. java -jar target/springboot-postgres-docker-assignment-1.0-SNAPSHOT.jar
+
+
+7. in postgre terminal
+	 \dt
+	  List of relations
+			Schema |   Name   | Type  |  Owner
+			--------+----------+-------+----------
+		 public | customer | table | postgres
+			(1 row)
+			
+	 select * from customer;
+			id | country_of_birth | country_of_residence | name | segment
+			----+------------------+----------------------+------+---------
+			(0 rows)
+
+
+8. as of now no customer detailes are there. if you want customer details 
+we need to mahe a http  post call , so that we can save customer data in this application.
+
+9. we can use curl command  to make a post call or we can use tools like postman to make http call
+or we can use python script also to make a http call 
+
+10. now we are using curl command 
+https://stackoverflow.com/questions/7172784/how-do-i-post-json-data-with-curl
+
+curl --header "Content-Type: application/json" \
+  --request POST \
+  --data '{"username":"xyz","password":"xyz"}' \
+  http://localhost:3000/api/login
+
+as
+
+11.	by using curl command
+	curl --header "Content-Type: application/json" \
+  --request POST \
+  --data '{  "name": "Haritha",  "country_of_birth": "INDIA",  "country_of_residence": "INDIA",  "segment": "Retail"}'  \
+  http://3.208.34.58:33333/createnewcustomer
+
+			customer created[ec2-user@ip-172-31-42-199 ~]$
+
+
+12. postgres=>  select * from customer;
+ id | country_of_birth | country_of_residence |  name   | segment
+----+------------------+----------------------+---------+---------
+  1 | INDIA            | INDIA                | Haritha | Retail
+(1 row)
+
+			OR
+			
+			
+12. BY USING POSTMAN API
+https://web.postman.co/workspace/My-Workspace~607037d5-3f52-453e-8e05-fbeeb73f9f67/request/create?requestId=107d6f3a-e28b-4746-a427-79051245d4d0
+
+URL:	http://3.208.34.58:33333/createnewcustomer
+METHOD :	POST
+BODY-->RAW-->JSON
+{
+  "name": "Uday",
+  "country_of_birth": "INDIA",
+  "country_of_residence": "INDIA",
+  "segment": "Wholesale"
+}
+CLICK ON SEND 
+
+		customer created
+
+
+13. postgres=>  select * from customer;
+ id | country_of_birth | country_of_residence |  name   |  segment
+----+------------------+----------------------+---------+-----------
+  1 | INDIA            | INDIA                | Haritha | Retail
+  2 | INDIA            | INDIA                | Uday    | Wholesale
+(2 rows)
+
+
+			or
+			
+14. by using python script we will add customer data.
+https://www.w3schools.com/python/ref_requests_post.asp
+
+import requests
+
+url = 'http://3.208.34.58:33333/createnewcustomer'
+myobj = {"name": "Srinadh",  "country_of_birth": "INDIA",  "country_of_residence": "INDIA",  "segment": "Retail"}
+
+x = requests.post(url, json = myobj)
+"
+print(x.text)
+
+in ec2
+	python3
+			Python 3.7.16 (default, Mar 10 2023, 03:25:26)
+			[GCC 7.3.1 20180712 (Red Hat 7.3.1-15)] on linux
+			Type "help", "copyright", "credits" or "license" for more information.
+				>>>
+	import requests
+			Traceback (most recent call last):
+			  File "<stdin>", line 1, in <module>
+			  ModuleNotFoundError: No module named 'requests'
+	url = 'http://3.208.34.58:33333/createnewcustomer'
+	myobj = {"name": "Srinadh",  "country_of_birth": "INDIA",  "country_of_residence": "INDIA",  "segment": "Retail"}
+
+	x = requests.post(url, json = myobj)
+
+	print(x.text)
+
+		customer created
+
+
+15. postgres=>  select * from customer;
+ id | country_of_birth | country_of_residence |  name   |  segment
+----+------------------+----------------------+---------+-----------
+  1 | INDIA            | INDIA                | Haritha | Retail
+  2 | INDIA            | INDIA                | Uday    | Wholesale
+  3 | INDIA            | INDIA                | Srinadh | Retail
+(3 rows)
+
+
+16.  to get the existing list of all customers
+		curl --request GET  url = http://3.208.34.58:33333/listallcustomers
+			curl: (6) Could not resolve host: url
+				curl: (3) URL using bad/illegal format or missing URL
+				[{"name":"Haritha","id":1,"country_of_birth":"INDIA","country_of_residence":"INDIA","segment":"Retail"},{"name":"Uday","id":2,"country_of_birth":"INDIA","country_of_residence":"INDIA","segment":"Wholesale"}][ec2-user@ip-172-31-42-199 ~]$
+
+			or 
+	     you can hit from browser also by using url 
+		 
+		 http://3.208.34.58:33333/listallcustomers
+		[
+    {
+        "name": "Haritha",
+        "id": 1,
+        "country_of_birth": "INDIA",
+        "country_of_residence": "INDIA",
+        "segment": "Retail"
+    },
+    {
+        "name": "Uday",
+        "id": 2,
+        "country_of_birth": "INDIA",
+        "country_of_residence": "INDIA",
+        "segment": "Wholesale"
+    },
+    {
+        "name": "Srinadh",
+        "id": 3,
+        "country_of_birth": "INDIA",
+        "country_of_residence": "INDIA",
+        "segment": "Retail"
+    }
+]
+
+
+17. now a days nobady going to work with ip addres ,everyone workwith DNS name i.e load balancers
+	create classic  load balancer
+	
+	hit in chrome
+	http://haritha-classiclb-1856031223.us-east-1.elb.amazonaws.com/listallcustomers
+			[{"name":"Haritha","id":1,"country_of_birth":"INDIA","country_of_residence":"INDIA","segment":"Retail"},
+			{"name":"Uday","id":2,"country_of_birth":"INDIA","country_of_residence":"INDIA","segment":"Wholesale"},
+			{"name":"Srinadh","id":3,"country_of_birth":"INDIA","country_of_residence":"INDIA","segment":"Retail"}]
+
+
+
+
+
+
+
+
+
+
+
+
