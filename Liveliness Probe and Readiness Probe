@@ -1,0 +1,410 @@
+Liveliness Probe and Readiness Probe
+##############################
+
+Liveness Probes: Used to check if the container is available and alive. 
+Readiness Probes: Used to check if the application is ready to use and serve the traffic.
+
+Agenda
+###############################
+
+what happens if liveliness probe fails?
+what happens if readiness probe fails?
+
+#################################
+
+if you take java springboot application into this consideration how to configure liveliness probe and readiness probe?
+what happens if liveliness probe fails and
+what happens if readiness probe fails?
+
+liveliness probe
+##########################
+liveliness probe is define in 3/many ways ,like
+
+1.	Liveness  probe using linux command
+
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    test: liveness
+  name: liveness-exec
+spec:
+  containers:
+  - name: liveness
+    image: k8s.gcr.io/busybox
+    args:
+    - /bin/sh
+    - -c
+    - touch /tmp/healthy; sleep 30; rm -rf /tmp/healthy; sleep 600
+    livenessProbe:
+      exec:
+        command:
+        - cat
+        - /tmp/healthy
+      initialDelaySeconds: 3
+      periodSeconds: 5
+	  
+	  
+2. 	Liveness HTTP request
+
+livenessProbe:
+  httpGet:
+    path: /healthz
+    port: 8080
+  initialDelaySeconds: 3
+  periodSeconds: 3
+
+
+3. 	TCP Liveness probe
+
+livenessProbe:
+  tcpSocket:
+    port: 8080
+  initialDelaySeconds: 15
+  periodSeconds: 20
+  
+  
+in our scenario we can take 2nd approac i.e using liveliness HTTP request. so that
+
+1. create ec2-instance and attach IAM role to the instance
+	sudo -i
+2. install docker  
+	 sudo yum install docker -y
+	 systemcl start docker
+	
+3. minikube 
+
+curl -Lo minikube https://github.com/kubernetes/minikube/releases/download/v1.25.2/minikube-linux-amd64
+chmod +x minikube
+sudo mv minikube /usr/local/bin/
+yum install conntrack -y
+export PATH=/usr/local/bin:$PATH
+minikube start --driver=none
+
+4. kubectl
+https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/
+
+	curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+	
+		curl -LO "https://dl.k8s.io/release/v1.23.3/bin/linux/amd64/kubectl"
+
+	curl -LO "https://dl.k8s.io/release/v1.23.3/bin/linux/amd64/kubectl"
+	 chmod +x kubectl
+	cp kubectl /usr/bin/
+
+5. kubectl get nodes
+		NAME                            STATUS   ROLES                  AGE     VERSION
+		ip-172-31-81-234.ec2.internal   Ready    control-plane,master   3m19s   v1.23.3
+		
+6. if you want to see lables
+
+	kubectl describe nodes ip-172-31-81-234.ec2.internal
+
+7. docker run --name=java-app -p 8080:8080 -d mannemharitha/springboot-maven-course-micro-svc:10
+		Unable to find image 'mannemharitha/springboot-maven-course-micro-svc:10' locally
+		10: Pulling from mannemharitha/springboot-maven-course-micro-svc
+		001c52e26ad5: Pull complete
+		d9d4b9b6e964: Pull complete
+		2068746827ec: Pull complete
+		9daef329d350: Pull complete
+		d85151f15b66: Pull complete
+		52a8c426d30b: Pull complete
+		8754a66e0050: Pull complete
+		381b69aaa58a: Pull complete
+		Digest: sha256:073186e1556346dcbb8bb98059f36f3456ca185c03c7fe7c21f43feef1ecfc4b
+		Status: Downloaded newer image for mannemharitha/springboot-maven-course-micro-svc:10
+		0c839cc34d26ac1b051621b08f20f9fa0c7d728cd4799602704d4cfeed08e347
+		
+8. docker ps
+	CONTAINER ID   IMAGE                                                COMMAND                  CREATED          STATUS          PORTS                                       NAMES
+	0c839cc34d26   mannemharitha/springboot-maven-course-micro-svc:10   "java -jar /app.jar"     12 seconds ago   Up 7 seconds    0.0.0.0:8080->8080/tcp, :::8080->8080/tcp   java-app
+
+9. 	54.161.196.177:8080/course-svc/actuator/health
+
+by using liveliness 2nd approac
+
+livenessProbe:
+  httpGet:
+    path: /healthz
+    port: 8080
+  initialDelaySeconds: 3
+  periodSeconds: 3
+  
+  
+livenessProbe:
+  httpGet:
+    path: /course-svc/actuator/health
+    port: 8080
+  initialDelaySeconds: 3
+  periodSeconds: 3
+  
+  
+10.	by using springboot deployment.yaml file we place the above liveliness probe in under image.like
+  
+vi springboot-deployment.yaml
+  
+  
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: springboot-deployment
+  labels:
+    app: springboot
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: springboot
+  template:
+    metadata:
+      labels:
+        app: springboot
+    spec:
+      containers:
+      - name: springboot-container
+        image:  mannemharitha/springboot-maven-course-micro-svc:10
+		livenessProbe:
+		  httpGet:
+		    path: /course-svc/actuator/health
+			port: 8080
+		  initialDelaySeconds: 3
+		  periodSeconds: 3
+        ports:
+        - containerPort: 8080
+		
+11. cat springboot-deployment.yaml
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: springboot-deployment
+  labels:
+    app: springboot
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: springboot
+  template:
+    metadata:
+      labels:
+        app: springboot
+    spec:
+      containers:
+      - name: springboot-container
+        image:  mannemharitha/springboot-maven-course-micro-svc:10
+        livenessProbe:
+          httpGet:
+            path: /course-svc/actuator/health
+            port: 8080
+          initialDelaySeconds: 3
+          periodSeconds: 3
+        ports:
+        - containerPort: 8080
+
+
+12.	kubectl apply -f springboot-deployment.yml
+		deployment.apps/springboot-deployment configured
+
+13.  kubectl get pods
+		NAME                                     READY   STATUS    RESTARTS      AGE
+		springboot-deployment-6f47698d9f-2kjr7   1/1     Running   5 (12m ago)   14m
+		springboot-deployment-6f47698d9f-kwlqp   1/1     Running   4 (13m ago)   14m
+		springboot-deployment-6f47698d9f-tbvl5   1/1     Running   5 (12m ago)   14m
+
+
+14. by using springboot deployment.yaml file we place the above readiness probe in under liveness probe.like
+  vi springboot-deployment.yml
+  
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: springboot-deployment
+  labels:
+    app: springboot
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: springboot
+  template:
+    metadata:
+      labels:
+        app: springboot
+    spec:
+      containers:
+      - name: springboot-container
+        image: mannemharitha/springboot-maven-course-micro-svc:10
+        livenessProbe:
+          httpGet:
+            path: /course-svc/actuator/health
+            port: 8080
+          initialDelaySeconds: 3
+          periodSeconds: 3
+        readinessProbe:
+          httpGet:
+            path: /course-svc/actuator/health
+            port: 8080
+          initialDelaySeconds: 3
+          periodSeconds: 3
+        ports:
+        - containerPort: 8080
+
+15. kubectl apply -f springboot-deployment.yml
+		deployment.apps/springboot-deployment configured
+
+16. kubectl get pods --watch
+
+#####################################
+
+
+now we can create liveness AND  readiness probe in AKS using azure cli
+
+######################
+https://learn.microsoft.com/en-us/azure/aks/learn/quick-kubernetes-deploy-cli
+
+1. open your azure accont
+2. open cloud shell
+		Requesting a Cloud Shell.Succeeded. 
+		Connecting terminal...
+		Welcome to Azure Cloud Shell
+		Type "az" to use Azure CLI
+		Type "help" to learn about Cloud Shell
+		MOTD: SqlServer has been updated to Version 22!
+		VERBOSE: Authenticating to Azure ...
+		VERBOSE: Building your Azure drive ...
+		
+3. create a resource group
+	az group create --name myResourceGroup --location eastus
+	
+		{
+		"id": "/subscriptions/df9d70b6-bcd5-49cf-8d2a-24dcb2a00d8c/resourceGroupss/myResourceGroup",
+		"location": "eastus",
+		"managedBy": null,
+		"name": "myResourceGroup",
+		"properties": {
+		"provisioningState": "Succeeded"
+		},
+		"tags": null,
+		"type": "Microsoft.Resources/resourceGroups"
+		}
+
+4. create a aks cluster
+	az aks create -g myResourceGroup -n myAKSCluster --enable-managed-identity --node-count 1 --enable-addons monitoring --enable-msi-auth-for-monitoring  --generate-ssh-keys
+	
+5. in azure search kubernetes services click on the k8s services , you can see the myAKScluster
+	NOW cluster is running
+	
+6. then i need to connect to the cluster
+
+	az aks get-credentials --resource-group myResourceGroup --name myAKSCluster
+			Merged "myAKSCluster" as current context in /home/bandteja/.kube/config
+			
+7.kubectl get nodes
+		NAME                                STATUS   ROLES   AGE   VERSION
+		aks-nodepool1-34133234-vmss000000   Ready    agent   10m   v1.25.6
+		
+8. vi springboot-deployment.yaml
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: springboot-deployment
+  labels:
+    app: springboot
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: springboot
+  template:
+    metadata:
+      labels:
+        app: springboot
+    spec:
+      containers:
+      - name: springboot-container
+        image: mannemharitha/springboot-maven-course-micro-svc:10
+        livenessProbe:
+          httpGet:
+            path: /course-svc/actuator/health
+            port: 8080
+          initialDelaySeconds: 3
+          periodSeconds: 3
+        readinessProbe:
+          httpGet:
+            path: /course-svc/actuator/health
+            port: 8080
+          initialDelaySeconds: 3
+          periodSeconds: 3
+        ports:
+        - containerPort: 8080
+
+
+9. kubectl apply -f springboot-deployment.yaml
+		deployment.apps/springboot-deployment created
+	
+now open workloads in your cluster you can see a springboot-deployment your containers are running
+
+10. kubectl get pods
+		NAME                                     READY   STATUS    RESTARTS       AGE
+		springboot-deployment-569dfdfd66-4tjnr   1/1     Running   5 (3m3s ago)   4m38s
+		springboot-deployment-569dfdfd66-gvmwm   1/1     Running   5 (3m3s ago)   4m38s
+		springboot-deployment-569dfdfd66-vmw9f   1/1     Running   5 (3m3s ago)   4m38s
+		
+		or
+
+	kubectl get deployments                            
+		NAME                    READY   UP-TO-DATE   AVAILABLE   AGE
+		springboot-deployment   3/3     3            3           10m
+		
+		
+11. now check the logs of the applicaton/container
+
+	kubectl logs springboot-deployment-569dfdfd66-4tjnr
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::                (v2.5.4)
+
+2023-07-17 12:56:49.457  INFO 1 --- [           main] SpringbootMavenCourseMicroSvcApplication : Starting SpringbootMavenCourseMicroSvcApplication v0.0.1-SNAPSHOT using Java 1.8.0_342 on springboot-deployment-569dfdfd66-4tjnr with PID 1 (/app.jar started by root in /)
+2023-07-17 12:56:49.464  INFO 1 --- [           main] SpringbootMavenCourseMicroSvcApplication : No active profile set, falling back to default profiles: default
+2023-07-17 12:56:52.663  INFO 1 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port(s): 8080 (http)
+2023-07-17 12:56:52.675  INFO 1 --- [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2023-07-17 12:56:52.676  INFO 1 --- [           main] org.apache.catalina.core.StandardEngine  : Starting Servlet engine: [Apache Tomcat/9.0.52]
+2023-07-17 12:56:52.743  INFO 1 --- [           main] o.a.c.c.C.[.[localhost].[/course-svc]    : Initializing Spring embedded WebApplicationContext
+2023-07-17 12:56:52.743  INFO 1 --- [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 3021 ms
+2023-07-17 12:56:53.492  INFO 1 --- [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 13 endpoint(s) beneath base path '/actuator'
+2023-07-17 12:56:53.571  INFO 1 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port(s): 8080 (http) with context path '/course-svc'
+2023-07-17 12:56:53.592  INFO 1 --- [           main] SpringbootMavenCourseMicroSvcApplication : Started SpringbootMavenCourseMicroSvcApplication in 5.66 seconds (JVM running for 7.241)
+2023-07-17 12:56:53.900  INFO 1 --- [nio-8080-exec-1] o.a.c.c.C.[.[localhost].[/course-svc]    : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2023-07-17 12:56:53.901  INFO 1 --- [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2023-07-17 12:56:53.903  INFO 1 --- [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 2 ms
+
+
+now you can see  the application up and running
+
+12. now expose the  deployment as service
+	kubectl expose deployment springboot-deployment --port=8080 --type=LoadBalancer --name springboot-service
+			service/springboot-service exposed
+			
+13. kubectl get service                                                                                      
+		NAME                    TYPE           CLUSTER-IP    EXTERNAL-IP    PORT(S)          AGE
+		kubernetes              ClusterIP      10.0.0.1      <none>         443/TCP          33m
+		springboot-deployment   LoadBalancer   10.0.6.18     20.232.5.150   8080:31195/TCP   89s
+		springboot-service      LoadBalancer   10.0.21.179   4.157.80.196   8080:31262/TCP   52s
+		
+14. go to the services and ingress and copy the external ip
+
+	4.157.80.196:8080/course-svc/actuator/health
+			{"status":"UP","groups":["liveness","readiness"]}
+			or
+	4.157.80.196:8080/course-svc/getAllDevopsTools
+			["git","maven","sonar","nexus","jenkins"]
+			
+16.	Remove the resource group, container service, and all related resources using the az group delete command. using Azure CLI
+		az group delete --name myResourceGroup --yes --no-wait
