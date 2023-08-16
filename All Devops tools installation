@@ -247,7 +247,7 @@ WantedBy=multi-user.target
 
 
 
-Jfrog Installation
+9. Jfrog Installation
 #####################
 https://medium.com/@raguyazhin/step-by-step-guide-to-install-jfrog-artifactory-on-amazon-linux-6b832dd8097b
 1. sudo yum update -y
@@ -282,3 +282,121 @@ WantedBy=multi-user.target
 13. login
 	username:admin
 	password: password
+
+
+
+10. Install ELK on amazon linux2
+
+ElasticSearch SETUP
+
+1. first make sure we hava Elastic Search up and running
+
+pre requisiste of elastic search is java and also maintain instance type is minimum t2.medium. and make sure elastic and kibana versions both are same.
+
+1. create instance and type is minimun t2.medium and open port numbers for elastic search and kibana
+	elastic search port number: 9200
+	kibana: 5601
+	
+2. sudo yum install java-11-amazon-corretto-headless -yum
+
+3. now download the elastic search as 7.10 version
+	https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-7.10.0-x86_64.rpm
+			or
+	wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-7.10.0-x86_64.rpm
+	sudo rpm --install elasticsearch-7.10.0-x86_64.rpm
+		or
+		sudo rpm -ivh elasticsearch-7.10.0-x86_64.rpm
+		
+4. sudo systemctl start elasticsearch
+5. sudo systemctl status elasticsearch
+
+6.  sudo vi /etc/elasticsearch/elasticsearch.yml
+
+  cluster.name: my-application
+  node.name: node-1
+  network.host: 0.0.0.0
+  http.port: 9200
+  discovery.type: single-node
+  
+7. sudo systemctl restart elasticsearch
+
+8. sudo netstat -plunt | grep :9200
+		tcp6       0      0 :::9200                 :::*                    LISTEN      21538/java
+
+9. 54.234.107.233:9200
+
+{
+  "name" : "node-1",
+  "cluster_name" : "my-application",
+  "cluster_uuid" : "E2-4SV3QTauUehlvJz1-iA",
+  "version" : {
+    "number" : "7.10.0",
+    "build_flavor" : "default",
+    "build_type" : "rpm",
+    "build_hash" : "51e9d6f22758d0374a0f3f5c6e8f3a7997850f96",
+    "build_date" : "2020-11-09T21:30:33.964949Z",
+    "build_snapshot" : false,
+    "lucene_version" : "8.7.0",
+    "minimum_wire_compatibility_version" : "6.8.0",
+    "minimum_index_compatibility_version" : "6.0.0-beta1"
+  },
+  "tagline" : "You Know, for Search"
+}
+
+
+KIBANA SETUP
+
+2. Once elastic search is ready then run kibana as well
+https://www.elastic.co/guide/en/kibana/7.17/rpm.html#install-rpm
+
+1. install kibana
+	wget https://artifacts.elastic.co/downloads/kibana/kibana-7.10.0-x86_64.rpm
+	##wget https://artifacts.elastic.co/downloads/kibana/kibana-7.10.0-x86_64.rpm.sha512
+	##shasum -a 512 -c kibana-7.10.0-x86_64.rpm.sha512 
+	sudo rpm --install kibana-7.10.0-x86_64.rpm
+
+
+2.sudo rpm --install kibana-7.10.0-x86_64.rpm
+3. sudo systemctl status kibana
+     sudo systemctl start kibana
+     sudo systemctl status kibana
+
+
+4. vi /etc/kibana/kibana.yml
+
+server.port: 5601
+server.host: "0.0.0.0"
+elasticsearch.hosts: ["http://localhost:9200"]
+
+5. sudo systemctl restart kibana
+
+6. sudo netstat -plunt | grep :5601
+		tcp        0      0 0.0.0.0:5601            0.0.0.0:*               LISTEN      11691/node
+		or
+	44.203.173.84:5601
+
+
+now our ELK setup is ready.now we have to make sure
+
+
+11. Mysql installation
+https://coderjony.com/blogs/installing-mysql-on-amazon-linux-2-ec2-instance-and-configure-it-for-remote-connections
+######################
+
+1. sudo yum install -y mariadb-server
+
+2. sudo systemctl start mariadb
+
+3. sudo systemctl status mariadb
+
+if you want to connect with any database first we need to know the username and password.
+4. sudo mysql_secure_installation
+	new password: Mysql#123
+	Remove anonymous users? [Y/n]: press enter
+	Disallow root login remotely? [Y/n]: press enter
+	Remove test database and access to it? [Y/n]: press enter
+	Reload privilege tables now? [Y/n]: press enter
+
+5. mysql -u root -pMysql#123
+
+
