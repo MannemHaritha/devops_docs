@@ -1,0 +1,135 @@
+Gitops in Argo CD
+####################
+What is the concept of GitOps?
+
+GitOps uses Git repositories as a single source of truth to deliver infrastructure as code. Submitted code checks the CI process, 
+while the CD process checks and applies requirements for things like security, infrastructure as code, or any other boundaries set for the application framework
+
+GitOps is a way of implementing Continuous Deployment for cloud native applications. 
+It focuses on a developer-centric experience when operating infrastructure, by using tools developers are already familiar with, including Git and Continuous Deployment tools.
+
+Argo CD Approach
+##################
+
+Argo CD is a declarative, GitOps continuous delivery tool for Kubernetes. The core component of Argo CD is the Application Controller, 
+which continuously monitors running applications and compares the live application state against the desired target state defined in the Git repository.
+
+install argocd
+#############
+https://blog.devgenius.io/how-to-deploy-argocd-in-eks-cluster-for-continuous-deployment-6ebbb3009024
+
+Demo overview steps
+		Install ArgoCD in K8s cluster
+		Configure ArgoCD with “Applicatin” CRD
+		Install the ArgoCD CLI.
+		Test our setup by updating Deployment.yaml files
+		
+1. kubectl create namespace argocd
+				namespace/argocd created
+
+
+2. Next, let's apply the yaml configuration files for ArgoCd
+
+	kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+
+
+3. Now we can view the pods created in the ArgoCD namespace.
+
+		kubectl get pods -n argocd
+					NAME                                                R									EADY   STATUS    RESTARTS   AGE
+					argocd-application-controller-0                     					1/1     Running   0          80s
+					argocd-applicationset-controller-74bd4b8497-bzjlt   1/1     Running   0          81s
+					argocd-dex-server-6c6dfb6597-hck6f                  			1/1     Running   0          81s
+					argocd-notifications-controller-6786586cb-xpjf8     1/1     Running   0          81s
+					argocd-redis-b5d6bf5f5-p7sx6                        					1/1     Running   0          81s
+					argocd-repo-server-6658f8b96d-bnxbq                 		1/1     Running   0          81s
+					argocd-server-5fff657769-9cx49  
+					
+					
+4. 	kubectl get svc -n argocd
+
+					NAME                                      							TYPE        						CLUSTER-IP       EXTERNAL-IP   				PORT(S)                      									AGE
+					argocd-applicationset-controller     			ClusterIP   					10.100.149.75    <none>        					7000/TCP,8080/TCP            							3m52s
+					argocd-dex-server                         				ClusterIP   					10.100.200.136   <none>       				 5556/TCP,5557/TCP,5558/TCP   			3m52s
+					argocd-metrics                            					ClusterIP   					10.100.42.117    <none>        						8082/TCP                     									3m52s
+					argocd-notifications-controller-metrics   ClusterIP   					10.100.192.41    <none>        						9001/TCP                     								3m52s
+					argocd-redis                              						ClusterIP   					10.100.130.54    <none>        						6379/TCP                     								3m52s
+					argocd-repo-server                        				ClusterIP   					10.100.167.194   <none>       					 8081/TCP,8084/TCP            					3m52s
+					argocd-server                             					ClusterIP   					10.100.18.134    <none>        						80/TCP,443/TCP               							3m52s
+					argocd-server-metrics                     			ClusterIP   					10.100.135.248   <none>        						8083/TCP                     								3m52s
+
+
+5. with this cluster ip i can't access to the outside,  so that we can use port forwarding/service type
+now i can use service/
+	Next we can acess the ArgoCD ui from the services deployed
+	
+		kubectl port-forward svc/argocd-server 8080:443 -n argocd
+		
+						or
+		
+		kubectl edit svc/argocd-server -n argocd
+				service/argocd-server edited(where as cluster ip put LoadBlanncer)
+
+6.  kubectl get svc -n argocd
+				NAME                                      TYPE           CLUSTER-IP       EXTERNAL-IP                                                               PORT(S)                      AGE
+				argocd-applicationset-controller          ClusterIP      10.100.149.75    <none>                                                                    7000/TCP,8080/TCP            30m
+				argocd-dex-server                         ClusterIP      10.100.200.136   <none>                                                                    5556/TCP,5557/TCP,5558/TCP   30m
+				argocd-metrics                            ClusterIP      10.100.42.117    <none>                                                                    8082/TCP                     30m
+				argocd-notifications-controller-metrics   ClusterIP      10.100.192.41    <none>                                                                    9001/TCP                     30m
+				argocd-redis                              ClusterIP      10.100.130.54    <none>                                                                    6379/TCP                     30m
+				argocd-repo-server                        ClusterIP      10.100.167.194   <none>                                                                    8081/TCP,8084/TCP            30m
+				argocd-server                             LoadBalancer   10.100.18.134    af0ee10a5851a495da5998d4ab6f3bdf-1149205784.us-east-1.elb.amazonaws.com   80:30806/TCP,443:30010/TCP   30m
+				argocd-server-metrics                     ClusterIP      10.100.135.248   <none>     
+				
+				
+7. hit the url in browser and also check the loadblancers are in service
+	af0ee10a5851a495da5998d4ab6f3bdf-1149205784.us-east-1.elb.amazonaws.com
+	IT SHOWS YOU ARE CONNECTING OT PRIVATE IP
+	CLICK ON ADVANCED
+	CLICK ON LINK, now you can see the argocd UI.
+	
+	
+8. The username is admin
+		The password is autogenerated and stored in the secret called argocd-initial-admin-secret in the argocd installation namespace.
+
+	kubectl get secret argocd-initial-admin-secret -n argocd -o yaml
+	
+apiVersion: v1
+data:
+  password: aUNpU3p3M3RhSmlvMno4LQ==
+kind: Secret
+metadata:
+  creationTimestamp: "2023-08-21T16:58:37Z"
+  name: argocd-initial-admin-secret
+  namespace: argocd
+  resourceVersion: "59011"
+  uid: d14f89f2-88f7-4fe7-9a61-72e6f15968d5
+type: Opaque
+
+
+9. Then you can decode the password
+
+echo aUNpU3p3M3RhSmlvMno4LQ== | base64 --decode
+
+password: iCiSzw3taJio2z8-
+
+now open the argocd ui
+10. now create the new app
+after competion of application,
+
+11. in terminal
+	 kubectl get pods
+			NAME                                  READY   STATUS    RESTARTS   AGE
+			hellospringbooteks-747b6fc66c-99tdd   1/1     Running   0          50s
+
+12.	kubectl get svc
+			NAME                 TYPE           CLUSTER-IP      EXTERNAL-IP                                                              PORT(S)          AGE
+			hellospringbooteks   LoadBalancer   10.100.130.82   a18f6140c47fc405484bc5759f196e79-198713315.us-east-1.elb.amazonaws.com   8080:32395/TCP   83s
+			kubernetes           ClusterIP      10.100.0.1      <none>                                                                   443/TCP          7h19m
+		
+
+13. now you can see the loadbalancer the applications is in service.
+
+14. now you can hit the application
+	a18f6140c47fc405484bc5759f196e79-198713315.us-east-1.elb.amazonaws.com:8080/hello
+				Welcome to Cloudtechmasters version:1
