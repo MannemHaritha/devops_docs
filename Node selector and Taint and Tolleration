@@ -1,0 +1,477 @@
+Node selector and Taint and Tolleration
+######################
+Agenda
+#########
+1. i want to create eks cluster of 1.27 k8s version
+
+2. taint and tolleration
+3. pod distribution budger
+
+4. gitops
+5. in side gitops i will try to show Argo cd
+
+6. helm charts.
+
+########################
+
+1. create eks cluster of 1.27 k8s version
+###################
+EKS cluster setup run in ec2-user
+############
+Step1: Take EC2 Instance with t2.xlarge instance type
+
+Step2: Create IAM Role with Admin policy for eks-cluster and attach to ec2-instance
+
+Step3: Install kubectl
+	curl -O https://s3.us-west-2.amazonaws.com/amazon-eks/1.27.1/2023-04-19/bin/linux/amd64/kubectl
+
+	curl -o kubectl https://amazon-eks.s3.us-west-2.amazonaws.com/1.27.1/2023-04-19/bin/linux/amd64/kubectl
+	chmod +x ./kubectl
+	mkdir -p $HOME/bin
+	cp ./kubectl $HOME/bin/kubectl
+	export PATH=$HOME/bin:$PATH
+	echo 'export PATH=$HOME/bin:$PATH' >> ~/.bashrc
+	source $HOME/.bashrc
+	kubectl version --short --client
+	
+Step4: Install eksctl:
+	curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
+	sudo mv /tmp/eksctl /usr/bin
+	eksctl version
+	
+Step5: Cluster creation:
+eksctl create cluster --name=eksdemo-dev \
+                  --region=us-east-1 \
+                  --zones=us-east-1a,us-east-1b \
+                  --without-nodegroup 
+			OR
+eksctl create cluster --name=eksdemo --region=us-east-1 --version=1.27 --zones=us-east-1a,us-east-1b --without-nodegroup
+		or
+eksctl create cluster --name=eksdemo-dev --region=us-east-1 --version=1.27 --zones=us-east-1a,us-east-1b --without-nodegroup
+
+eksctl create cluster --name=eksdemo-test --region=us-east-1 --version=1.27 --zones=us-east-1a,us-east-1b --without-nodegroup
+
+eksctl create cluster --name=eksdemo-staging/UAT/Pre-prod --region=us-east-1 --version=1.27 --zones=us-east-1a,us-east-1b --without-nodegroup
+
+eksctl create cluster --name=eksdemo-prod --region=us-east-1 --version=1.27 --zones=us-east-1a,us-east-1b --without-nodegroup
+
+step:5
+
+eksctl utils associate-iam-oidc-provider \
+    --region us-east-1 \
+    --cluster eksdemo-dev \
+    --approve
+	
+step 6:
+
+eksctl create nodegroup --cluster=eksdemo-dev \
+                   --region=us-east-1 \
+                   --name=eksdemo-dev-ng1 \
+                   --node-type=t2.medium \
+                   --nodes=2 \
+                   --nodes-min=2 \
+                   --nodes-max=4 \
+                   --node-volume-size=10 \
+                   --ssh-access \
+                   --ssh-public-key=haritha \
+                   --managed \
+                   --asg-access \
+                   --external-dns-access \
+                   --full-ecr-access \
+                   --appmesh-access \
+                   --alb-ingress-access	
+				   
+				   
+6. if you want to connect any kubernetes cluster we need kubeconfig file
+	and also we have to make for eks latest version we need aws cli 2
+
+
+7. aws --version
+	aws-cli/1.18.147 Python/2.7.18 Linux/5.10.179-171.711.amzn2.x86_64 botocore/1.18.6
+	with aws cli 1.18 version we can't connect proper way we install latest aws cli
+	
+
+8. curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+	unzip awscliv2.zip
+	sudo ./aws/install 
+	
+	aws --version
+		aws-cli/2.12.2 Python/3.11.4 Linux/5.10.179-171.711.amzn2.x86_64 exe/x86_64.amzn.2 prompt/off
+	export PATH=$PATH:/usr/local/bin
+	aws --version
+		aws-cli/2.12.2 Python/3.11.4 Linux/5.10.179-171.711.amzn2.x86_64 exe/x86_64.amzn.2 prompt/off
+
+
+9. NOW I WANT TO GENERATE aws update kubeconfig file  
+	aws eks update-kubeconfig  --name my-cluster  --region region-code
+			or
+	aws eks update-kubeconfig  --name eksdemo-dev  --region us-east-1
+			Added new context arn:aws:eks:us-east-1:255766941731:cluster/eksdemo-dev to /home/ec2-user/.kube/config
+	
+10.  kubectl get nodes
+			NAME                             STATUS   ROLES    AGE   VERSION
+			ip-192-168-23-130.ec2.internal   Ready    <none>   66m   v1.27.1-eks-2f008fe
+			ip-192-168-37-21.ec2.internal    Ready    <none>   66m   v1.27.1-eks-2f008fe
+
+
+
+2. taint and tolleration
+####################
+Taints are the opposite -- they allow a node to repel a set of pods. 
+Tolerations are applied to pods. Tolerations allow the scheduler to schedule pods with matching taints.
+
+https://www.densify.com/kubernetes-autoscaling/kubernetes-taints/
+
+
+A taint can produce three possible effects:
+1. NoSchedule
+			The Kubernetes scheduler will only allow scheduling pods that have tolerations for the tainted nodes.
+			
+2. PreferNoSchedule
+			The Kubernetes scheduler will try to avoid scheduling pods that don’t have tolerations for the tainted nodes.
+			
+3. NoExecute
+			Kubernetes will evict the running pods from the nodes if the pods don’t have tolerations for the tainted nodes.
+
+
+https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/
+
+1. You add a taint to a node using kubectl taint. For example,
+	kubectl taint nodes node1 key1=value1:NoSchedule
+		AS
+	kubectl taint nodes ip-192-168-46-159.ec2.internal  key1=value1:NoSchedule
+			node/ip-192-168-46-159.ec2.internal tainted
+
+2. kubectl get nodes -o wide
+3. kubectl describe nodes ip-192-168-46-159.ec2.internal
+			Taints:             key1=value1:NoSchedule
+
+in general if we run three replicas , it will try to run 3 pods on 2 nodes
+but as we mensioned/created  taint on node1, so that all the three pods will be running on node2.
+
+
+let us take example
+
+1. curl -O https://raw.githubusercontent.com/MannemHaritha/springboot-maven-course-micro-svc/master/springboot-deployment.yml
+			  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+				100   423  100   423    0     0   4252      0 --:--:-- --:--:-- --:--:--  4272
+
+2. ls
+
+3. vi springboot-deployment.yml
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: springboot-deployment
+  labels:
+    app: springboot
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: springboot
+  template:
+    metadata:
+      labels:
+        app: springboot
+    spec:
+      containers:
+      - name: springboot-container
+        image:  mannemharitha/springboot-maven-course-micro-svc:10
+        ports:
+        - containerPort: 8080
+
+4. cat springboot-deployment.yml
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: springboot-deployment
+  labels:
+    app: springboot
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: springboot
+  template:
+    metadata:
+      labels:
+        app: springboot
+    spec:
+      containers:
+      - name: springboot-container
+        image: mannemharitha/springboot-maven-course-micro-svc:10
+        ports:
+        - containerPort: 8080
+
+5.  kubectl apply -f springboot-deployment.yml
+				deployment.apps/springboot-deployment created
+				
+6.  kubectl get pods
+			NAME                                     								READY   STATUS    RESTARTS   AGE
+			springboot-deployment-548958c57d-br62n   1/1     Running   0          11s
+			springboot-deployment-548958c57d-m2z5n   1/1     Running   0          23s
+			springboot-deployment-548958c57d-qq866   1/1     Running   0          6s
+
+7. kubectl get pods -o wide
+					NAME                                     									READY   STATUS    RESTARTS   AGE     IP               NODE                            NOMINATED NODE   READINESS GATES
+					springboot-deployment-548958c57d-br62n   1/1     Running   0          2m      192.168.8.53     ip-192-168-8-221.ec2.internal   <none>           <none>
+					springboot-deployment-548958c57d-m2z5n   1/1     Running   0          2m12s   192.168.0.52     ip-192-168-8-221.ec2.internal   <none>           <none>
+					springboot-deployment-548958c57d-qq866   1/1     Running   0          115s    192.168.16.227   ip-192-168-8-221.ec2.internal   <none>           <none>
+
+
+i want created taint for node1 so that all the pods are running on node2.
+
+
+8. now  i want  to do tolleration i.e if you want to strictly run  pods on node1 ,you need to taint and you need to apply the tolleration on yml file.
+
+so that first you delete the created deployment.
+
+9. kubectl delete -f springboot-deployment.yml
+			deployment.apps "springboot-deployment" deleted
+
+10.  we add tolaration to node1
+vi springboot-deployment.yml
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: springboot-deployment
+  labels:
+    app: springboot
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: springboot
+  template:
+    metadata:
+      labels:
+        app: springboot
+    spec:
+        containers:
+      - name: springboot-container
+        image:  mannemharitha/springboot-maven-course-micro-svc:10
+        ports:
+        - containerPort: 8080
+tolerations:
+- key: "key1"
+  operator: "Equal"
+  value: "value1"
+  effect: "NoSchedule"
+
+11. kubectl apply -f springboot-deployment.yml
+				deployment.apps/springboot-deployment created
+12.  kubectl get pods -o wide
+					NAME                                     READY   STATUS    RESTARTS   AGE   IP                                                                                                     NODE                             NOMINATED NODE   READINESS GATES
+						springboot-deployment-848cb679c9-2tn9s   1/1     Running   0          16s   192.                                                                                      168.15.213   ip-192-168-8-221.ec2.internal    <none>           <none>
+				springboot-deployment-848cb679c9-jqzcw   1/1     Running   0          16s   192.                                                                                      168.8.53     ip-192-168-8-221.ec2.internal    <none>           <none>
+				springboot-deployment-848cb679c9-t2pmq   1/1     Running   0          16s   192.                                                                                      168.49.186   ip-192-168-46-159.ec2.internal   <none>           <none>
+						[ec2-user@ip-172-31-82-246 ~]$
+
+
+13. in taint concept all the pods are running on  node2
+		in tollaration  strictly we are running atleast one pod on node1
+
+14. now i want strictly run all pods on  node1 ,i don't want taint and tolleration.
+		so that the concept is called node selector.
+		
+
+ Node selector
+ #############
+so that first we delete the created springboot-deployment.yml.
+ kubectl delete -f  springboot-deployment.yml
+				deployment.apps "springboot-deployment" deleted
+
+https://kubernetes.io/docs/tasks/configure-pod-container/assign-pods-nodes/
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx
+  labels:
+    env: test
+spec:
+  containers:
+  - name: nginx
+    image: nginx
+    imagePullPolicy: IfNotPresent
+  nodeSelector:
+    disktype: ssd
+	
+first you can create a lable  and node selector
+https://kubernetes.io/docs/tasks/configure-pod-container/assign-pods-nodes/
+
+
+ kubectl get nodes --show-labels  (before creating a lable)
+ 
+NAME                             STATUS   ROLES    AGE   VERSION               LABELS
+ip-192-168-46-159.ec2.internal   Ready    <none>   97m   v1.27.3-eks-a5565ad   alpha.eksctl.io/cluster-name=eksdemo-dev,alpha.eksctl.io/nodegroup-name=eksdemo-dev-ng1,
+beta.kubernetes.io/arch=amd64,beta.kubernetes.io/instance-type=t2.medium,beta.kubernetes.io/os=linux,eks.amazonaws.com/capacityType=ON_DEMAND,
+eks.amazonaws.com/nodegroup-image=ami-080632d422a0f7cc5,eks.amazonaws.com/nodegroup=eksdemo-dev-ng1,eks.amazonaws.com/sourceLaunchTemplateId=lt-00e83ba07beda6504,
+eks.amazonaws.com/sourceLaunchTemplateVersion=1,failure-domain.beta.kubernetes.io/region=us-east-1,
+failure-domain.beta.kubernetes.io/zone=us-east-1b,k8s.io/cloud-provider-aws=43625bd1343a15fa311dd06b9cc8f3bb,
+kubernetes.io/arch=amd64,kubernetes.io/hostname=ip-192-168-46-159.ec2.internal,kubernetes.io/os=linux,node.kubernetes.io/instance-type=t2.medium,topology.
+kubernetes.io/region=us-east-1,topology.kubernetes.io/zone=us-east-1b
+ip-192-168-8-221.ec2.internal    Ready    <none>   97m   v1.27.3-eks-a5565ad   alpha.eksctl.io/cluster-name=eksdemo-dev,alpha.eksctl.io/nodegroup-name=eksdemo-dev-ng1,
+beta.kubernetes.io/arch=amd64,beta.kubernetes.io/instance-type=t2.medium,beta.kubernetes.io/os=linux,eks.amazonaws.com/capacityType=ON_DEMAND,
+eks.amazonaws.com/nodegroup-image=ami-080632d422a0f7cc5,eks.amazonaws.com/nodegroup=eksdemo-dev-ng1,eks.amazonaws.com/sourceLaunchTemplateId=lt-00e83ba07beda6504,
+eks.amazonaws.com/sourceLaunchTemplateVersion=1,failure-domain.beta.kubernetes.io/region=us-east-1,failure-domain.beta.kubernetes.io/zone=us-east-1a,
+k8s.io/cloud-provider-aws=43625bd1343a15fa311dd06b9cc8f3bb,kubernetes.io/arch=amd64,kubernetes.io/hostname=ip-192-168-8-221.ec2.internal,
+kubernetes.io/os=linux,node.kubernetes.io/instance-type=t2.medium,topology.kubernetes.io/region=us-east-1,topology.kubernetes.io/zone=us-east-1a
+
+
+1. Choose one of your nodes, and add a label to it:
+
+		kubectl label nodes <your-node-name> disktype=ssd
+						as
+		kubectl  label  nodes ip-192-168-46-159.ec2.internal  disktype=ssd
+					node/ip-192-168-46-159.ec2.internal labeled
+
+2. kubectl get nodes --show-labels
+NAME                             STATUS   ROLES    AGE    VERSION               LABELS
+ip-192-168-46-159.ec2.internal   Ready    <none>   124m   v1.27.3-eks-a5565ad   alpha.eksctl.io/cluster-name=eksdemo-dev,alpha.eksctl.io/nodegroup-name=eksdemo-dev-ng1,
+beta.kubernetes.io/arch=amd64,beta.kubernetes.io/instance-type=t2.medium,beta.kubernetes.io/os=linux,disktype=ssd,eks.amazonaws.com/capacityType=ON_DEMAND,
+eks.amazonaws.com/nodegroup-image=ami-080632d422a0f7cc5,eks.amazonaws.com/nodegroup=eksdemo-dev-ng1,eks.amazonaws.com/sourceLaunchTemplateId=lt-00e83ba07beda6504,
+eks.amazonaws.com/sourceLaunchTemplateVersion=1,failure-domain.beta.kubernetes.io/region=us-east-1,failure-domain.beta.kubernetes.io/zone=us-east-1b,
+k8s.io/cloud-provider-aws=43625bd1343a15fa311dd06b9cc8f3bb,kubernetes.io/arch=amd64,kubernetes.io/hostname=ip-192-168-46-159.ec2.internal,kubernetes.io/os=linux,node.
+kubernetes.io/instance-type=t2.medium,topology.kubernetes.io/region=us-east-1,topology.kubernetes.io/zone=us-east-1b
+
+
+now our lable is added.
+
+
+3. in yml file create node selector
+
+4. cp springboot-deployment.yml springboot-deployment-ns.yml
+5. vi springboot-deployment-ns.yml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: springboot-deployment
+  labels:
+    app: springboot
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: springboot
+  template:
+    metadata:
+      labels:
+        app: springboot
+    spec:
+      containers:
+      - name: springboot-container
+        image: mannemharitha/springboot-maven-course-micro-svc:10
+        ports:
+        - containerPort: 8080
+      nodeSelector:
+        disktype: ssd
+5.  cat springboot-deployment-ns.yml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: springboot-deployment
+  labels:
+    app: springboot
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: springboot
+  template:
+    metadata:
+      labels:
+        app: springboot
+    spec:
+      containers:
+      - name: springboot-container
+        image: mannemharitha/springboot-maven-course-micro-svc:10
+        ports:
+        - containerPort: 8080
+      nodeSelector:
+        disktype: ssd
+
+6. and also make sure you must untaint the node1.
+	kubectl taint nodes ip-192-168-46-159.ec2.internal  key1=value1:NoSchedule-
+				node/ip-192-168-46-159.ec2.internal untainted
+
+
+7. kubectl apply -f springboot-deployment-ns.yml
+deployment.apps/springboot-deployment created
+
+
+
+8.  kubectl get pods
+					NAME                                     READY   STATUS    RESTARTS   AGE
+					springboot-deployment-557c848c48-kdd77   1/1     Running   0          29s
+				springboot-deployment-557c848c48-lrf6j   1/1     Running   0          29s
+					springboot-deployment-557c848c48-vj4lj   1/1     Running   0          29s
+					
+9.  kubectl get pods -o wide
+							NAME                                     READY   STATUS    RESTARTS   AGE   IP               NODE                             NOMINATED NODE   READINESS GATES
+					springboot-deployment-557c848c48-kdd77   1/1     Running   0          43s   192.168.40.107    ip-192-168-46-159.ec2.internal   <none>           <none>
+				springboot-deployment-557c848c48-lrf6j   1/1     Running   0          43s   192.168.58.230            ip-192-168-46-159.ec2.internal   <none>           <none>
+				springboot-deployment-557c848c48-vj4lj   1/1     Running   0          43s   192.168.52.92              ip-192-168-46-159.ec2.internal   <none>           <none>
+ 
+now all the pods are running in perticular/same node.
+
+
+
+
+
+
+
+
+
+
+
+
+history
+3###########
+	1  curl -o kubectl https://amazon-eks.s3.us-west-2.amazonaws.com/1.27.1/2023-04-19/bin/linux/amd64/kubectl
+    2  chmod +x ./kubectl
+    3  mkdir -p $HOME/bin
+    4  cp ./kubectl $HOME/bin/kubectl
+    5  export PATH=$HOME/bin:$PATH
+    6  echo 'export PATH=$HOME/bin:$PATH' >> ~/.bashrc
+    7  source $HOME/.bashrc
+    8  kubectl version --short --client
+    9  curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
+   10  sudo mv /tmp/eksctl /usr/bin
+   11  eksctl version
+   12  eksctl create cluster --name=eksdemo-dev --region=us-east-1 --version=1.27 --zones=us-east-1a,us-east-1b --without-nodegroup
+   13  W
+   14  eksctl utils associate-iam-oidc-provider     --region us-east-1     --cluster eksdemo-dev     --approve
+   15  eksctl create nodegroup --cluster=eksdemo-dev                    --region=us-east-1                    --name=eksdemo-dev-ng1                    --node-type=t2.medium                    --nodes=2                    --nodes-min=2                    --nodes-max=4                    --node-volume-size=10                    --ssh-access                    --ssh-public-key=haritha                    --managed                    --asg-access                    --external-dns-access                    --full-ecr-access                    --appmesh-access                    --alb-ingress-access
+   16  aws --version
+   17  export PATH=$PATH:/usr/local/bin
+   18  aws --version
+   19  aws eks update-kubeconfig  --name eksdemo-dev  --region us-east-1
+   20   kubectl get nodes
+	kubectl taint nodes ip-192-168-46-159.ec2.internal  key1=value1:NoSchedule
+   10  kubectl get nodes -o wide
+   11  kubectl describe nodes ip-192-168-46-159.ec2.internal
+   12  curl -O https://raw.githubusercontent.com/MannemHaritha/springboot-maven-course-micro-svc/master/springboot-deployment.yml
+   10  ls
+   11  vi springboot-deployment.yml
+   12  cat springboot-deployment.yml
+   13  kubectl apply -f springboot-deployment.yml
+   14  kubectl get pods
+   15  vi springboot-deployment.yml
+   16  cat springboot-deployment.yml
+   17  kubectl apply -f springboot-deployment.yml
+   18  kubectl get pods
+   19  kubectl get pods -o wide
+    cp springboot-deployment.yml springboot-deployment-ns.yml
+   12  vi springboot-deployment-ns.yml
+   13  cat springboot-deployment-ns.yml
+   14  kubectl taint nodes ip-192-168-46-159.ec2.internal  key1=value1:NoSchedule-
+   15  kubectl apply -f springboot-deployment-ns.yml
+   16  kubectl get pods
+   17  kubectl get pods -o wide
+
+
