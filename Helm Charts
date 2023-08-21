@@ -1,0 +1,442 @@
+Helm charts
+#################
+like in linux package manager
+in k8s also we have helm packages.
+
+in linux what we can do is
+		will try to download the  rpm file and try to install it
+				or
+		will try to download the dpkg file  and try to install it
+		
+similarly  if you are working with k8s,
+		peoples are usually created something called helm charts. and you can package them as a tar.gz and then you can install the helm charts directly.
+		so that your application usually running.
+		
+		
+now i will try to create a small helm chart.
+##############################
+https://docs.aws.amazon.com/eks/latest/userguide/helm.html
+
+1. download the helm.
+
+curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 > get_helm.sh
+chmod 700 get_helm.sh
+./get_helm.sh
+
+2. set the path 
+	export PATH=$PATH:/usr/local/bin
+
+3.	helm version
+version.BuildInfo{Version:"v3.12.3", GitCommit:"3a31588ad33fe3b89af5a2a54ee1d25bfe6eaa5e", GitTreeState:"clean", GoVersion:"go1.20.7"}
+
+4. helm ls
+NAME    NAMESPACE       REVISION        UPDATED STATUS  CHART   APP VERSION
+
+5. i will create helm chart for spring boot application
+https://josephrodriguezg.medium.com/deploying-a-spring-boot-application-in-kubernetes-using-helm-charts-5c04c2d46e16
+	 helm create springboot-starterkit-svc
+				Creating springboot-starterkit-svc
+
+
+6.  ls
+			aws  awscliv2.zip  bin  get_helm.sh  kubectl  springboot-deployment-ns.yml  springboot-deployment.yml  springboot-starterkit-svc
+	it will create a above highlated folder.
+
+7. sudo yum install tree -y
+8.  tree springboot-starterkit-svc
+springboot-starterkit-svc
+├── charts
+├── Chart.yaml
+├── templates
+│   ├── deployment.yaml
+│   ├── _helpers.tpl
+│   ├── hpa.yaml
+│   ├── ingress.yaml
+│   ├── NOTES.txt
+│   ├── serviceaccount.yaml
+│   ├── service.yaml
+│   └── tests
+│       └── test-connection.yaml
+└── values.yaml
+
+3 directories, 10 files
+
+9. sudo yum install git -y
+
+
+10. in deployment.yml file you can define any name  we can use chart.yml file
+Chart.yaml
+	This is a required file that contains the information about the chart like the API version, name, application version, dependencies, range of compatible Kubernetes version, etc.
+	Lets set the name of the chart application like springboot-starterkit-svc and the version of the chart to 0.1.2. 
+	The appVersion value is reference in deployment.yaml file as the image tag used to create the containers in the Kubernetes cluster.
+
+Chart.yaml
+
+apiVersion: v2
+name: springboot-starterkit-svc
+description: A Helm chart for Kubernetes
+type: application
+version: 0.1.2
+appVersion: "latest"
+
+11. if you see the chart.yml file
+
+cat  springboot-starterkit-svc/Chart.yaml
+apiVersion: v2
+name: springboot-starterkit-svc
+description: A Helm chart for Kubernetes
+
+# A chart can be either an 'application' or a 'library' chart.
+#
+# Application charts are a collection of templates that can be packaged into versioned archives
+# to be deployed.
+#
+# Library charts provide useful utilities or functions for the chart developer. They're included as
+# a dependency of application charts to inject those utilities and functions into the rendering
+# pipeline. Library charts do not define any templates and therefore cannot be deployed.
+type: application
+
+# This is the chart version. This version number should be incremented each time you make changes
+# to the chart and its templates, including the app version.
+# Versions are expected to follow Semantic Versioning (https://semver.org/)
+version: 0.1.0
+
+# This is the version number of the application being deployed. This version number should be
+# incremented each time you make changes to the application. Versions are not expected to
+# follow Semantic Versioning. They should reflect the version the application is using.
+# It is recommended to use it with quotes.
+appVersion: "1.16.0"
+
+
+		IF YOU CAN DEFINE ANYTHING IN THIS ABOVE  U CAN USE CHART.YAML FILE
+
+
+12.If you want to mension any values of chart u can use values.yaml file.
+values.yaml
+	The default configuration values for the chart are declared here . Lets talk about the principal configurations of the chart below.
+
+values.yaml
+
+replicaCount: 3
+image:
+  repository: josephrodriguez/springboot-starterkit
+  pullPolicy: Always
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 8080
+ingress:
+  enabled: true
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    kubernetes.io/tls-acme: "true"
+  hosts:
+    - host: springboot.starterkit.local
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          serviceName: springboot-starterkit-svc
+          servicePort: 80
+
+
+
+13. deployment.yaml
+		Kubernetes Deployment resources are useful to declare the desire state for ReplicaSets and Pods. This is the first manifest template that we use on our application. 
+		Helm creates a Deployment resource with the specifications from this file.
+		The Pod Template define the structure of the pod, a single container is created with the image and tag values on image.repository and Chart.AppVersion respectively.
+
+deployment.yaml
+
+containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.targetPort }}
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: http
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+
+
+
+
+
+
+14. now i will create existing helm chart
+
+	git clone https://github.com/MannemHaritha/helm-hellospringbooteks.git
+15. ls
+			aws  awscliv2.zip  bin  get_helm.sh  helm-hellospringbooteks  kubectl  springboot-deployment-ns.yml  springboot-deployment.yml  springboot-starterkit-svc
+16.  cd helm-hellospringbooteks/
+17.	[ec2-user@ip-172-31-82-246 helm-hellospringbooteks]$ tree
+.
+├── Dockerfile
+├── hellospringbooteks
+│   ├── Chart.yaml
+│   ├── templates
+│   │   ├── deployment.yaml
+│   │   ├── _helpers.tpl
+│   │   ├── hpa.yaml
+│   │   ├── ingress.yaml
+│   │   ├── NOTES.txt
+│   │   ├── serviceaccount.yaml
+│   │   ├── service.yaml
+│   │   └── tests
+│   │       └── test-connection.yaml
+│   └── values.yaml
+├── mvnw
+├── mvnw.cmd
+├── pom.xml
+├── README.md
+└── src
+    ├── main
+    │   ├── java
+    │   │   └── com
+    │   │       └── spjenk
+    │   │           └── hello
+    │   │               ├── HelloApplication.java
+    │   │               └── HelloController.java
+    │   └── resources
+    │       └── application.properties
+    └── test
+        └── java
+            └── com
+                └── spjenk
+                    └── hello
+                        └── HelloApplicationTests.java
+
+15 directories, 19 files
+
+
+18. cd hellospringbooteks/
+
+19. [ec2-user@ip-172-31-82-246 hellospringbooteks]$ tree .
+.
+├── Chart.yaml
+├── templates
+│   ├── deployment.yaml
+│   ├── _helpers.tpl
+│   ├── hpa.yaml
+│   ├── ingress.yaml
+│   ├── NOTES.txt
+│   ├── serviceaccount.yaml
+│   ├── service.yaml
+│   └── tests
+│       └── test-connection.yaml
+└── values.yaml
+
+2 directories, 10 files
+[ec2-user@ip-172-31-82-246 hellospringbooteks]$
+
+
+20. iinstall helm
+	 helm install chartname hellospringbooteks
+			NAME: chartname
+LAST DEPLOYED: Mon Aug 21 14:08:00 2023
+NAMESPACE: default
+STATUS: deployed
+REVISION: 1
+NOTES:
+1. Get the application URL by running these commands:
+     NOTE: It may take a few minutes for the LoadBalancer IP to be available.
+           You can watch the status of by running 'kubectl get --namespace default svc -w chartname-hellospringbooteks'
+  export SERVICE_IP=$(kubectl get svc --namespace default chartname-hellospringbooteks --template "{{ range (index .status.loadBalancer.ingress 0) }}{{.}}{{ end }}")
+  echo http://$SERVICE_IP:8080
+
+21.kubectl get pods
+				NAME                                           										READY   STATUS    RESTARTS   AGE
+				chartname-hellospringbooteks-d5574d754-zxzp4   1/1     Running   0          3m56s
+
+22.  kubectl get svc
+				NAME                           TYPE           CLUSTER-IP       EXTERNAL-IP                                                               PORT(S)          AGE
+				chartname-hellospringbooteks   LoadBalancer   10.100.225.213   a934a96bd9dff41948ff214705d4a48c-2022093473.us-east-1.elb.amazonaws.com   8080:32213/TCP   4m29s
+				kubernetes                     ClusterIP      10.100.0.1       <none>                                                                    443/TCP          3h42m
+			
+
+
+23. 	a934a96bd9dff41948ff214705d4a48c-2022093473.us-east-1.elb.amazonaws.com:8080/hello
+				Welcome to Cloudtechmasters version:1
+
+24. helm ls
+				NAME            NAMESPACE       REVISION        UPDATED                                 STATUS          CHART                           APP VERSION
+				chartname       default         1               2023-08-21 14:08:00.974585629 +0000 UTC deployed        hellospringbooteks-0.1.0        1.16.0
+
+
+25.	helm uninstall chartname
+			release "chartname" uninstalled
+
+26. helm ls
+					NAME    NAMESPACE       REVISION        UPDATED STATUS  CHART   APP VERSION
+
+
+27. kubectl get pods
+		NAME                                     READY   STATUS    RESTARTS   AGE
+
+
+28  To push a Helm chart to an Amazon ECR repository
+https://docs.aws.amazon.com/AmazonECR/latest/userguide/push-oci-artifact.html
+	Install the latest version of the Helm client. These steps were written using Helm version 3.8.2. For more information, see Installing Helm.
+	Use the following steps to create a test Helm chart. For more information, see Helm Docs - Getting Started.
+	Create a Helm chart named helm-test-chart and clear the contents of the templates directory.
+
+1. helm create helm-test-chart
+				Creating helm-test-chart
+2. rm -rf ./helm-test-chart/templates/*
+
+3. Create a ConfigMap in the templates folder.
+
+cd helm-test-chart/templates
+cat <<EOF > configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: helm-test-chart-configmap
+data:
+  myvalue: "Hello World"
+EOF
+Package the chart. The output will 
+
+ 4. cd ../..
+ 
+5. helm package helm-test-chart
+			Successfully packaged chart and saved it to: /home/ec2-user/helm-test-chart-0.1.0.tgz
+
+6.  ls
+aws           bin          helm-hellospringbooteks  helm-test-chart-0.1.0.tgz  springboot-deployment-ns.yml  springboot-starterkit-svc
+awscliv2.zip  get_helm.sh  helm-test-chart          kubectl                    springboot-deployment.yml
+
+		now i need to store this tgz file in ecr.
+		
+7. Create a repository to store your Helm chart. The name of your repository should match the name you used when creating the Helm chart in step 2.
+
+aws ecr create-repository \
+     --repository-name helm-test-chart \
+     --region us-east-1
+
+
+8. Authenticate your Helm client to the Amazon ECR registry to which you intend to push your Helm chart. 
+Authentication tokens must be obtained for each registry used, and the tokens are valid for 12 hours. 
+
+
+aws ecr get-login-password \
+     --region us-west-2 | helm registry login \
+     --username AWS \
+     --password-stdin aws_account_id.dkr.ecr.us-west-2.amazonaws.com
+
+			as
+			
+aws ecr get-login-password \
+     --region  us-east-1 | helm registry login \
+     --username AWS \
+     --password-stdin  255766941731.dkr.ecr.us-east-1.amazonaws.com
+
+			Login Succeeded
+
+
+9. Push the Helm chart using the helm push command. The output should include the Amazon ECR repository URI and SHA digest.
+
+	helm push helm-test-chart-0.1.0.tgz oci://255766941731.dkr.ecr.us-east-1.amazonaws.com/
+						Pushed: 255766941731.dkr.ecr.us-east-1.amazonaws.com/helm-test-chart:0.1.0
+						Digest: sha256:57be0ba465cb45e5119ffe2e1888c5e5ab86484efdfca10a4f76df87ed5cdba6
+		
+		go to ecr and check the helm chart
+		
+		
+9. if you want to pull the helm chart from ecr 
+https://stackoverflow.com/questions/66246442/how-to-pull-helm-chart-from-aws-ecr-locally
+		first you delecte the  helm-test-chart repo which is your created.
+		rm -rf  helm-test-chart
+		
+		helm pull \
+    oci://12345678910.dkr.ecr.eu-west-1.amazonaws.com/my/helm/chart --version 0.1.19
+	
+				as
+				
+			helm pull   oci://255766941731.dkr.ecr.us-east-1.amazonaws.com/helm-test-chart --version  0.1.0
+								Pulled: 255766941731.dkr.ecr.us-east-1.amazonaws.com/helm-test-chart:0.1.0
+								Digest: sha256:57be0ba465cb45e5119ffe2e1888c5e5ab86484efdfca10a4f76df87ed5cdba6
+10.  ls
+				aws           bin          helm-hellospringbooteks    kubectl                       springboot-deployment.yml
+				awscliv2.zip  get_helm.sh  helm-test-chart-0.1.0.tgz  springboot-deployment-ns.yml  springboot-starterkit-svc
+
+	
+
+
+
+
+
+History
+###############
+	38 curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 > get_helm.sh
+   39  chmod 700 get_helm.sh
+   40  ./get_helm.sh
+   41  export PATH=$PATH:/usr/local/bin
+   42  HELM VERSION
+   43  helm version
+   44  helm ls
+   45  helm create springboot-starterkit-svc
+   46  ls
+   47  tree springboot-starterkit-svc
+   48  sudo yum install tree -y
+   49  tree springboot-starterkit-svc
+   50  sudo yum install git -y
+   51 ls
+   52  git clone https://github.com/MannemHaritha/helm-hellospringbooteks.git
+   53  ls
+   54  cd helm-hellospringbooteks/
+   55  tree
+   59 cd hellospringbooteks/
+   60  tree .
+    61 ls
+    62 cd ..
+   64  helm install hellospringbooteks springboot/hellospringbooteks --dry-run
+   65  helm install hellospringbooteks hellospringbooteks --dry-run
+   66 kubectl get pods
+   67 kubectl get svc
+   68  a934a96bd9dff41948ff214705d4a48c-2022093473.us-east-1.elb.amazonaws.com:8080/hello
+   69 helm ls
+   70  helm uninstall chartname
+  71  helm ls
+   72kubectl get pods
+
+  
+
+
+push helm to ecr gistory
+################
+
+	61helm create helm-test-chart
+   62  rm -rf ./helm-test-chart/templates/*
+   63  cd helm-test-chart/templates
+   64  cat <<EOF > configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: helm-test-chart-configmap
+data:
+  myvalue: "Hello World"
+EOF
+
+   65  cd ../..
+   66  helm package helm-test-chart
+   67 aws ecr create-repository      --repository-name helm-test-chart      --region us-east-1
+    68 aws ecr get-login-password      --region  us-east-1 | helm registry login      --username AWS      --password-stdin  255766941731.dkr.ecr.us-east-1.amazonaws.com
+   80  helm push helm-test-chart-0.1.0.tgz oci://255766941731.dkr.ecr.us-east-1.amazonaws.com/
+    81 helm pull \oci://255766941731.dkr.ecr.us-east-1.amazonaws.com/helm-test-chart --version  0.1.0
+   82   ls
+
+
+
+
